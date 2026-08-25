@@ -66,16 +66,27 @@
       card.dataset.id = o.id;
       var badgeHtml = o.badge ? '<div class="of-badge">' + escapeHtml(o.badge) + '</div>' : '';
       var prezzo2Html = o.prezzo_secondario ? '<div class="of-prezzo2">' + escapeHtml(o.prezzo_secondario) + '</div>' : '';
+      var prezzoConvHtml = o.prezzo_convergente
+        ? '<div class="of-prezzo-conv">' + escapeHtml(o.prezzo_convergente) + (o.nota_convergenza ? ' &mdash; ' + escapeHtml(o.nota_convergenza) : '') + '</div>'
+        : '';
       var dettagliArr = (o.dettagli || '').split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
       var dettagliHtml = dettagliArr.map(function (d) { return '<div>' + escapeHtml(d) + '</div>'; }).join('');
       card.innerHTML =
+        '<button type="button" class="of-edit-btn" title="Modifica">\u270e</button>' +
         '<div class="of-check">\u2713</div>' +
         badgeHtml +
         '<div class="of-nome">' + escapeHtml(o.nome) + '</div>' +
         '<div class="of-prezzo1">' + escapeHtml(o.prezzo_principale || '') + '</div>' +
         prezzo2Html +
+        prezzoConvHtml +
         '<div class="of-dettagli">' + dettagliHtml + '</div>' +
         '<div class="of-tag">' + CAT_LABEL[o.categoria] + ' &middot; ' + TIPO_LABEL[o.tipo] + '</div>';
+      card.querySelector('.of-edit-btn').addEventListener('click', function (ev) {
+        ev.stopPropagation();
+        document.getElementById('ofAdminBackdrop').classList.remove('hidden');
+        renderAdminList();
+        showAdminForm(o);
+      });
       card.addEventListener('click', function () { toggleSelect(o.id); });
       grid.appendChild(card);
     });
@@ -140,6 +151,8 @@
     document.getElementById('ofFormNome').value = o ? o.nome : '';
     document.getElementById('ofFormPrezzo1').value = o ? (o.prezzo_principale || '') : '';
     document.getElementById('ofFormPrezzo2').value = o ? (o.prezzo_secondario || '') : '';
+    document.getElementById('ofFormPrezzoConv').value = o ? (o.prezzo_convergente || '') : '';
+    document.getElementById('ofFormNotaConv').value = o ? (o.nota_convergenza || '') : '';
     document.getElementById('ofFormBadge').value = o ? (o.badge || '') : '';
     document.getElementById('ofFormDettagli').value = o ? (o.dettagli || '') : '';
     document.getElementById('ofFormDelete').classList.toggle('hidden', !o);
@@ -163,6 +176,8 @@
       nome: nome,
       prezzo_principale: document.getElementById('ofFormPrezzo1').value.trim(),
       prezzo_secondario: document.getElementById('ofFormPrezzo2').value.trim(),
+      prezzo_convergente: document.getElementById('ofFormPrezzoConv').value.trim(),
+      nota_convergenza: document.getElementById('ofFormNotaConv').value.trim(),
       badge: document.getElementById('ofFormBadge').value.trim(),
       dettagli: document.getElementById('ofFormDettagli').value.trim()
     };
