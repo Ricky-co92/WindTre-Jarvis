@@ -423,6 +423,7 @@
   // ================= GESTIONE DATI (tabella editabile) =================
   var gdRows = {};      // { rowKey: { id, isNew, dirty, values:{...} } }
   var gdRowCounter = 0;
+  var gdSelected = {}; // { key: true }
 
   function gdFieldNames() {
     return ['categoria', 'tipo', 'nome', 'prezzo_principale', 'prezzo_secondario', 'prezzo_convergente', 'nota_convergenza', 'badge', 'dettagli'];
@@ -433,6 +434,9 @@
     if (!tbody) return;
     tbody.innerHTML = '';
     gdRows = {};
+    gdSelected = {};
+    updateGdDeleteButton();
+    document.getElementById('gdSelectAll').checked = false;
     offerte.forEach(function (o) {
       var key = 'r' + (gdRowCounter++);
       gdRows[key] = { id: o.id, isNew: false, dirty: false, values: {
@@ -451,6 +455,15 @@
     var tr = document.createElement('tr');
     tr.dataset.key = key;
     tr.className = row.isNew ? 'gd-new' : (row.dirty ? 'gd-dirty' : '');
+
+    var selCell = document.createElement('td');
+    selCell.className = 'gd-flag-cell';
+    selCell.innerHTML = '<input type="checkbox" class="gd-row-select">';
+    selCell.querySelector('input').addEventListener('change', function (ev) {
+      if (ev.target.checked) gdSelected[key] = true; else delete gdSelected[key];
+      updateGdDeleteButton();
+    });
+    tr.appendChild(selCell);
 
     function td(inputHtml) {
       var cell = document.createElement('td');
@@ -525,6 +538,55 @@
       loadOfferte();
     });
   }
+
+  function updateGdDeleteButton() {
+    var btn = document.getElementById('gdDeleteSelected');
+    var n = Object.keys(gdSelected).length;
+    btn.classList.toggle('hidden', n === 0);
+    btn.textContent = 'Elimina selezionate (' + n + ')';
+  }
+
+  document.getElementById('gdSelectAll').addEventListener('change', function (ev) {
+    var checked = ev.target.checked;
+    gdSelected = {};
+    document.querySelectorAll('#gdTbody tr').forEach(function (tr) {
+      var cb = tr.querySelector('.gd-row-select');
+      if (cb) cb.checked = checked;
+      if (checked) gdSelected[tr.dataset.key] = true;
+    });
+    updateGdDeleteButton();
+  });
+
+  document.getElementById('gdDeleteSelected').addEventListener('click', async function () {
+    var keys = Object.keys(gdSelected);
+    if (!keys.length) return;
+    if (!confirm('Eliminare ' + keys.length + ' offerte selezionate? L\'operazione non \u00e8 reversibile.')) return;
+    var statusEl = document.getElementById('gdStatus');
+    statusEl.textContent = 'Eliminazione in corso...';
+    statusEl.className = 'status';
+    var idsToDelete = keys.map(function (k) { return gdRows[k] && gdRows[k].id; }).filter(function (id) { return id; });
+    var newRowKeys = keys.filter(function (k) { return gdRows[k] && gdRows[k].isNew; });
+    try {
+      if (idsToDelete.length) {
+        var { error } = await sb.from('wt_offerte').delete().in('id', idsToDelete);
+        if (error) throw error;
+      }
+      newRowKeys.forEach(function (k) {
+        var el = document.querySelector('#gdTbody tr[data-key="' + k + '"]');
+        if (el) el.remove();
+        delete gdRows[k];
+      });
+      statusEl.textContent = 'Eliminate ' + keys.length + ' offerte.';
+      statusEl.className = 'status ok';
+      gdSelected = {};
+      updateGdDeleteButton();
+      await loadOfferte();
+      renderGestioneTable();
+    } catch (err) {
+      statusEl.textContent = 'Errore: ' + err.message;
+      statusEl.className = 'status err';
+    }
+  });
 
   document.getElementById('gdAddRow') && document.getElementById('gdAddRow').addEventListener('click', function () {
     var key = 'r' + (gdRowCounter++);

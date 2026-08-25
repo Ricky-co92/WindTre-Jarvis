@@ -312,6 +312,9 @@
   .gd-table thead th.gd-custom-col{position:relative; padding-right:20px;}
   .gd-col-remove{position:absolute; top:6px; right:2px; background:none; border:none; color:#7fc4dc; font-size:13px; cursor:pointer; line-height:1;}
   .gd-col-remove:hover{color:#ff6767;}
+  .gd-table th:first-child, .gd-table td:first-child{position:sticky; left:0; z-index:2; background:#0d1924;}
+  .gd-table th:last-child, .gd-table td:last-child{position:sticky; right:0; z-index:2; background:#0d1924; text-align:center;}
+  .gd-table thead th:first-child, .gd-table thead th:last-child{z-index:3;}
 </style>
 </head>
 <body>
@@ -1415,6 +1418,7 @@
         <div class="panel-actions">
           <button type="button" class="of-btn" id="gdAddColumn">+ Aggiungi colonna</button>
           <button type="button" class="of-btn" id="gdAddRow">+ Nuova riga</button>
+          <button type="button" class="of-btn danger hidden" id="gdDeleteSelected">Elimina selezionate</button>
           <button type="button" class="of-btn accent" id="gdSaveAll">Salva tutte le modifiche</button>
           <span class="status" id="gdStatus"></span>
         </div>
@@ -1424,6 +1428,7 @@
         <table class="gd-table" id="gdTable">
           <thead>
             <tr id="gdHeaderRow">
+              <th><input type="checkbox" id="gdSelectAll" title="Seleziona tutte"></th>
               <th>Categoria</th><th>Tipo</th><th>Nome</th><th>Prezzo princ.</th><th>Prezzo second.</th>
               <th>Prezzo convergente</th><th>Nota convergenza</th><th>Badge</th><th>Opzione</th><th>Dettagli</th><th id="gdHeaderEnd"></th>
             </tr>
