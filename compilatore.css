@@ -1,0 +1,124 @@
+
+  #app-root {
+    --wt-orange: #EE6C1F;
+    --wt-orange-dark: #D45A12;
+    --wt-orange-light: #FFA85C;
+    --ink: #1C1C1E;
+    --paper: #F3F1EC;
+    --line: #E4DFD6;
+    --muted: #857F75;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 32px 16px 50px;
+    box-sizing: border-box;
+  }
+  #app-root * { box-sizing: border-box; }
+  #app-root .wrap { max-width: 760px; margin: 0 auto; }
+  #app-root .brandbar { display:flex; align-items:center; gap:11px; margin-bottom: 22px; }
+  #app-root .brandbar svg { width: 40px; height: 40px; flex-shrink:0; }
+  #app-root .brandbar .wordmark { font-size: 21px; font-weight: 800; letter-spacing: -0.3px; }
+  #app-root .brandbar .wordmark .wind { color: var(--ink); }
+  #app-root .brandbar .wordmark .tre { color: var(--wt-orange); }
+  #app-root .brandbar .tagline { font-size: 11px; color: var(--muted); margin-top: -2px; letter-spacing: 0.03em; }
+  #app-root .headercard {
+    background: linear-gradient(120deg, var(--wt-orange) 0%, #F58B3C 100%);
+    color: #fff; padding: 20px 22px; border-radius: 14px;
+    box-shadow: 0 8px 20px -8px rgba(238,108,31,0.55);
+    margin-bottom: 24px;
+  }
+  #app-root h1 { font-size: 20px; font-weight: 700; margin: 0 0 6px; line-height:1.3; }
+  #app-root .headercard .sub { color: rgba(255,255,255,0.92); font-size: 13px; margin: 0; }
+  #app-root fieldset {
+    border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px 20px;
+    margin: 0 0 18px; background: #fff;
+    box-shadow: 0 2px 10px -6px rgba(28,28,30,0.12);
+  }
+  #app-root legend {
+    font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--wt-orange-dark); padding: 0 8px;
+  }
+  #app-root .row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+  #app-root .field { flex: 1 1 200px; display: flex; flex-direction: column; gap: 4px; }
+  #app-root .field.narrow { flex: 0 1 100px; }
+  #app-root .field.wide { flex: 1 1 100%; }
+  #app-root label { font-size: 12.5px; color: var(--muted); font-weight: 600; }
+  #app-root input[type=text], #app-root input[type=date] {
+    border: 1px solid var(--line); border-radius: 7px; padding: 9px 10px; font-size: 14px;
+    font-family: inherit; background: #fff; color: var(--ink);
+  }
+  #app-root input:focus { outline: 2px solid var(--wt-orange); outline-offset: 1px; }
+  #app-root input[type=text]:hover, #app-root input[type=date]:hover { border-color: var(--wt-orange-light); }
+  #app-root .radio-group { display:flex; flex-direction:column; gap:8px; }
+  #app-root .radio-opt { display:flex; align-items:flex-start; gap:8px; font-size: 13.5px; cursor:pointer; }
+  #app-root .radio-opt input { margin-top: 3px; accent-color: var(--wt-orange); width:16px; height:16px; flex-shrink:0; }
+  #app-root .sigrow { display:flex; justify-content: space-between; align-items:center; margin-top:8px; }
+  #app-root .linkbtn {
+    background:none; border:none; color: var(--wt-orange-dark); font-size: 12.5px; font-weight:600;
+    cursor:pointer; padding: 4px 0; text-decoration: underline;
+  }
+  #app-root .actions { display:flex; gap:10px; align-items:center; margin-top: 22px; flex-wrap: wrap; }
+  #app-root button#generate, #app-root button#generateDocs {
+    background: var(--wt-orange); color:#fff; border:none; border-radius: 9px;
+    padding: 13px 26px; font-size: 15px; font-weight: 700; cursor: pointer;
+    box-shadow: 0 4px 14px -4px rgba(238,108,31,0.55);
+    transition: background 0.15s ease, transform 0.1s ease;
+  }
+  #app-root button#generate:hover, #app-root button#generateDocs:hover { background: var(--wt-orange-dark); transform: translateY(-1px); }
+  #app-root button#generate:disabled, #app-root button#generateDocs:disabled { opacity: 0.55; cursor: default; transform:none; }
+  #app-root button#generateDocs { padding: 11px 20px; font-size: 14px; }
+  #app-root canvas.sigpad-canvas {
+    border: 1.5px dashed var(--line); border-radius: 8px; width: 100%; height: 150px;
+    touch-action: none; background: #FDFCFA; cursor: crosshair;
+    transition: border-color 0.15s ease;
+  }
+  #app-root canvas.sigpad-canvas:hover { border-color: var(--wt-orange-light); }
+  #app-root .footer-note {
+    text-align:center; font-size: 11.5px; color: var(--muted); margin-top: 28px; line-height:1.6;
+  }
+  #app-root .status { font-size: 13px; color: var(--muted); }
+  #app-root .status.err { color: #C0392B; font-weight: 600; }
+  #app-root .status.ok { color: #1E8449; font-weight: 600; }
+  #app-root .req { color: var(--wt-orange-dark); }
+  #app-root .docpage { position: relative; display:inline-block; margin: 10px 10px 10px 0; border: 1px solid var(--line); border-radius: 6px; overflow: visible; cursor: crosshair; line-height:0; }
+  #app-root .docpage canvas { display:block; max-width: 100%; }
+  #app-root .stamp-marker {
+    position:absolute; pointer-events:none; border: 1.5px dashed var(--wt-orange);
+    background: rgba(238,108,31,0.12); border-radius: 4px; padding: 2px 6px;
+    font-size: 10px; color: var(--wt-orange-dark); font-weight:700; white-space:nowrap;
+    transform: translate(0, -100%);
+  }
+  #app-root .pagelabel { font-size: 11.5px; color: var(--muted); margin: 4px 0 -2px; }
+  #app-root .sig-drag {
+    position: absolute; cursor: move; touch-action: none;
+    outline: 1.5px dashed var(--wt-orange); background: rgba(255,255,255,0.5);
+  }
+  #app-root .sig-drag img { width:100%; height:100%; display:block; pointer-events:none; user-select:none; }
+  #app-root .sig-drag .sig-resize-handle {
+    position: absolute; right: -7px; bottom: -7px; width: 14px; height: 14px;
+    background: var(--wt-orange); border: 2px solid #fff; border-radius: 50%;
+    cursor: nwse-resize; touch-action: none; box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+  #app-root .sig-drag .sig-remove {
+    position: absolute; left: -8px; top: -8px; width: 16px; height: 16px;
+    background: #C0392B; color:#fff; border-radius: 50%; font-size: 11px; line-height:16px;
+    text-align:center; cursor:pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+  #app-root .tabs { display:flex; gap:8px; margin-bottom: 20px; flex-wrap: wrap; }
+  #app-root .tabs .tab-btn { flex: 1 1 150px; }
+  #app-root .tab-btn {
+    flex:1; text-align:center; padding: 12px 10px; border-radius: 10px; border: 1.5px solid var(--line);
+    background:#fff; color: var(--muted); font-weight:700; font-size: 13.5px; cursor:pointer;
+    transition: all 0.15s ease;
+  }
+  #app-root .tab-btn.active { border-color: var(--wt-orange); color: var(--wt-orange-dark); background: #FFF4EC; box-shadow: 0 2px 8px -4px rgba(238,108,31,0.4); }
+  #app-root .tab-panel[data-hidden="true"] { display:none; }
+  #app-root .hidden { display:none !important; }
+  #app-root .module-card {
+    background:#fff; border:1.5px solid var(--line); border-radius:12px; padding:16px 10px;
+    font-weight:700; font-size:13.5px; color:var(--ink); cursor:pointer; text-align:center; line-height:1.35;
+    transition: all .15s ease;
+  }
+  #app-root .module-card:hover { border-color: var(--wt-orange); box-shadow: 0 2px 8px -4px rgba(238,108,31,0.4); }
+  #app-root .module-card.active { border-color: var(--wt-orange); background:#FFF4EC; color: var(--wt-orange-dark); }

@@ -15,6 +15,10 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
+<link rel="stylesheet" href="compilatore.css">
 <style>
   :root{ font-size:18px; }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -273,13 +277,860 @@
 
   <!-- COMPILATORE MODULI -->
   <div id="view-compilatore" class="hidden">
-    <div class="panel">
-      <div class="panel-head"><div class="title">◈ compilatore moduli</div></div>
-      <div class="placeholder-msg">
-        <span class="big">In attesa del sorgente</span>
-        Carica il file HTML del Compilatore Moduli esistente per integrarlo qui come pagina nativa (con login e dati comuni).
+<div id="app-root">
+
+
+<div class="wrap">
+  <div class="brandbar">
+    <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="wtGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#FFB169"/>
+          <stop offset="100%" stop-color="#EE6C1F"/>
+        </linearGradient>
+      </defs>
+      <path d="M4 20 C 12 8, 20 8, 24 20 C 28 32, 36 32, 44 20" fill="none" stroke="url(#wtGrad)" stroke-width="5" stroke-linecap="round"/>
+      <path d="M4 30 C 12 20, 18 20, 22 30 C 26 40, 34 40, 44 30" fill="none" stroke="url(#wtGrad)" stroke-width="5" stroke-linecap="round" opacity="0.55"/>
+    </svg>
+    <div>
+      <div class="wordmark"><span class="wind">WIND</span><span class="tre">TRE</span></div>
+      <div class="tagline">STRUMENTI PERSONALI &middot; NON UFFICIALE</div>
+    </div>
+  </div>
+
+  <!-- ===== STEP 0: scelta modulo con anteprima vuota ===== -->
+  <div id="moduleGrid" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px; margin-bottom:22px;">
+    <button type="button" class="module-card" data-mode="mobile">Recesso<br>Mobile</button>
+    <button type="button" class="module-card" data-mode="micro">Recesso<br>Micro Mobile</button>
+    <button type="button" class="module-card" data-mode="fisso">Recesso<br>Rete Fissa</button>
+    <button type="button" class="module-card" data-mode="cessione">Cessione<br>Contratto</button>
+    <button type="button" class="module-card" data-mode="morte">Autocert<br>Cert. Morte</button>
+    <button type="button" class="module-card" data-mode="decesso">Autocert<br>Atto Notorio</button>
+    <button type="button" class="module-card" data-mode="firmadoc">Firma Doc</button>
+    <button type="button" class="module-card" data-mode="energy">Att. Utenza<br>Energy</button>
+  </div>
+
+  <div id="blankPreviewWrap" class="hidden" style="margin-bottom:22px;">
+    <div class="sub" style="margin-bottom:8px;">Anteprima del modulo vuoto</div>
+    <div id="blankPreviewContainer"></div>
+  </div>
+
+  <div class="headercard hidden" id="formArea">
+  <h1 id="formTitle">Richiesta di recesso &mdash; contratto mobile privato</h1>
+    <p class="sub" id="formSub">Compila i campi, disegna la firma e genera il PDF pronto da allegare al documento d'identit&agrave; e al codice fiscale.</p>
+  </div>
+
+  <div class="row hidden" id="moduleSelectRow" style="margin-bottom:20px">
+    <div class="field wide">
+      <label>Modulo da compilare</label>
+      <select id="moduleSelect" style="border:1px solid var(--line); border-radius:9px; padding:12px 14px; font-size:14.5px; font-weight:700; color:var(--wt-orange-dark); background:#fff; width:100%;">
+        <option value="mobile">Recesso Mobile</option>
+        <option value="micro">Recesso Micro Mobile</option>
+        <option value="fisso">Recesso Rete Fissa</option>
+        <option value="cessione">Cessione Contratto</option>
+        <option value="morte">Autocert Cert Morte</option>
+        <option value="decesso">Autocert Atto Notorio</option>
+        <option value="firmadoc">Firma Doc</option>
+        <option value="energy">Att Utenza Energy</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="panel-mobile" class="tab-panel">
+
+  <fieldset>
+    <legend>Intestatario</legend>
+    <div class="row">
+      <div class="field wide">
+        <label>Nome e cognome intestatario SIM/linea <span class="req">*</span></label>
+        <input type="text" id="nome_cognome" placeholder="Mario Rossi">
       </div>
     </div>
+    <div class="row">
+      <div class="field">
+        <label>Codice fiscale <span class="req">*</span></label>
+        <input type="text" id="codice_fiscale" maxlength="16" style="text-transform:uppercase" placeholder="RSSMRA80A01L219K">
+      </div>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label>Documento d'identit&agrave; &mdash; tipo</label>
+        <input type="text" id="doc_tipo" placeholder="Carta d'identit&agrave;">
+      </div>
+      <div class="field">
+        <label>Documento d'identit&agrave; &mdash; numero</label>
+        <input type="text" id="doc_numero" placeholder="AB1234567">
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Recapiti</legend>
+    <div class="row">
+      <div class="field">
+        <label>Numero del titolare della linea</label>
+        <input type="text" id="numero_titolare" placeholder="333 1234567">
+      </div>
+      <div class="field">
+        <label>Recapito telefonico alternativo</label>
+        <input type="text" id="recapito_alternativo" placeholder="Per eventuali chiarimenti">
+      </div>
+    </div>
+    <div class="row">
+      <div class="field" style="flex:2 1 260px">
+        <label>Indirizzo di residenza &mdash; via</label>
+        <input type="text" id="indirizzo_via" placeholder="Via Roma">
+      </div>
+      <div class="field narrow">
+        <label>Numero civico</label>
+        <input type="text" id="indirizzo_numero" placeholder="10">
+      </div>
+      <div class="field">
+        <label>Citt&agrave;</label>
+        <input type="text" id="indirizzo_citta" placeholder="Torino">
+      </div>
+    </div>
+    <div class="row">
+      <div class="field narrow">
+        <label>Provincia</label>
+        <input type="text" id="provincia" maxlength="2" style="text-transform:uppercase" placeholder="TO">
+      </div>
+      <div class="field narrow">
+        <label>CAP</label>
+        <input type="text" id="cap" maxlength="5" placeholder="10100">
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Recesso richiesto</legend>
+    <div class="row">
+      <div class="field wide">
+        <label>Utenza/e oggetto della richiesta <span class="req">*</span></label>
+        <input type="text" id="utenza" placeholder="333 9998888">
+      </div>
+    </div>
+    <div class="row">
+      <div class="field wide">
+        <label style="margin-bottom:2px">Motivo</label>
+        <div class="radio-group">
+          <label class="radio-opt"><input type="radio" name="motivo" value="cb_richiesta_recesso" checked> Richiesta di recesso</label>
+          <label class="radio-opt"><input type="radio" name="motivo" value="cb_diritto_modifiche"> Diritto di recesso per modifiche contrattuali</label>
+          <label class="radio-opt"><input type="radio" name="motivo" value="cb_recesso_14gg"> Richiesta di recesso entro 14 giorni</label>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="field wide">
+        <label style="margin-bottom:2px">Modalit&agrave; pagamento rate residue (se dovute)</label>
+        <div class="radio-group">
+          <label class="radio-opt"><input type="radio" name="pagamento" value="cb_pagamento_rateizzato"> Pagamento rateizzato</label>
+          <label class="radio-opt"><input type="radio" name="pagamento" value="cb_pagamento_unica" checked> Pagamento in unica soluzione</label>
+        </div>
+      </div>
+    </div>
+  </fieldset>
+  </div>
+
+  <div id="panel-micro" class="tab-panel" data-hidden="true">
+    <fieldset>
+      <legend>Intestatario (Professionista)</legend>
+      <div class="row">
+        <div class="field wide"><label>Ragione Sociale <span class="req">*</span></label><input type="text" id="mm_ragione_sociale" placeholder="Rossi Costruzioni S.r.l."></div>
+        <div class="field"><label>Partita IVA</label><input type="text" id="mm_partita_iva"></div>
+      </div>
+      <div class="row">
+        <div class="field wide"><label>Referente Legale/Delegato</label><input type="text" id="mm_referente_legale"></div>
+      </div>
+      <div class="row">
+        <div class="field wide"><label>Il/La Rappresentante Legale <span class="req">*</span></label><input type="text" id="mm_rappresentante_legale" placeholder="Mario Rossi"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Codice fiscale <span class="req">*</span></label><input type="text" id="mm_codice_fiscale" maxlength="16" style="text-transform:uppercase"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Documento d'identit&agrave; &mdash; tipo</label><input type="text" id="mm_doc_tipo"></div>
+        <div class="field"><label>Documento d'identit&agrave; &mdash; numero</label><input type="text" id="mm_doc_numero"></div>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>Recapiti</legend>
+      <div class="row">
+        <div class="field"><label>Numero del Rappresentante Legale</label><input type="text" id="mm_numero_rappresentante" placeholder="333 1234567"></div>
+        <div class="field"><label>Recapito telefonico Referente Delegato</label><input type="text" id="mm_recapito_alternativo"></div>
+      </div>
+      <div class="row">
+        <div class="field" style="flex:2 1 260px"><label>Indirizzo di residenza &mdash; via</label><input type="text" id="mm_indirizzo_via"></div>
+        <div class="field narrow"><label>Numero</label><input type="text" id="mm_indirizzo_numero"></div>
+        <div class="field"><label>Citt&agrave;</label><input type="text" id="mm_indirizzo_citta"></div>
+      </div>
+      <div class="row">
+        <div class="field narrow"><label>Provincia</label><input type="text" id="mm_provincia" maxlength="2" style="text-transform:uppercase"></div>
+        <div class="field narrow"><label>CAP</label><input type="text" id="mm_cap" maxlength="5"></div>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>Recesso richiesto</legend>
+      <div class="row">
+        <div class="field wide"><label>Utenza/e oggetto della richiesta <span class="req">*</span></label><input type="text" id="mm_utenza" placeholder="333 9998888"></div>
+      </div>
+      <div class="row">
+        <div class="field wide">
+          <div class="radio-group">
+            <label class="radio-opt"><input type="radio" name="mm_motivo" value="cb_richiesta_recesso" checked> Richiesta di recesso</label>
+            <label class="radio-opt"><input type="radio" name="mm_motivo" value="cb_diritto_modifiche"> Diritto di recesso per modifiche contrattuali</label>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="field wide">
+          <div class="radio-group">
+            <label class="radio-opt"><input type="radio" name="mm_pagamento" value="cb_pagamento_rateizzato"> Pagamento rateizzato</label>
+            <label class="radio-opt"><input type="radio" name="mm_pagamento" value="cb_pagamento_unica" checked> Pagamento in unica soluzione</label>
+          </div>
+        </div>
+      </div>
+    </fieldset>
+  </div>
+
+  <div id="panel-fisso" class="tab-panel" data-hidden="true">
+    <fieldset>
+      <legend>Intestatario</legend>
+      <div class="row">
+        <div class="field wide">
+          <label>Nome e cognome intestatario linea <span class="req">*</span></label>
+          <input type="text" id="f_nome_cognome" placeholder="Mario Rossi">
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label>Codice fiscale <span class="req">*</span></label>
+          <input type="text" id="f_codice_fiscale" maxlength="16" style="text-transform:uppercase" placeholder="RSSMRA80A01L219K">
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label>Documento d'identit&agrave; &mdash; tipo</label>
+          <input type="text" id="f_doc_tipo" placeholder="Carta d'identit&agrave;">
+        </div>
+        <div class="field">
+          <label>Documento d'identit&agrave; &mdash; numero</label>
+          <input type="text" id="f_doc_numero" placeholder="AB1234567">
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Recapiti</legend>
+      <div class="row">
+        <div class="field">
+          <label>Numero del titolare della linea</label>
+          <input type="text" id="f_numero_titolare" placeholder="0142 123456">
+        </div>
+        <div class="field">
+          <label>Recapito telefonico alternativo</label>
+          <input type="text" id="f_recapito_alternativo" placeholder="Per eventuali chiarimenti">
+        </div>
+      </div>
+      <div class="row">
+        <div class="field" style="flex:2 1 260px">
+          <label>Indirizzo di residenza &mdash; via</label>
+          <input type="text" id="f_indirizzo_via" placeholder="Via Roma">
+        </div>
+        <div class="field narrow">
+          <label>Numero civico</label>
+          <input type="text" id="f_indirizzo_numero" placeholder="10">
+        </div>
+        <div class="field">
+          <label>Citt&agrave;</label>
+          <input type="text" id="f_indirizzo_citta" placeholder="Torino">
+        </div>
+      </div>
+      <div class="row">
+        <div class="field narrow">
+          <label>Provincia</label>
+          <input type="text" id="f_provincia" maxlength="2" style="text-transform:uppercase" placeholder="TO">
+        </div>
+        <div class="field narrow">
+          <label>CAP</label>
+          <input type="text" id="f_cap" maxlength="5" placeholder="10100">
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Recesso richiesto</legend>
+      <div class="row">
+        <div class="field wide">
+          <label>Utenza/e oggetto della richiesta <span class="req">*</span></label>
+          <input type="text" id="f_utenza" placeholder="0142 987654">
+        </div>
+      </div>
+      <div class="row">
+        <div class="field wide">
+          <label style="margin-bottom:2px">Motivo</label>
+          <div class="radio-group">
+            <label class="radio-opt"><input type="radio" name="f_motivo" value="cb_richiesta_recesso" checked> Richiesta di recesso</label>
+            <label class="radio-opt"><input type="radio" name="f_motivo" value="cb_diritto_modifiche"> Diritto di recesso per modifiche contrattuali</label>
+            <label class="radio-opt"><input type="radio" name="f_motivo" value="cb_recesso_14gg"> Richiesta di recesso entro 14 giorni</label>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="field wide">
+          <label style="margin-bottom:2px">Modalit&agrave; con cui recedere dal servizio <span class="req">*</span></label>
+          <div class="radio-group">
+            <label class="radio-opt"><input type="radio" name="f_modalita" value="cb_cessazione"> Con cessazione definitiva della linea e perdita del numero</label>
+            <label class="radio-opt"><input type="radio" name="f_modalita" value="cb_portabilita"> Con portabilit&agrave; verso altro operatore tramite codice di migrazione</label>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="field wide">
+          <label style="margin-bottom:2px">Modalit&agrave; pagamento rate residue (se dovute)</label>
+          <div class="radio-group">
+            <label class="radio-opt"><input type="radio" name="f_pagamento" value="cb_pagamento_rateizzato"> Pagamento rateizzato</label>
+            <label class="radio-opt"><input type="radio" name="f_pagamento" value="cb_pagamento_unica" checked> Pagamento in unica soluzione</label>
+          </div>
+        </div>
+      </div>
+    </fieldset>
+  </div>
+
+  <div id="panel-datafirma-standard" class="tab-panel">
+    <fieldset>
+      <legend>Data e firma</legend>
+      <div class="row" style="margin-bottom:6px;">
+        <label class="radio-opt"><input type="checkbox" id="optIncludiData" checked> Includi la data nel documento</label>
+      </div>
+      <div class="row" style="margin-bottom:6px;">
+        <label class="radio-opt"><input type="checkbox" id="optIncludiFirma" checked> Includi la firma nel documento</label>
+      </div>
+      <div class="row" id="dataFieldRow">
+        <div class="field narrow">
+          <label>Data</label>
+          <input type="date" id="data">
+        </div>
+      </div>
+      <div class="field wide" id="firmaFieldWrap">
+        <label>Firma <span class="req">*</span> &mdash; disegna qui con mouse o dito, oppure carica un'immagine</label>
+        <canvas id="sigpad" class="sigpad-canvas"></canvas>
+        <div class="sigrow">
+          <div style="display:flex; gap:16px; align-items:center;">
+            <button class="linkbtn" id="clearsig" type="button">Cancella firma</button>
+            <label class="linkbtn" for="sigupload" style="cursor:pointer;">Carica immagine firma&hellip;</label>
+            <input type="file" id="sigupload" accept="image/*" style="display:none;">
+          </div>
+          <span class="status" id="sigstatus"></span>
+        </div>
+      </div>
+    </fieldset>
+
+    <div class="actions">
+      <button id="previewStandard" type="button">1. Compila e genera anteprima</button>
+      <span class="status" id="status"></span>
+    </div>
+
+    <fieldset id="standardSignFieldset" style="display:none; margin-top:18px">
+      <legend>Posiziona la firma sul documento</legend>
+      <p class="sub" style="margin:0 0 12px">Il modulo qui sotto &egrave; gi&agrave; compilato, data inclusa. Clicca dove vuoi mettere la firma: comparir&agrave; l&rsquo;immagine vera, che puoi <strong>trascinare</strong> per spostarla e ridimensionare tirando il puntino arancione. Puoi aggiungerne quante ne servono.</p>
+      <div style="display:flex; gap:8px; margin:6px 0 8px; flex-wrap:wrap;">
+        <button type="button" class="linkbtn" id="clearAllMarksStandard">Cancella tutte le firme</button>
+      </div>
+      <div id="sigPreviewMobileFisso"></div>
+      <div class="actions" style="margin-top:14px">
+        <button id="generate" type="button" disabled>2. Scarica PDF firmato</button>
+        <span class="status" id="statusStandardFinal"></span>
+      </div>
+    </fieldset>
+  </div>
+
+  <div id="panel-cessione" class="tab-panel" data-hidden="true">
+    <fieldset>
+      <legend>Attuale Intestatario (Cedente)</legend>
+      <div class="row">
+        <div class="field"><label>Nome <span class="req">*</span></label><input type="text" id="c_ced_nome" placeholder="Federico"></div>
+        <div class="field"><label>Cognome <span class="req">*</span></label><input type="text" id="c_ced_cognome" placeholder="Rossi"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Codice fiscale <span class="req">*</span></label><input type="text" id="c_ced_cf" maxlength="16" style="text-transform:uppercase" placeholder="RSSFRC80A01L219K"></div>
+        <div class="field"><label>Partita IVA (se libero prof.)</label><input type="text" id="c_ced_piva"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Recapito telefonico</label><input type="text" id="c_ced_telefono" placeholder="333 1234567"></div>
+      </div>
+      <div class="row">
+        <div class="field wide">
+          <label class="radio-opt" style="font-weight:600"><input type="checkbox" id="c_ced_is_impresa"> Il Cedente agisce come Impresa (compila Ragione Sociale)</label>
+        </div>
+      </div>
+      <div id="c_ced_impresa_block" style="display:none">
+        <div class="row">
+          <div class="field wide"><label>Denominazione/Ragione Sociale</label><input type="text" id="c_ced_impresa_denominazione"></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>Partita IVA impresa</label><input type="text" id="c_ced_impresa_piva"></div>
+          <div class="field"><label>Recapito telefonico impresa</label><input type="text" id="c_ced_impresa_telefono"></div>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Nuovo Intestatario (Cessionario)</legend>
+      <div class="row">
+        <div class="field"><label>Nome <span class="req">*</span></label><input type="text" id="c_ces_nome" placeholder="Mario"></div>
+        <div class="field"><label>Cognome <span class="req">*</span></label><input type="text" id="c_ces_cognome" placeholder="Bianchi"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Codice fiscale <span class="req">*</span></label><input type="text" id="c_ces_cf" maxlength="16" style="text-transform:uppercase" placeholder="BNCMRA90A01L219Z"></div>
+        <div class="field"><label>Partita IVA (se libero prof.)</label><input type="text" id="c_ces_piva"></div>
+        <div class="field narrow"><label>Sesso</label>
+          <select id="c_ces_sesso" style="border:1px solid var(--line); border-radius:7px; padding:9px 10px; font-size:14px; background:#fff;">
+            <option value="">&mdash;</option><option value="M">M</option><option value="F">F</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Comune di nascita</label><input type="text" id="c_ces_comune_nascita"></div>
+        <div class="field narrow"><label>Prov.</label><input type="text" id="c_ces_prov_nascita" maxlength="2" style="text-transform:uppercase"></div>
+        <div class="field narrow"><label>Data di nascita</label><input type="text" id="c_ces_data_nascita" placeholder="gg/mm/aaaa"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Recapito telefonico</label><input type="text" id="c_ces_telefono" placeholder="333 1234567"></div>
+      </div>
+      <div class="row">
+        <div class="field narrow"><label>Documento &mdash; data rilascio</label><input type="text" id="c_ces_doc_rilascio" placeholder="gg/mm/aaaa"></div>
+        <div class="field"><label>Documento &mdash; numero</label><input type="text" id="c_ces_doc_numero"></div>
+        <div class="field narrow"><label>Nazionalit&agrave;</label><input type="text" id="c_ces_doc_naz" placeholder="ITA"></div>
+      </div>
+      <div class="row">
+        <div class="field" style="flex:2 1 260px"><label>Indirizzo di residenza</label><input type="text" id="c_ces_indirizzo" placeholder="Via Roma"></div>
+        <div class="field narrow"><label>N&deg;</label><input type="text" id="c_ces_civico"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Localit&agrave;</label><input type="text" id="c_ces_localita"></div>
+        <div class="field narrow"><label>CAP</label><input type="text" id="c_ces_cap" maxlength="5"></div>
+        <div class="field"><label>Comune</label><input type="text" id="c_ces_comune"></div>
+        <div class="field narrow"><label>Prov.</label><input type="text" id="c_ces_prov" maxlength="2" style="text-transform:uppercase"></div>
+      </div>
+      <div class="row">
+        <div class="field wide">
+          <label class="radio-opt" style="font-weight:600"><input type="checkbox" id="c_ces_is_impresa"> Il Cessionario agisce come Impresa (compila Ragione Sociale e Sede Legale)</label>
+        </div>
+      </div>
+      <div id="c_ces_impresa_block" style="display:none">
+        <div class="row">
+          <div class="field wide"><label>Denominazione/Ragione Sociale</label><input type="text" id="c_ces_impresa_denominazione"></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>Partita IVA impresa</label><input type="text" id="c_ces_impresa_piva"></div>
+          <div class="field"><label>Recapito telefonico impresa</label><input type="text" id="c_ces_impresa_telefono"></div>
+        </div>
+        <p class="sub" style="margin:4px 0 10px">Sede Legale</p>
+        <div class="row">
+          <div class="field" style="flex:2 1 260px"><label>Via</label><input type="text" id="c_ces_sede_legale_via"></div>
+          <div class="field narrow"><label>N&deg;</label><input type="text" id="c_ces_sede_legale_civico"></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>Localit&agrave;</label><input type="text" id="c_ces_sede_legale_localita"></div>
+          <div class="field narrow"><label>CAP</label><input type="text" id="c_ces_sede_legale_cap" maxlength="5"></div>
+          <div class="field"><label>Comune</label><input type="text" id="c_ces_sede_legale_comune"></div>
+          <div class="field narrow"><label>Prov.</label><input type="text" id="c_ces_sede_legale_prov" maxlength="2" style="text-transform:uppercase"></div>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Numeri di telefono oggetto della cessione</legend>
+      <div class="row">
+        <div class="field wide">
+          <label>Numeri ceduti <span class="req">*</span> (separati da virgola)</label>
+          <input type="text" id="c_numeri_ceduti" placeholder="333 1112223, 333 4445556">
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Modalit&agrave; di pagamento (a cura del Cessionario)</legend>
+      <div class="row">
+        <div class="field wide">
+          <div class="radio-group">
+            <label class="radio-opt"><input type="radio" name="c_pagamento" value="none" checked> Nessuna (da definire)</label>
+            <label class="radio-opt"><input type="radio" name="c_pagamento" value="carta"> Carta di credito</label>
+            <label class="radio-opt"><input type="radio" name="c_pagamento" value="sepa"> Addebito diretto su conto corrente (SEPA)</label>
+            <label class="radio-opt"><input type="radio" name="c_pagamento" value="bollettino"> Bollettino postale</label>
+          </div>
+        </div>
+      </div>
+      <div id="c_sepa_block" style="display:none">
+        <div class="row">
+          <div class="field"><label>Nome Banca/Poste</label><input type="text" id="c_sepa_banca"></div>
+          <div class="field"><label>IBAN <span style="font-weight:400">(senza il prefisso IT, gi&agrave; stampato)</span></label><input type="text" id="c_sepa_iban" placeholder="60X0542811101000000123456"></div>
+        </div>
+        <p class="sub" style="margin:4px 0 10px">Dati del Sottoscrittore del modulo (deve essere una persona fisica)</p>
+        <div class="row">
+          <div class="field"><label>Nome, Cognome</label><input type="text" id="c_sott_nome_cognome"></div>
+          <div class="field"><label>Codice fiscale</label><input type="text" id="c_sott_cf" style="text-transform:uppercase"></div>
+        </div>
+        <div class="row">
+          <div class="field" style="flex:2 1 260px"><label>Indirizzo</label><input type="text" id="c_sott_indirizzo"></div>
+          <div class="field narrow"><label>N&deg;</label><input type="text" id="c_sott_civico"></div>
+        </div>
+        <div class="row">
+          <div class="field narrow"><label>CAP</label><input type="text" id="c_sott_cap" maxlength="5"></div>
+          <div class="field"><label>Comune</label><input type="text" id="c_sott_comune"></div>
+          <div class="field narrow"><label>Prov.</label><input type="text" id="c_sott_prov" maxlength="2" style="text-transform:uppercase"></div>
+          <div class="field"><label>Telefono</label><input type="text" id="c_sott_telefono"></div>
+        </div>
+        <p class="sub" style="margin:4px 0 10px">Intestatario del conto da addebitare (se diverso, altrimenti ripeti gli stessi dati)</p>
+        <div class="row">
+          <div class="field"><label>Denominazione/Nome, Cognome</label><input type="text" id="c_intest_denominazione"></div>
+          <div class="field"><label>Cod. fiscale / P.IVA</label><input type="text" id="c_intest_cf_piva" style="text-transform:uppercase"></div>
+        </div>
+        <div class="row">
+          <div class="field" style="flex:2 1 260px"><label>Indirizzo</label><input type="text" id="c_intest_indirizzo"></div>
+          <div class="field narrow"><label>N&deg;</label><input type="text" id="c_intest_civico"></div>
+        </div>
+        <div class="row">
+          <div class="field narrow"><label>CAP</label><input type="text" id="c_intest_cap" maxlength="5"></div>
+          <div class="field"><label>Comune</label><input type="text" id="c_intest_comune"></div>
+          <div class="field narrow"><label>Prov.</label><input type="text" id="c_intest_prov" maxlength="2" style="text-transform:uppercase"></div>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Luogo, data e firme</legend>
+      <div class="row">
+        <div class="field"><label>Luogo</label><input type="text" id="c_luogo" placeholder="Casale Monferrato"></div>
+        <div class="field narrow"><label>Data</label><input type="date" id="c_data"></div>
+      </div>
+      <div class="row">
+        <div class="field wide">
+          <label>Firma Cedente <span class="req">*</span></label>
+          <canvas id="sigpadCedente" class="sigpad-canvas"></canvas>
+          <div class="sigrow">
+            <div style="display:flex; gap:16px; align-items:center;">
+              <button class="linkbtn" id="clearsigCedente" type="button">Cancella firma</button>
+              <label class="linkbtn" for="sigCedenteUpload" style="cursor:pointer;">Carica immagine firma&hellip;</label>
+              <input type="file" id="sigCedenteUpload" accept="image/*" style="display:none;">
+            </div>
+            <span class="status" id="sigCedenteStatus"></span>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="field wide">
+          <label>Firma Cessionario <span class="req">*</span></label>
+          <canvas id="sigpadCessionario" class="sigpad-canvas"></canvas>
+          <div class="sigrow">
+            <div style="display:flex; gap:16px; align-items:center;">
+              <button class="linkbtn" id="clearsigCessionario" type="button">Cancella firma</button>
+              <label class="linkbtn" for="sigCessionarioUpload" style="cursor:pointer;">Carica immagine firma&hellip;</label>
+              <input type="file" id="sigCessionarioUpload" accept="image/*" style="display:none;">
+            </div>
+            <span class="status" id="sigCessionarioStatus"></span>
+          </div>
+        </div>
+      </div>
+    </fieldset>
+
+    <div class="actions">
+      <button id="previewCessione" type="button">1. Compila e genera anteprima</button>
+      <span class="status" id="statusCessione"></span>
+    </div>
+
+    <fieldset id="cessioneSignFieldset" style="display:none; margin-top:18px">
+      <legend>Posiziona le firme sul documento</legend>
+      <p class="sub" style="margin:0 0 12px">Il modulo qui sotto &egrave; gi&agrave; compilato, date incluse. Scegli chi stai firmando e clicca dove serve: comparir&agrave; l&rsquo;immagine vera della firma, che puoi <strong>trascinare</strong> per spostarla e ridimensionare tirando il puntino arancione. Il modulo richiede pi&ugrave; firme a testa: aggiungine quante servono.</p>
+      <div style="display:flex; gap:8px; margin:6px 0 8px; flex-wrap:wrap;">
+        <button type="button" class="tab-btn active" id="placeBtnCedente" style="flex:0 0 auto; padding:8px 14px; font-size:12.5px;">Sto firmando: Cedente</button>
+        <button type="button" class="tab-btn" id="placeBtnCessionario" style="flex:0 0 auto; padding:8px 14px; font-size:12.5px;">Sto firmando: Cessionario</button>
+        <button type="button" class="linkbtn" id="clearAllMarks">Cancella tutte le firme</button>
+      </div>
+      <div id="sigPreviewCessione"></div>
+      <div class="actions" style="margin-top:14px">
+        <button id="generateCessione" type="button" disabled>2. Scarica PDF firmato</button>
+        <span class="status" id="statusCessioneFinal"></span>
+      </div>
+    </fieldset>
+  </div>
+
+  <div id="panel-morte" class="tab-panel" data-hidden="true">
+    <fieldset>
+      <legend>Dichiarante</legend>
+      <div class="row">
+        <div class="field wide">
+          <label>Nome e cognome dichiarante <span class="req">*</span></label>
+          <input type="text" id="m_nome_cognome" placeholder="Mario Rossi">
+        </div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Codice fiscale <span class="req">*</span></label><input type="text" id="m_cf" maxlength="16" style="text-transform:uppercase"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Comune di nascita</label><input type="text" id="m_comune_nascita"></div>
+        <div class="field narrow"><label>Prov.</label><input type="text" id="m_prov_nascita" maxlength="2" style="text-transform:uppercase"></div>
+        <div class="field narrow"><label>Data di nascita</label><input type="text" id="m_data_nascita" placeholder="gg/mm/aaaa"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Comune di residenza</label><input type="text" id="m_comune_residenza"></div>
+        <div class="field narrow"><label>Prov.</label><input type="text" id="m_prov_residenza" maxlength="2" style="text-transform:uppercase"></div>
+      </div>
+      <div class="row">
+        <div class="field" style="flex:2 1 260px"><label>Via</label><input type="text" id="m_via_residenza"></div>
+        <div class="field narrow"><label>N&deg;</label><input type="text" id="m_civico_residenza"></div>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>Dichiarazione di decesso</legend>
+      <div class="row">
+        <div class="field wide"><label>Nome e cognome del deceduto/a <span class="req">*</span></label><input type="text" id="m_nome_deceduto"></div>
+      </div>
+      <div class="row">
+        <div class="field wide"><label>Grado di parentela</label><input type="text" id="m_grado_parentela" placeholder="es. figlio/a, coniuge..."></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Data del decesso <span class="req">*</span></label><input type="text" id="m_data_decesso" placeholder="gg/mm/aaaa"></div>
+      </div>
+      <div class="row">
+        <div class="field wide"><label>Luogo e data della dichiarazione</label><input type="text" id="m_luogo_data" placeholder="Torino, 15/07/2026"></div>
+      </div>
+    </fieldset>
+  </div>
+
+  <div id="panel-decesso" class="tab-panel" data-hidden="true">
+    <fieldset>
+      <legend>Intestazione lettera</legend>
+      <div class="row">
+        <div class="field narrow"><label>Data lettera</label><input type="text" id="d_data_lettera" placeholder="gg/mm/aaaa"></div>
+        <div class="field wide"><label>Linea/Numero Cliente</label><input type="text" id="d_linea_numero" placeholder="333 1234567"></div>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>Erede richiedente</legend>
+      <div class="row">
+        <div class="field wide"><label>Nome e cognome erede <span class="req">*</span></label><input type="text" id="d_nome_cognome_erede"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Comune di nascita</label><input type="text" id="d_comune_nascita_erede"></div>
+        <div class="field narrow"><label>Data di nascita</label><input type="text" id="d_data_nascita_erede" placeholder="gg/mm/aaaa"></div>
+        <div class="field"><label>Codice fiscale <span class="req">*</span></label><input type="text" id="d_cf_erede" maxlength="16" style="text-transform:uppercase"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Comune di residenza</label><input type="text" id="d_comune_residenza_erede"></div>
+        <div class="field" style="flex:2 1 260px"><label>Via</label><input type="text" id="d_via_residenza_erede"></div>
+        <div class="field narrow"><label>N&deg;</label><input type="text" id="d_civico_residenza_erede"></div>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>Dichiarazione di decesso</legend>
+      <div class="row">
+        <div class="field narrow"><label>Data del decesso <span class="req">*</span></label><input type="text" id="d_data_decesso" placeholder="gg/mm/aaaa"></div>
+        <div class="field wide"><label>Nome e cognome del titolare deceduto <span class="req">*</span></label><input type="text" id="d_nome_deceduto"></div>
+      </div>
+      <div class="row">
+        <div class="field wide">
+          <label>Altri eredi (se presenti, uno per riga)</label>
+          <input type="text" id="d_altri_eredi_1" placeholder="Nome Cognome" style="margin-bottom:6px">
+          <input type="text" id="d_altri_eredi_2" placeholder="Nome Cognome" style="margin-bottom:6px">
+          <input type="text" id="d_altri_eredi_3" placeholder="Nome Cognome">
+        </div>
+      </div>
+    </fieldset>
+  </div>
+
+  <div id="panel-firmadoc" class="tab-panel" data-hidden="true">
+    <fieldset>
+      <legend>Firma Doc &mdash; firma un PDF qualsiasi</legend>
+      <p class="sub" style="margin:0 0 14px">Carica un PDF qualsiasi (non legato a nessun modulo), scegli firma e data, e apponile dove e quante volte vuoi.</p>
+      <div class="row">
+        <div class="field wide">
+          <label for="fdUpload">File PDF da firmare</label>
+          <input type="file" id="fdUpload" accept="application/pdf">
+        </div>
+      </div>
+      <div class="row">
+        <div class="field narrow">
+          <label>Data</label>
+          <input type="date" id="fd_data">
+        </div>
+      </div>
+      <div class="field wide">
+        <label>Firma &mdash; disegna qui con mouse o dito, oppure carica un'immagine</label>
+        <canvas id="sigpadFirmaDoc" class="sigpad-canvas"></canvas>
+        <div class="sigrow">
+          <div style="display:flex; gap:16px; align-items:center;">
+            <button class="linkbtn" id="clearsigFirmaDoc" type="button">Cancella firma</button>
+            <label class="linkbtn" for="sigFirmaDocUpload" style="cursor:pointer;">Carica immagine firma&hellip;</label>
+            <input type="file" id="sigFirmaDocUpload" accept="image/*" style="display:none;">
+          </div>
+          <span class="status" id="sigFirmaDocStatus"></span>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset id="fdSignFieldset" style="display:none">
+      <legend>Posiziona firma e data</legend>
+      <p class="sub" style="margin:0 0 12px">Scegli cosa stai posizionando e clicca su ogni pagina. La firma comparir&agrave; come immagine vera: trascinala per spostarla e tira il puntino arancione per ridimensionarla. La data resta un testo da posizionare col click (regola qui sotto la dimensione).</p>
+      <div style="display:flex; gap:8px; margin:6px 0 8px; flex-wrap:wrap;">
+        <button type="button" class="tab-btn active" id="placeBtnFdFirma" style="flex:0 0 auto; padding:8px 14px; font-size:12.5px;">Sto posizionando: Firma</button>
+        <button type="button" class="tab-btn" id="placeBtnFdData" style="flex:0 0 auto; padding:8px 14px; font-size:12.5px;">Sto posizionando: Data</button>
+        <button type="button" class="linkbtn" id="clearFdPositions">Cancella tutti i punti</button>
+      </div>
+      <div class="row">
+        <div class="field narrow">
+          <label>Dimensione data <span id="fdDateSizeVal">14</span>pt</label>
+          <input type="range" id="fdDateSize" min="6" max="30" value="14" style="width:100%">
+        </div>
+      </div>
+      <div id="fdPages"></div>
+      <div class="actions" style="margin-top:14px">
+        <button id="generateFd" type="button">Scarica PDF firmato</button>
+        <span class="status" id="fdStatus"></span>
+      </div>
+    </fieldset>
+  </div>
+
+  <div id="panel-energy" class="tab-panel" data-hidden="true">
+    <fieldset>
+      <legend>POD/PDR e dichiarante</legend>
+      <div class="row">
+        <div class="field wide"><label>POD/PDR</label><input type="text" id="en_pod_pdr" placeholder="Codice punto di prelievo/riconsegna"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Cognome <span class="req">*</span></label><input type="text" id="en_sott_cognome"></div>
+        <div class="field"><label>Nome <span class="req">*</span></label><input type="text" id="en_sott_nome"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Nato a</label><input type="text" id="en_sott_nato_a"></div>
+        <div class="field narrow"><label>Il</label><input type="text" id="en_sott_data_nascita" placeholder="gg/mm/aaaa"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Codice fiscale <span class="req">*</span></label><input type="text" id="en_sott_cf" maxlength="16" style="text-transform:uppercase"></div>
+      </div>
+      <div class="row">
+        <div class="field wide">
+          <label style="margin-bottom:2px">Chiede una nuova fornitura di</label>
+          <div class="radio-group">
+            <label class="radio-opt"><input type="radio" name="en_tipo_fornitura" value="cb_elettrica" checked> Energia elettrica</label>
+            <label class="radio-opt"><input type="radio" name="en_tipo_fornitura" value="cb_gas"> Gas</label>
+          </div>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Dati anagrafici del cliente</legend>
+      <div class="row">
+        <div class="field wide"><label>Cognome e nome</label><input type="text" id="en_cliente_cognome_nome"></div>
+        <div class="field"><label>Codice fiscale</label><input type="text" id="en_cliente_cf" style="text-transform:uppercase"></div>
+      </div>
+      <div class="row">
+        <div class="field narrow"><label>Data di nascita</label><input type="text" id="en_cliente_data_nascita" placeholder="gg/mm/aaaa"></div>
+        <div class="field"><label>Luogo</label><input type="text" id="en_cliente_luogo_nascita"></div>
+      </div>
+      <div class="row">
+        <div class="field wide"><label>Cognome e nome/Ragione sociale (se diversa)</label><input type="text" id="en_cliente_ragione_sociale"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Partita IVA</label><input type="text" id="en_cliente_piva"></div>
+        <div class="field"><label>Codice fiscale azienda</label><input type="text" id="en_cliente_cf_azienda" style="text-transform:uppercase"></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Referente</legend>
+      <div class="row">
+        <div class="field wide"><label>Cognome e nome</label><input type="text" id="en_referente_nome"></div>
+        <div class="field"><label>Codice fiscale</label><input type="text" id="en_referente_cf" style="text-transform:uppercase"></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Indirizzo di fornitura</legend>
+      <div class="row">
+        <div class="field" style="flex:2 1 260px"><label>Indirizzo</label><input type="text" id="en_fornitura_indirizzo"></div>
+        <div class="field narrow"><label>N&deg;</label><input type="text" id="en_fornitura_civico"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Citt&agrave;</label><input type="text" id="en_fornitura_citta"></div>
+        <div class="field narrow"><label>CAP</label><input type="text" id="en_fornitura_cap" maxlength="5"></div>
+        <div class="field narrow"><label>Provincia</label><input type="text" id="en_fornitura_provincia" maxlength="2" style="text-transform:uppercase"></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Regolarit&agrave; urbanistica dell'immobile</legend>
+      <p class="sub" style="margin:0 0 10px">Barra solo la casella d'interesse, poi compila i campi corrispondenti se richiesti.</p>
+      <div class="row">
+        <div class="field wide">
+          <div class="radio-group">
+            <label class="radio-opt"><input type="radio" name="en_titolo_edilizio" value="cb_permesso"> Con Permesso di costruire</label>
+            <label class="radio-opt"><input type="radio" name="en_titolo_edilizio" value="cb_scia"> Con Segnalazione Certificata di Inizio Attivit&agrave; (SCIA)</label>
+            <label class="radio-opt"><input type="radio" name="en_titolo_edilizio" value="cb_superscia"> Con SCIA in alternativa al permesso (SUPERSCIA)</label>
+            <label class="radio-opt"><input type="radio" name="en_titolo_edilizio" value="cb_altro"> Con altro titolo edilizio</label>
+            <label class="radio-opt"><input type="radio" name="en_titolo_edilizio" value="cb_prima_1977"> Realizzato prima del 30/01/1977</label>
+            <label class="radio-opt"><input type="radio" name="en_titolo_edilizio" value="cb_nessun_provvedimento"> Nessun provvedimento o comunicazione richiesti</label>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Permesso di costruire &mdash; numero</label><input type="text" id="en_permesso_numero"></div>
+        <div class="field"><label>Comune</label><input type="text" id="en_permesso_comune"></div>
+        <div class="field narrow"><label>Data</label><input type="text" id="en_permesso_data" placeholder="gg/mm/aaaa"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>SCIA &mdash; numero</label><input type="text" id="en_scia_numero"></div>
+        <div class="field"><label>Comune</label><input type="text" id="en_scia_comune"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>SUPERSCIA &mdash; numero</label><input type="text" id="en_superscia_numero"></div>
+        <div class="field"><label>Comune</label><input type="text" id="en_superscia_comune"></div>
+      </div>
+      <div class="row">
+        <div class="field wide"><label>Altro titolo &mdash; descrizione</label><input type="text" id="en_altro_descrizione"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>N&deg; atto</label><input type="text" id="en_altro_atto_numero"></div>
+        <div class="field"><label>Rilasciato da</label><input type="text" id="en_altro_rilasciato_da"></div>
+        <div class="field narrow"><label>Data</label><input type="text" id="en_altro_data" placeholder="gg/mm/aaaa"></div>
+      </div>
+      <p class="sub" style="margin:6px 0 0">La sezione specifica per la Regione Veneto (pagina 2) non &egrave; inclusa qui: barrala a mano sul PDF finale se necessario.</p>
+    </fieldset>
+  </div>
+
+  <fieldset style="margin-top:28px">
+    <legend>Firma anche i documenti allegati</legend>
+    <p class="sub" style="margin:0 0 14px">Carica il PDF con le copie dei documenti (es. carta d'identit&agrave; + codice fiscale). Scegli cosa stai posizionando e clicca su ogni pagina dove serve &mdash; firma e data sono indipendenti, le metti tu dove vuoi, non una sopra l'altra.</p>
+    <div class="row">
+      <div class="field wide">
+        <label for="docupload">File PDF dei documenti</label>
+        <input type="file" id="docupload" accept="application/pdf">
+      </div>
+    </div>
+    <div style="display:none; gap:8px; margin:6px 0 8px; flex-wrap:wrap;" id="docPlaceToggle">
+      <button type="button" class="tab-btn active" id="placeBtnDocFirma" style="flex:0 0 auto; padding:8px 14px; font-size:12.5px;">Sto posizionando: Firma</button>
+      <button type="button" class="tab-btn" id="placeBtnDocData" style="flex:0 0 auto; padding:8px 14px; font-size:12.5px;">Sto posizionando: Data</button>
+    </div>
+    <div id="docPages"></div>
+    <div class="row" id="docSizeControls" style="display:none">
+      <div class="field narrow">
+        <label>Dimensione data <span id="docDateSizeVal">16</span>pt</label>
+        <input type="range" id="docDateSize" min="8" max="30" value="16" style="width:100%">
+      </div>
+    </div>
+    <div class="actions" id="docActions" style="display:none">
+      <button id="generateDocs" type="button">Genera documenti firmati</button>
+      <button class="linkbtn" id="clearDocPositions" type="button">Cancella posizioni</button>
+      <span class="status" id="docStatus"></span>
+    </div>
+  </fieldset>
+
+  <p class="footer-note">Strumento personale per uso interno &mdash; non un servizio ufficiale WindTre.<br>Tutto avviene nel browser: nessun dato lascia questo dispositivo.</p>
+</div>
+
+</div>
   </div>
 
   <!-- ANALIZZATORE OFFERTE -->
@@ -307,6 +1158,7 @@
 
 <script src="config.js"></script>
 <script src="app.js"></script>
+<script src="compilatore.js"></script>
 <div id="login-flash"></div>
 <div id="login-iris"></div>
 <div id="transition-label">Accesso consentito</div>
