@@ -1,0 +1,3 @@
+// Configurazione Supabase — WindTre-Jarvis
+const SUPABASE_URL = "https://aknsslytlubhgmdwkbum.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFrbnNzbHl0bHViaGdtZHdrYnVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2NDUyNDksImV4cCI6MjEwMzIyMTI0OX0.G37oDq6MaM-KPgspxGtYTBnpdLG45jrT8o0FB3kFrTc";
