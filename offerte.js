@@ -183,7 +183,9 @@
 
   function renderGrid() {
     var grid = document.getElementById('ofGrid');
-    var list = filteredOfferte();
+    var list = filteredOfferte().slice().sort(function (a, b) {
+      return (a.is_opzione === true ? 1 : 0) - (b.is_opzione === true ? 1 : 0);
+    });
     document.getElementById('ofCount').textContent = list.length + ' offerte';
     if (!list.length) {
       grid.innerHTML = '<p class="sub">Nessuna offerta corrisponde ai filtri scelti.</p>';
