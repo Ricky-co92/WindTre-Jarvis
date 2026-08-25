@@ -2,6 +2,7 @@
   var offerte = [];
   var activeCatFilters = [];   // es. ['consumer','business'] o []
   var activeTipoFilters = [];  // es. ['mobile','fisso'] o []
+  var activeBadgeFilters = []; // es. ['Opzione aggiuntiva'] o []
   var selectedIds = {};        // { id: true }
 
   // ================= CARICAMENTO DATI =================
@@ -18,7 +19,27 @@
       grid.innerHTML = '<p class="sub">Errore nel caricamento. Verifica che la tabella wt_offerte esista su Supabase.</p>';
       return;
     }
+    renderBadgeFilters();
     renderGrid();
+  }
+
+  function renderBadgeFilters() {
+    var group = document.getElementById('ofBadgeFilterGroup');
+    var badges = [];
+    offerte.forEach(function (o) {
+      if (o.badge && badges.indexOf(o.badge) === -1) badges.push(o.badge);
+    });
+    // rimuove i chip precedenti (mantiene la label)
+    group.querySelectorAll('.of-chip').forEach(function (c) { c.remove(); });
+    badges.forEach(function (b) {
+      var chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'of-chip' + (activeBadgeFilters.indexOf(b) > -1 ? ' active' : '');
+      chip.textContent = b;
+      chip.addEventListener('click', function () { toggleFilter(chip, activeBadgeFilters, b); });
+      group.appendChild(chip);
+    });
+    group.classList.toggle('hidden', badges.length === 0);
   }
 
   // ================= FILTRI =================
@@ -43,7 +64,8 @@
     return offerte.filter(function (o) {
       var catOk = activeCatFilters.length === 0 || activeCatFilters.indexOf(o.categoria) > -1;
       var tipoOk = activeTipoFilters.length === 0 || activeTipoFilters.indexOf(o.tipo) > -1;
-      return catOk && tipoOk;
+      var badgeOk = activeBadgeFilters.length === 0 || activeBadgeFilters.indexOf(o.badge) > -1;
+      return catOk && tipoOk && badgeOk;
     });
   }
 
@@ -65,20 +87,32 @@
       card.className = 'of-card' + (selectedIds[o.id] ? ' selected' : '');
       card.dataset.id = o.id;
       var badgeHtml = o.badge ? '<div class="of-badge">' + escapeHtml(o.badge) + '</div>' : '';
-      var prezzo2Html = o.prezzo_secondario ? '<div class="of-prezzo2">' + escapeHtml(o.prezzo_secondario) + '</div>' : '';
-      var prezzoConvHtml = o.prezzo_convergente
-        ? '<div class="of-prezzo-conv">' + escapeHtml(o.prezzo_convergente) + (o.nota_convergenza ? ' &mdash; ' + escapeHtml(o.nota_convergenza) : '') + '</div>'
-        : '';
       var dettagliArr = (o.dettagli || '').split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
       var dettagliHtml = dettagliArr.map(function (d) { return '<div>' + escapeHtml(d) + '</div>'; }).join('');
+
+      var prezzoBlockHtml;
+      if (o.tipo === 'fisso' && o.prezzo_convergente) {
+        // Fisso con prezzo convergente: il convergente è il prezzo in evidenza (come nel portale w3)
+        var convLabel = o.nota_convergenza ? escapeHtml(o.nota_convergenza) : 'Prezzo convergente';
+        prezzoBlockHtml =
+          '<div class="of-prezzo-conv-label">' + convLabel + '</div>' +
+          '<div class="of-prezzo-conv-main">' + escapeHtml(o.prezzo_convergente) + '</div>' +
+          (o.prezzo_principale ? '<div class="of-prezzo-solo">Solo fisso: ' + escapeHtml(o.prezzo_principale) + '</div>' : '') +
+          (o.prezzo_secondario ? '<div class="of-prezzo2">' + escapeHtml(o.prezzo_secondario) + '</div>' : '');
+      } else {
+        // Mobile (o Fisso senza convergente): comportamento invariato
+        prezzoBlockHtml =
+          '<div class="of-prezzo1">' + escapeHtml(o.prezzo_principale || '') + '</div>' +
+          (o.prezzo_secondario ? '<div class="of-prezzo2">' + escapeHtml(o.prezzo_secondario) + '</div>' : '') +
+          (o.prezzo_convergente ? '<div class="of-prezzo-conv">' + escapeHtml(o.prezzo_convergente) + (o.nota_convergenza ? ' &mdash; ' + escapeHtml(o.nota_convergenza) : '') + '</div>' : '');
+      }
+
       card.innerHTML =
         '<button type="button" class="of-edit-btn" title="Modifica">\u270e</button>' +
         '<div class="of-check">\u2713</div>' +
         badgeHtml +
         '<div class="of-nome">' + escapeHtml(o.nome) + '</div>' +
-        '<div class="of-prezzo1">' + escapeHtml(o.prezzo_principale || '') + '</div>' +
-        prezzo2Html +
-        prezzoConvHtml +
+        prezzoBlockHtml +
         '<div class="of-dettagli">' + dettagliHtml + '</div>' +
         '<div class="of-tag">' + CAT_LABEL[o.categoria] + ' &middot; ' + TIPO_LABEL[o.tipo] + '</div>';
       card.querySelector('.of-edit-btn').addEventListener('click', function (ev) {
