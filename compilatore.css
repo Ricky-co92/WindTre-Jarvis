@@ -1,124 +1,165 @@
 
   #app-root {
-    --wt-orange: #EE6C1F;
-    --wt-orange-dark: #D45A12;
-    --wt-orange-light: #FFA85C;
-    --ink: #1C1C1E;
-    --paper: #F3F1EC;
-    --line: #E4DFD6;
-    --muted: #857F75;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    --wt-orange: #ffb020;
+    --wt-orange-dark: #d99000;
+    --wt-orange-light: #ffcf7a;
+    --ink: #eafcff;
+    --paper: transparent;
+    --line: rgba(143,232,255,.25);
+    --muted: #7fc4dc;
+    font-family: 'Inter', sans-serif;
     background: var(--paper);
     color: var(--ink);
-    min-height: 100vh;
-    padding: 32px 16px 50px;
+    min-height: auto;
+    padding: 0;
     box-sizing: border-box;
   }
-  #app-root * { box-sizing: border-box; }
-  #app-root .wrap { max-width: 760px; margin: 0 auto; }
-  #app-root .brandbar { display:flex; align-items:center; gap:11px; margin-bottom: 22px; }
-  #app-root .brandbar svg { width: 40px; height: 40px; flex-shrink:0; }
-  #app-root .brandbar .wordmark { font-size: 21px; font-weight: 800; letter-spacing: -0.3px; }
-  #app-root .brandbar .wordmark .wind { color: var(--ink); }
-  #app-root .brandbar .wordmark .tre { color: var(--wt-orange); }
-  #app-root .brandbar .tagline { font-size: 11px; color: var(--muted); margin-top: -2px; letter-spacing: 0.03em; }
-  #app-root .headercard {
-    background: linear-gradient(120deg, var(--wt-orange) 0%, #F58B3C 100%);
-    color: #fff; padding: 20px 22px; border-radius: 14px;
-    box-shadow: 0 8px 20px -8px rgba(238,108,31,0.55);
-    margin-bottom: 24px;
-  }
-  #app-root h1 { font-size: 20px; font-weight: 700; margin: 0 0 6px; line-height:1.3; }
-  #app-root .headercard .sub { color: rgba(255,255,255,0.92); font-size: 13px; margin: 0; }
+  #app-root *{box-sizing:border-box;}
+  #app-root .wrap { max-width: 900px; margin: 0 auto; }
+  #app-root .brandbar { display:none; }
+  #app-root .headercard { display:none; }
   #app-root fieldset {
-    border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px 20px;
-    margin: 0 0 18px; background: #fff;
-    box-shadow: 0 2px 10px -6px rgba(28,28,30,0.12);
+    border: 1px solid var(--line); border-radius: 4px 14px 14px 14px; padding: 18px 20px 20px;
+    margin: 0 0 18px; background: rgba(13,25,36,.55);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
   }
   #app-root legend {
-    font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em;
-    color: var(--wt-orange-dark); padding: 0 8px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em;
+    color: #4fc8e8; padding: 0 8px;
   }
   #app-root .row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
   #app-root .field { flex: 1 1 200px; display: flex; flex-direction: column; gap: 4px; }
   #app-root .field.narrow { flex: 0 1 100px; }
   #app-root .field.wide { flex: 1 1 100%; }
-  #app-root label { font-size: 12.5px; color: var(--muted); font-weight: 600; }
-  #app-root input[type=text], #app-root input[type=date] {
-    border: 1px solid var(--line); border-radius: 7px; padding: 9px 10px; font-size: 14px;
-    font-family: inherit; background: #fff; color: var(--ink);
+  #app-root label { font-family: 'Rajdhani', sans-serif; font-size: 13px; color: var(--muted); font-weight: 600; text-transform:uppercase; letter-spacing:.02em; }
+  #app-root input[type=text], #app-root input[type=date], #app-root textarea {
+    border: 1px solid var(--line); border-radius: 5px; padding: 10px 11px; font-size: 14.5px;
+    font-family: 'Inter', sans-serif; background: rgba(42,184,217,.06); color: var(--ink);
   }
-  #app-root input:focus { outline: 2px solid var(--wt-orange); outline-offset: 1px; }
-  #app-root input[type=text]:hover, #app-root input[type=date]:hover { border-color: var(--wt-orange-light); }
+  #app-root input::placeholder, #app-root textarea::placeholder { color: rgba(234,252,255,.35); }
+  #app-root input:focus, #app-root textarea:focus { outline: none; border-color: var(--wt-orange); box-shadow: 0 0 0 2px rgba(255,176,32,.25); }
   #app-root .radio-group { display:flex; flex-direction:column; gap:8px; }
-  #app-root .radio-opt { display:flex; align-items:flex-start; gap:8px; font-size: 13.5px; cursor:pointer; }
+  #app-root .radio-opt { display:flex; align-items:flex-start; gap:8px; font-size: 13.5px; cursor:pointer; text-transform:none; color: var(--ink); font-family:'Inter',sans-serif; }
   #app-root .radio-opt input { margin-top: 3px; accent-color: var(--wt-orange); width:16px; height:16px; flex-shrink:0; }
   #app-root .sigrow { display:flex; justify-content: space-between; align-items:center; margin-top:8px; }
   #app-root .linkbtn {
-    background:none; border:none; color: var(--wt-orange-dark); font-size: 12.5px; font-weight:600;
+    background:none; border:none; color: var(--wt-orange); font-size: 12.5px; font-weight:700;
     cursor:pointer; padding: 4px 0; text-decoration: underline;
+    font-family:'Rajdhani',sans-serif; text-transform:uppercase; letter-spacing:.03em;
   }
   #app-root .actions { display:flex; gap:10px; align-items:center; margin-top: 22px; flex-wrap: wrap; }
-  #app-root button#generate, #app-root button#generateDocs {
-    background: var(--wt-orange); color:#fff; border:none; border-radius: 9px;
-    padding: 13px 26px; font-size: 15px; font-weight: 700; cursor: pointer;
-    box-shadow: 0 4px 14px -4px rgba(238,108,31,0.55);
-    transition: background 0.15s ease, transform 0.1s ease;
+  #app-root .btn-hud, #app-root button#generate, #app-root button#generateDocs {
+    background: rgba(42,184,217,.1); color:#c8f2ff; border:1px solid #2ab8d9; border-radius: 3px;
+    padding: 13px 26px; font-family:'Rajdhani',sans-serif; font-weight: 700; font-size: 15px;
+    text-transform:uppercase; letter-spacing:.03em; cursor: pointer;
+    transition: background 0.15s ease, box-shadow .15s ease;
   }
-  #app-root button#generate:hover, #app-root button#generateDocs:hover { background: var(--wt-orange-dark); transform: translateY(-1px); }
-  #app-root button#generate:disabled, #app-root button#generateDocs:disabled { opacity: 0.55; cursor: default; transform:none; }
+  #app-root .btn-hud:hover, #app-root button#generate:hover, #app-root button#generateDocs:hover { background: rgba(42,184,217,.18); box-shadow: 0 0 16px rgba(42,184,217,.35); }
+  #app-root .btn-hud.accent { border-color: var(--wt-orange); color: #ffe6b0; }
+  #app-root .btn-hud.accent:hover { background: rgba(255,176,32,.12); box-shadow: 0 0 16px rgba(255,176,32,.3); }
+  #app-root .btn-hud.ghost { border-color: var(--line); color: var(--muted); background:transparent; }
+  #app-root button#generate:disabled, #app-root button#generateDocs:disabled { opacity: 0.4; cursor: default; }
   #app-root button#generateDocs { padding: 11px 20px; font-size: 14px; }
   #app-root canvas.sigpad-canvas {
-    border: 1.5px dashed var(--line); border-radius: 8px; width: 100%; height: 150px;
-    touch-action: none; background: #FDFCFA; cursor: crosshair;
-    transition: border-color 0.15s ease;
+    border: 1.5px dashed var(--line); border-radius: 6px; width: 100%; height: 150px;
+    touch-action: none; background: rgba(1,5,8,.4); cursor: crosshair;
   }
   #app-root canvas.sigpad-canvas:hover { border-color: var(--wt-orange-light); }
-  #app-root .footer-note {
-    text-align:center; font-size: 11.5px; color: var(--muted); margin-top: 28px; line-height:1.6;
-  }
+  #app-root .footer-note { display:none; }
   #app-root .status { font-size: 13px; color: var(--muted); }
-  #app-root .status.err { color: #C0392B; font-weight: 600; }
-  #app-root .status.ok { color: #1E8449; font-weight: 600; }
-  #app-root .req { color: var(--wt-orange-dark); }
+  #app-root .status.err { color: #ff6767; font-weight: 600; }
+  #app-root .status.ok { color: #7fe8a0; font-weight: 600; }
+  #app-root .req { color: var(--wt-orange); }
   #app-root .docpage { position: relative; display:inline-block; margin: 10px 10px 10px 0; border: 1px solid var(--line); border-radius: 6px; overflow: visible; cursor: crosshair; line-height:0; }
   #app-root .docpage canvas { display:block; max-width: 100%; }
   #app-root .stamp-marker {
     position:absolute; pointer-events:none; border: 1.5px dashed var(--wt-orange);
-    background: rgba(238,108,31,0.12); border-radius: 4px; padding: 2px 6px;
-    font-size: 10px; color: var(--wt-orange-dark); font-weight:700; white-space:nowrap;
+    background: rgba(255,176,32,.12); border-radius: 4px; padding: 2px 6px;
+    font-size: 10px; color: #ffe6b0; font-weight:700; white-space:nowrap;
     transform: translate(0, -100%);
   }
   #app-root .pagelabel { font-size: 11.5px; color: var(--muted); margin: 4px 0 -2px; }
   #app-root .sig-drag {
     position: absolute; cursor: move; touch-action: none;
-    outline: 1.5px dashed var(--wt-orange); background: rgba(255,255,255,0.5);
+    outline: 1.5px dashed var(--wt-orange); background: rgba(1,5,8,.3);
   }
   #app-root .sig-drag img { width:100%; height:100%; display:block; pointer-events:none; user-select:none; }
   #app-root .sig-drag .sig-resize-handle {
     position: absolute; right: -7px; bottom: -7px; width: 14px; height: 14px;
-    background: var(--wt-orange); border: 2px solid #fff; border-radius: 50%;
-    cursor: nwse-resize; touch-action: none; box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    background: var(--wt-orange); border: 2px solid #05141c; border-radius: 50%;
+    cursor: nwse-resize; touch-action: none;
   }
   #app-root .sig-drag .sig-remove {
     position: absolute; left: -8px; top: -8px; width: 16px; height: 16px;
-    background: #C0392B; color:#fff; border-radius: 50%; font-size: 11px; line-height:16px;
-    text-align:center; cursor:pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    background: #c0392b; color:#fff; border-radius: 50%; font-size: 11px; line-height:16px;
+    text-align:center; cursor:pointer;
   }
   #app-root .tabs { display:flex; gap:8px; margin-bottom: 20px; flex-wrap: wrap; }
-  #app-root .tabs .tab-btn { flex: 1 1 150px; }
   #app-root .tab-btn {
-    flex:1; text-align:center; padding: 12px 10px; border-radius: 10px; border: 1.5px solid var(--line);
-    background:#fff; color: var(--muted); font-weight:700; font-size: 13.5px; cursor:pointer;
-    transition: all 0.15s ease;
+    flex:1; text-align:center; padding: 12px 10px; border-radius: 4px; border: 1.5px solid var(--line);
+    background:rgba(42,184,217,.05); color: var(--muted); font-family:'Rajdhani',sans-serif; font-weight:700; font-size: 13.5px; cursor:pointer;
+    text-transform:uppercase; letter-spacing:.02em; transition: all 0.15s ease;
   }
-  #app-root .tab-btn.active { border-color: var(--wt-orange); color: var(--wt-orange-dark); background: #FFF4EC; box-shadow: 0 2px 8px -4px rgba(238,108,31,0.4); }
+  #app-root .tab-btn.active { border-color: var(--wt-orange); color: #ffe6b0; background: rgba(255,176,32,.08); }
   #app-root .tab-panel[data-hidden="true"] { display:none; }
   #app-root .hidden { display:none !important; }
-  #app-root .module-card {
-    background:#fff; border:1.5px solid var(--line); border-radius:12px; padding:16px 10px;
-    font-weight:700; font-size:13.5px; color:var(--ink); cursor:pointer; text-align:center; line-height:1.35;
-    transition: all .15s ease;
+
+  /* ===== STEPPER ===== */
+  #app-root .cf-stepper { display:flex; gap:6px; margin-bottom:26px; flex-wrap:wrap; }
+  #app-root .cf-step-dot {
+    flex:1; min-width:110px; display:flex; align-items:center; gap:8px;
+    padding:10px 12px; border-radius:4px; border:1px solid var(--line);
+    background:rgba(13,25,36,.4); font-family:'Rajdhani',sans-serif; font-size:12.5px;
+    font-weight:700; text-transform:uppercase; letter-spacing:.03em; color: var(--muted);
   }
-  #app-root .module-card:hover { border-color: var(--wt-orange); box-shadow: 0 2px 8px -4px rgba(238,108,31,0.4); }
-  #app-root .module-card.active { border-color: var(--wt-orange); background:#FFF4EC; color: var(--wt-orange-dark); }
+  #app-root .cf-step-dot .cf-step-num {
+    width:20px; height:20px; border-radius:50%; border:1px solid var(--line); flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; font-size:11px; color:var(--muted);
+  }
+  #app-root .cf-step-dot.done { border-color: rgba(127,232,160,.5); color:#7fe8a0; }
+  #app-root .cf-step-dot.done .cf-step-num { border-color:#7fe8a0; background:rgba(127,232,160,.12); color:#7fe8a0; }
+  #app-root .cf-step-dot.active { border-color: var(--wt-orange); color:#ffe6b0; box-shadow:0 0 12px rgba(255,176,32,.2); }
+  #app-root .cf-step-dot.active .cf-step-num { border-color: var(--wt-orange); background:rgba(255,176,32,.15); color:#ffe6b0; }
+  #app-root .cf-step-panel { display:none; }
+  #app-root .cf-step-panel.active { display:block; }
+
+  /* ===== STEP 1: griglia + anteprima/descrizione ===== */
+  #app-root .cf-step1-layout { display:grid; grid-template-columns: 1fr; gap:22px; }
+  @media (min-width:820px){ #app-root .cf-step1-layout { grid-template-columns: 260px 1fr; } }
+  #app-root .cf-module-list { display:flex; flex-direction:column; gap:8px; }
+  #app-root .module-card {
+    background:rgba(13,25,36,.5); border:1px solid var(--line); border-radius:4px 12px 12px 12px; padding:13px 14px;
+    font-family:'Rajdhani',sans-serif; font-weight:700; font-size:14px; color:var(--ink);
+    cursor:pointer; text-align:left; line-height:1.3; transition: all .15s ease;
+  }
+  #app-root .module-card:hover { border-color: var(--wt-orange-light); }
+  #app-root .module-card.active { border-color: var(--wt-orange); background:rgba(255,176,32,.08); color:#ffe6b0; }
+  #app-root .cf-detail-panel {
+    background:rgba(13,25,36,.5); border:1px solid var(--line); border-radius:4px 14px 14px 14px;
+    padding:20px; min-height:280px; display:flex; flex-direction:column; gap:14px;
+  }
+  #app-root .cf-detail-title { font-family:'Rajdhani',sans-serif; font-weight:700; font-size:16px; color:#4fc8e8; text-transform:uppercase; letter-spacing:.02em; }
+  #app-root .cf-detail-desc { font-size:14px; color: var(--ink); line-height:1.6; }
+  #app-root .cf-detail-desc.placeholder { color: var(--muted); font-style:italic; }
+  #app-root .cf-desc-edit-row { display:flex; gap:8px; align-items:center; }
+  #app-root .cf-desc-textarea { width:100%; min-height:80px; resize:vertical; }
+  #app-root .cf-preview-box { flex:1; min-height:160px; overflow:auto; border:1px solid var(--line); border-radius:4px; background:rgba(1,5,8,.4); padding:8px; }
+  #app-root .cf-preview-box p.sub { color: var(--muted); font-size:13px; text-align:center; margin-top:40px; }
+  #app-root .cf-empty-hint { color:var(--muted); font-size:14px; text-align:center; margin:auto; }
+
+  /* ===== STEP 2: progresso compilazione ===== */
+  #app-root .cf-progress-wrap { margin-bottom:18px; }
+  #app-root .cf-progress-label { display:flex; justify-content:space-between; font-family:'Rajdhani',sans-serif; font-size:12.5px; color: var(--muted); text-transform:uppercase; letter-spacing:.03em; margin-bottom:6px; }
+  #app-root .cf-progress-track { height:6px; border-radius:3px; background:rgba(42,184,217,.12); overflow:hidden; }
+  #app-root .cf-progress-fill { height:100%; background:linear-gradient(90deg,#2ab8d9,var(--wt-orange)); border-radius:3px; transition: width .25s ease; width:0%; }
+
+  /* ===== STEP 3: firma/data scelta ===== */
+  #app-root .cf-choice-row { display:flex; gap:14px; flex-wrap:wrap; margin: 18px 0; }
+  #app-root .cf-choice-card {
+    flex:1 1 220px; border:1px solid var(--line); border-radius:4px 12px 12px 12px; padding:18px;
+    background:rgba(13,25,36,.5); cursor:pointer; transition: all .15s ease;
+  }
+  #app-root .cf-choice-card:hover { border-color: var(--wt-orange-light); }
+  #app-root .cf-choice-card .cf-choice-title { font-family:'Rajdhani',sans-serif; font-weight:700; font-size:15px; color:#ffe6b0; text-transform:uppercase; margin-bottom:6px; }
+  #app-root .cf-choice-card .cf-choice-sub { font-size:13px; color: var(--muted); line-height:1.5; }

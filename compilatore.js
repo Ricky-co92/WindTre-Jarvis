@@ -399,6 +399,7 @@
   var STANDARD_COLORS = { firma: '#EE6C1F', data: '#2E6FDB' };
   var standardPreviewPages = []; // one entry per rendered page: {wrap, canvas, pageWidthPt, pageHeightPt, page}
   var standardFilledBytes = null;
+  var standardFilledBytesForSign = null;
 
   document.getElementById('clearAllMarksStandard').addEventListener('click', function() {
     standardPreviewPages.forEach(function(p) {
@@ -711,6 +712,9 @@
     document.getElementById('formTitle').textContent = TITLES[mode].h1;
     document.getElementById('formSub').textContent = TITLES[mode].sub;
     setStatus('', '');
+    var isStandard = (mode !== 'cessione' && mode !== 'firmadoc');
+    var next2 = document.getElementById('cfStep2Next');
+    if (next2) next2.classList.toggle('hidden', !isStandard);
     // canvases inside a panel that starts hidden get a 0x0 drawing buffer;
     // re-run their resize once the panel becomes visible so drawing/export works
     if (mode === 'cessione') {
@@ -723,22 +727,93 @@
   }
   document.getElementById('moduleSelect').addEventListener('change', function() { switchMode(this.value); });
 
-  // ---- STEP 0: griglia di selezione modulo + anteprima vuota ----
+  // ================= STEPPER =================
+  var cfCurrentStep = 1;
+  function goToStep(n) {
+    cfCurrentStep = n;
+    document.querySelectorAll('.cf-step-panel').forEach(function(p) { p.classList.remove('active'); });
+    document.getElementById('cfStep' + n).classList.add('active');
+    document.querySelectorAll('.cf-step-dot').forEach(function(dot) {
+      var s = parseInt(dot.dataset.step, 10);
+      dot.classList.toggle('active', s === n);
+      dot.classList.toggle('done', s < n);
+    });
+    document.getElementById('cfStep' + n).scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // ================= STEP 1: scelta modulo, anteprima, descrizione =================
+  var MODULE_LABELS = {
+    mobile: 'Recesso Mobile', micro: 'Recesso Micro Mobile', fisso: 'Recesso Rete Fissa',
+    cessione: 'Cessione Contratto', morte: 'Autocert Cert. Morte', decesso: 'Autocert Atto Notorio',
+    firmadoc: 'Firma Doc', energy: 'Att. Utenza Energy'
+  };
+  var DEFAULT_DESCRIPTIONS = {
+    mobile: 'Richiesta di recesso da un contratto mobile privato.',
+    micro: 'Richiesta di recesso da un contratto mobile intestato a professionista/ditta.',
+    fisso: 'Richiesta di recesso da un servizio di telefonia fissa.',
+    cessione: 'Proposta di cessione del contratto mobile a un nuovo intestatario (cedente + cessionario).',
+    morte: 'Autocertificazione di decesso ai sensi dell\u2019art. 46 D.P.R. 445/2000.',
+    decesso: 'Lettera a WindTre per la disattivazione della linea del titolare deceduto, a cura dell\u2019erede.',
+    firmadoc: 'Carica un PDF qualsiasi e apponi firma e data dove serve, senza compilare nessun modulo.',
+    energy: 'Dichiarazione sostitutiva per nuova fornitura energia elettrica/gas a uso domestico.'
+  };
+  var moduleDescriptions = {};
+  var selectedMode = null;
+
+  async function loadModuleDescriptions() {
+    try {
+      var { data, error } = await sb.from('wt_module_meta').select('mode, description');
+      if (!error && data) {
+        data.forEach(function(row) { moduleDescriptions[row.mode] = row.description; });
+      }
+    } catch (err) { console.warn('Descrizioni moduli non caricate:', err); }
+  }
+  loadModuleDescriptions();
+
+  function renderDescription(mode) {
+    var text = moduleDescriptions[mode] || DEFAULT_DESCRIPTIONS[mode] || '';
+    var el = document.getElementById('cfDescText');
+    el.textContent = text;
+    el.classList.remove('placeholder');
+    document.getElementById('cfDescEditBtn').classList.remove('hidden');
+    document.getElementById('cfDescEditForm').classList.add('hidden');
+    document.getElementById('cfDescView').classList.remove('hidden');
+  }
+
+  document.getElementById('cfDescEditBtn').addEventListener('click', function() {
+    document.getElementById('cfDescTextarea').value = moduleDescriptions[selectedMode] || DEFAULT_DESCRIPTIONS[selectedMode] || '';
+    document.getElementById('cfDescView').classList.add('hidden');
+    document.getElementById('cfDescEditForm').classList.remove('hidden');
+  });
+  document.getElementById('cfDescCancel').addEventListener('click', function() {
+    document.getElementById('cfDescEditForm').classList.add('hidden');
+    document.getElementById('cfDescView').classList.remove('hidden');
+  });
+  document.getElementById('cfDescSave').addEventListener('click', async function() {
+    var text = document.getElementById('cfDescTextarea').value.trim();
+    moduleDescriptions[selectedMode] = text;
+    renderDescription(selectedMode);
+    try {
+      await sb.from('wt_module_meta').upsert({ mode: selectedMode, description: text });
+    } catch (err) { console.warn('Salvataggio descrizione fallito:', err); }
+  });
+
   async function showBlankPreview(mode) {
-    var wrap = document.getElementById('blankPreviewWrap');
     var container = document.getElementById('blankPreviewContainer');
     container.innerHTML = '';
-    if (mode === 'firmadoc') { wrap.classList.add('hidden'); return; }
+    if (mode === 'firmadoc') {
+      container.innerHTML = '<p class="sub cf-empty-hint">Questo strumento non ha un template: carichi tu il PDF da firmare nel passo successivo.</p>';
+      return;
+    }
     var url = TEMPLATE_FILES[mode];
-    if (!url) { wrap.classList.add('hidden'); return; }
-    wrap.classList.remove('hidden');
-    container.innerHTML = '<p class="sub">Caricamento anteprima&hellip;</p>';
+    if (!url) { container.innerHTML = '<p class="sub cf-empty-hint">Anteprima non disponibile.</p>'; return; }
+    container.innerHTML = '<p class="sub cf-empty-hint">Caricamento anteprima&hellip;</p>';
     try {
       var bytes = await getTemplateBytes(url);
       container.innerHTML = '';
       await renderPdfPreviewAllPages(bytes, container);
     } catch (err) {
-      container.innerHTML = '<p class="sub">Anteprima non disponibile.</p>';
+      container.innerHTML = '<p class="sub cf-empty-hint">Anteprima non disponibile.</p>';
       console.error(err);
     }
   }
@@ -746,15 +821,112 @@
   document.querySelectorAll('.module-card').forEach(function(card) {
     card.addEventListener('click', function() {
       var mode = card.dataset.mode;
+      selectedMode = mode;
       document.querySelectorAll('.module-card').forEach(function(c) { c.classList.toggle('active', c === card); });
-      document.getElementById('moduleSelect').value = mode;
-      switchMode(mode);
+      document.getElementById('cfDetailTitle').textContent = MODULE_LABELS[mode];
+      renderDescription(mode);
       showBlankPreview(mode);
-      document.getElementById('formArea').classList.remove('hidden');
-      document.getElementById('moduleSelectRow').classList.remove('hidden');
-      document.getElementById('formArea').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      document.getElementById('cfStep1Next').disabled = false;
     });
   });
+
+  document.getElementById('cfStep1Next').addEventListener('click', function() {
+    if (!selectedMode) return;
+    document.getElementById('moduleSelect').value = selectedMode;
+    switchMode(selectedMode);
+    document.getElementById('formArea').classList.remove('hidden');
+    document.getElementById('moduleSelectRow').classList.remove('hidden');
+    updateProgress();
+    goToStep(2);
+  });
+
+  document.getElementById('cfStep2Back').addEventListener('click', function() { goToStep(1); });
+  document.getElementById('cfStep3Back').addEventListener('click', function() { goToStep(2); });
+  document.getElementById('cfStep4Restart').addEventListener('click', function() {
+    document.querySelectorAll('.module-card').forEach(function(c) { c.classList.remove('active'); });
+    document.getElementById('cfDetailTitle').textContent = 'Seleziona un modulo';
+    document.getElementById('cfDescText').textContent = "Scegli un modulo dall'elenco per vedere l'anteprima e la descrizione.";
+    document.getElementById('cfDescText').classList.add('placeholder');
+    document.getElementById('cfDescEditBtn').classList.add('hidden');
+    document.getElementById('blankPreviewContainer').innerHTML = '<p class="sub cf-empty-hint">Seleziona un modulo per vedere l\'anteprima</p>';
+    document.getElementById('cfStep1Next').disabled = true;
+    selectedMode = null;
+    goToStep(1);
+  });
+
+  // ================= STEP 2: avanzamento compilazione =================
+  var PROGRESS_FIELD_IDS = {
+    mobile: ['nome_cognome','codice_fiscale','doc_tipo','doc_numero','numero_titolare','indirizzo_via','indirizzo_numero','indirizzo_citta','provincia','cap','recapito_alternativo','utenza'],
+    micro: ['mm_ragione_sociale','mm_partita_iva','mm_referente_legale','mm_rappresentante_legale','mm_codice_fiscale','mm_doc_tipo','mm_doc_numero','mm_numero_rappresentante','mm_indirizzo_via','mm_indirizzo_numero','mm_indirizzo_citta','mm_provincia','mm_cap','mm_recapito_alternativo','mm_utenza'],
+    fisso: ['f_nome_cognome','f_codice_fiscale','f_doc_tipo','f_doc_numero','f_numero_titolare','f_recapito_alternativo','f_indirizzo_via','f_indirizzo_numero','f_indirizzo_citta','f_provincia','f_cap','f_utenza'],
+    morte: ['m_nome_cognome','m_cf','m_comune_nascita','m_prov_nascita','m_data_nascita','m_comune_residenza','m_prov_residenza','m_via_residenza','m_civico_residenza','m_nome_deceduto','m_grado_parentela','m_data_decesso','m_luogo_data'],
+    decesso: ['d_data_lettera','d_linea_numero','d_nome_cognome_erede','d_comune_nascita_erede','d_data_nascita_erede','d_cf_erede','d_comune_residenza_erede','d_via_residenza_erede','d_civico_residenza_erede','d_data_decesso','d_nome_deceduto','d_altri_eredi_1'],
+    energy: ['en_pod_pdr','en_sott_cognome','en_sott_nome','en_sott_nato_a','en_sott_data_nascita','en_sott_cf','en_cliente_cognome_nome','en_cliente_cf','en_fornitura_indirizzo','en_fornitura_civico','en_fornitura_citta','en_fornitura_cap','en_fornitura_provincia']
+  };
+  function updateProgress() {
+    var wrap = document.getElementById('cfProgressWrap');
+    var ids = PROGRESS_FIELD_IDS[currentMode];
+    if (!ids) { wrap.classList.add('hidden'); return; }
+    wrap.classList.remove('hidden');
+    var filled = ids.filter(function(id) {
+      var el = document.getElementById(id);
+      return el && el.value && el.value.trim();
+    }).length;
+    document.getElementById('cfProgressText').textContent = filled + ' / ' + ids.length + ' campi';
+    document.getElementById('cfProgressFill').style.width = (ids.length ? (filled / ids.length * 100) : 0) + '%';
+  }
+  document.addEventListener('input', function(ev) {
+    if (ev.target && ev.target.tagName === 'INPUT' && PROGRESS_FIELD_IDS[currentMode]) updateProgress();
+  });
+
+  // ================= STEP 3: scelta scarica-subito / firma+data =================
+  document.getElementById('cfChoiceDownload').addEventListener('click', function() {
+    downloadStandardNow();
+  });
+  document.getElementById('cfChoiceSign').addEventListener('click', function() {
+    document.getElementById('cfChoiceRow').classList.add('hidden');
+    document.getElementById('panel-datafirma-standard').classList.remove('hidden');
+    setTimeout(function() { mainPad.resize(); }, 0);
+  });
+
+  function standardFilenameFor(cfg) {
+    var nameFieldId = cfg.nameFieldId || 'nome_cognome';
+    var nomeEl = document.getElementById(cfg.fieldPrefix + nameFieldId);
+    var safeName = ((nomeEl && nomeEl.value.trim()) || 'modulo').replace(/[^a-zA-Z0-9]+/g, '_');
+    var dateVal = new Date().toISOString().slice(0,10);
+    return cfg.filenamePrefix + safeName + '_' + dateVal + '.pdf';
+  }
+
+  function triggerDownload(bytes, filename) {
+    var blob = new Blob([bytes], { type: 'application/pdf' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+  }
+
+  function downloadStandardNow() {
+    if (!standardFilledBytes) return;
+    var cfg = MODES[currentMode];
+    triggerDownload(standardFilledBytes, standardFilenameFor(cfg));
+    document.getElementById('cfStep4Msg').textContent = 'Il modulo \u00e8 stato compilato e scaricato, senza data e firma.';
+    goToStep(4);
+  }
+
+  async function embedDateOnly(bytes, cfg) {
+    var PDFLib = window.PDFLib;
+    var pdfDoc = await PDFLib.PDFDocument.load(bytes);
+    var page = pdfDoc.getPage(0);
+    var font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
+    if (cfg.fields.data) {
+      drawVal(page, font, page.getHeight(), cfg.fields.data, fmtDate(document.getElementById('data').value));
+    }
+    return pdfDoc.save();
+  }
 
   function b64ToBytes(b64) {
     var bin = atob(b64);
@@ -1228,6 +1400,8 @@
       setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
 
       setFdStatus('PDF firmato generato e scaricato.', 'ok');
+      document.getElementById('cfStep4Msg').textContent = 'Il documento caricato \u00e8 stato firmato e scaricato.';
+      goToStep(4);
     } catch (err) {
       console.error(err);
       setFdStatus('Errore nella generazione: ' + err.message, 'err');
@@ -1516,10 +1690,6 @@
     ids.forEach(function(id) {
       if (cfg.fields[id]) drawVal(page, font, pageHeight, cfg.fields[id], values[id]);
     });
-    var includiData = !document.getElementById('optIncludiData') || document.getElementById('optIncludiData').checked;
-    if (cfg.fields.data && includiData) {
-      drawVal(page, font, pageHeight, cfg.fields.data, fmtDate(document.getElementById('data').value));
-    }
 
     var motivo = document.querySelector('input[name=' + cfg.motivoRadioName + ']:checked');
     var pagamento = document.querySelector('input[name=' + cfg.pagamentoRadioName + ']:checked');
@@ -1551,61 +1721,105 @@
     return pdfDoc.save();
   }
 
-  document.getElementById('previewStandard').addEventListener('click', async function() {
+  document.getElementById('cfStep2Next').addEventListener('click', async function() {
     var btn = this;
     var cfg = MODES[currentMode];
+    var statusEl = document.getElementById('cfStep2Status');
 
     var missing = cfg.requiredIds.some(function(fullId) {
       var el = document.getElementById(fullId);
       return !el || !el.value.trim();
     });
     if (missing) {
-      setStatus('Compila tutti i campi obbligatori (*).', 'err');
-      return;
-    }
-    var includiFirma = document.getElementById('optIncludiFirma').checked;
-    if (includiFirma && !mainPad.hasSig()) {
-      setStatus('Manca la firma: disegnala o caricala nel riquadro.', 'err');
+      statusEl.textContent = 'Compila tutti i campi obbligatori (*).';
+      statusEl.className = 'status err';
       return;
     }
     if (cfg.modalitaRadioName && !cfg.modalitaOptional && !document.querySelector('input[name=' + cfg.modalitaRadioName + ']:checked')) {
-      setStatus('Seleziona la modalit\u00e0 di recesso (cessazione o portabilit\u00e0).', 'err');
+      statusEl.textContent = 'Seleziona la modalit\u00e0 di recesso (cessazione o portabilit\u00e0).';
+      statusEl.className = 'status err';
       return;
     }
 
     btn.disabled = true;
-    setStatus('Compilazione in corso...', '');
+    statusEl.textContent = 'Compilazione in corso...';
+    statusEl.className = 'status';
     try {
       standardFilledBytes = await buildFilledStandardBytes(cfg);
       standardMarks.firma = [];
+      standardPreviewPages = [];
+      // reset lo stato dello step 3: torna alla scelta scarica/firma
+      document.getElementById('cfChoiceRow').classList.remove('hidden');
+      document.getElementById('panel-datafirma-standard').classList.add('hidden');
+      document.getElementById('standardSignFieldset').style.display = 'none';
+      document.getElementById('generate').disabled = true;
+      document.getElementById('sigPreviewMobileFisso').innerHTML = '';
+      statusEl.textContent = '';
+      goToStep(3);
+    } catch (err) {
+      console.error(err);
+      statusEl.textContent = 'Errore nella compilazione: ' + err.message;
+      statusEl.className = 'status err';
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  document.getElementById('previewStandard').addEventListener('click', async function() {
+    var btn = this;
+    var cfg = MODES[currentMode];
+    var includiFirma = document.getElementById('optIncludiFirma').checked;
+    var includiData = document.getElementById('optIncludiData').checked;
+
+    if (includiFirma && !mainPad.hasSig()) {
+      setStatus('Manca la firma: disegnala o caricala nel riquadro.', 'err');
+      return;
+    }
+
+    btn.disabled = true;
+    setStatus('Preparazione in corso...', '');
+    try {
+      var workingBytes = standardFilledBytes;
+      if (includiData) workingBytes = await embedDateOnly(workingBytes, cfg);
+
+      if (!includiFirma) {
+        // niente firma da posizionare: scarica subito il PDF con (eventuale) data
+        triggerDownload(workingBytes, standardFilenameFor(cfg));
+        document.getElementById('cfStep4Msg').textContent = includiData
+          ? 'Il modulo \u00e8 stato compilato con la data e scaricato, senza firma.'
+          : 'Il modulo \u00e8 stato compilato e scaricato, senza data e firma.';
+        setStatus('', '');
+        goToStep(4);
+        return;
+      }
+
+      standardFilledBytesForSign = workingBytes;
+      standardMarks.firma = [];
       var container = document.getElementById('sigPreviewMobileFisso');
-      standardPreviewPages = await renderPdfPreviewAllPages(standardFilledBytes, container);
-      if (includiFirma) {
-        standardPreviewPages.forEach(function(pageInfo) {
-          pageInfo.wrap.addEventListener('click', function(ev) {
-            if (ev.target !== pageInfo.canvas) return; // ignore clicks on an existing signature/handle
-            var rect = pageInfo.wrap.getBoundingClientRect();
-            var xr = (ev.clientX - rect.left) / rect.width;
-            var yr = (ev.clientY - rect.top) / rect.height;
-            var mark = { x: xr, y: yr, page: pageInfo.page, sizePt: 20 };
-            standardMarks.firma.push(mark);
-            makeDraggableSignature(pageInfo.wrap, mark, mainPad, pageInfo.pageHeightPt, function() {
-              var idx = standardMarks.firma.indexOf(mark);
-              if (idx > -1) standardMarks.firma.splice(idx, 1);
-            });
+      container.innerHTML = '';
+      standardPreviewPages = await renderPdfPreviewAllPages(workingBytes, container);
+      standardPreviewPages.forEach(function(pageInfo) {
+        pageInfo.wrap.addEventListener('click', function(ev) {
+          if (ev.target !== pageInfo.canvas) return; // ignore clicks on an existing signature/handle
+          var rect = pageInfo.wrap.getBoundingClientRect();
+          var xr = (ev.clientX - rect.left) / rect.width;
+          var yr = (ev.clientY - rect.top) / rect.height;
+          var mark = { x: xr, y: yr, page: pageInfo.page, sizePt: 20 };
+          standardMarks.firma.push(mark);
+          makeDraggableSignature(pageInfo.wrap, mark, mainPad, pageInfo.pageHeightPt, function() {
+            var idx = standardMarks.firma.indexOf(mark);
+            if (idx > -1) standardMarks.firma.splice(idx, 1);
           });
         });
-        document.getElementById('standardSignFieldset').style.display = 'block';
-      } else {
-        document.getElementById('standardSignFieldset').style.display = 'none';
-      }
+      });
+      document.getElementById('standardSignFieldset').style.display = 'block';
       document.getElementById('generate').disabled = false;
       document.getElementById('standardSignFieldset').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      setStatus('Anteprima pronta.', 'ok');
+      setStatus('Ora clicca sul documento dove vuoi posizionare la firma.', 'ok');
       setStatusStandardFinal('', '');
     } catch (err) {
       console.error(err);
-      setStatus('Errore nella compilazione: ' + err.message, 'err');
+      setStatus('Errore nella preparazione: ' + err.message, 'err');
     } finally {
       btn.disabled = false;
     }
@@ -1613,49 +1827,35 @@
 
   document.getElementById('generate').addEventListener('click', async function() {
     var btn = this;
-    var includiFirma = document.getElementById('optIncludiFirma').checked;
-    if (!standardFilledBytes) { setStatusStandardFinal('Genera prima l\'anteprima.', 'err'); return; }
-    if (includiFirma && !standardMarks.firma.length) { setStatusStandardFinal('Clicca almeno un punto per la firma.', 'err'); return; }
+    if (!standardFilledBytesForSign) { setStatusStandardFinal('Genera prima l\'anteprima.', 'err'); return; }
+    if (!standardMarks.firma.length) { setStatusStandardFinal('Clicca almeno un punto per la firma.', 'err'); return; }
 
     btn.disabled = true;
     setStatusStandardFinal('Generazione PDF in corso...', '');
     try {
       var PDFLib = window.PDFLib;
-      var pdfDoc = await PDFLib.PDFDocument.load(standardFilledBytes);
+      var pdfDoc = await PDFLib.PDFDocument.load(standardFilledBytesForSign);
       var pages = pdfDoc.getPages();
 
-      if (includiFirma) {
-        var trimmed = trimCanvas(canvas);
-        var sigBytes = b64ToBytes(trimmed.dataUrl.split(',')[1]);
-        var sigImage = await pdfDoc.embedPng(sigBytes);
+      var trimmed = trimCanvas(canvas);
+      var sigBytes = b64ToBytes(trimmed.dataUrl.split(',')[1]);
+      var sigImage = await pdfDoc.embedPng(sigBytes);
 
-        standardMarks.firma.forEach(function(m) {
-          var pg = pages[m.page || 0];
-          var pw = pg.getWidth(), ph = pg.getHeight();
-          var scale = m.sizePt / trimmed.height;
-          var w = trimmed.width * scale, h = trimmed.height * scale;
-          pg.drawImage(sigImage, { x: m.x * pw, y: ph - m.y * ph, width: w, height: h });
-        });
-      }
+      standardMarks.firma.forEach(function(m) {
+        var pg = pages[m.page || 0];
+        var pw = pg.getWidth(), ph = pg.getHeight();
+        var scale = m.sizePt / trimmed.height;
+        var w = trimmed.width * scale, h = trimmed.height * scale;
+        pg.drawImage(sigImage, { x: m.x * pw, y: ph - m.y * ph, width: w, height: h });
+      });
 
       var cfg = MODES[currentMode];
-
       var outBytes = await pdfDoc.save();
-      var blob = new Blob([outBytes], { type: 'application/pdf' });
-      var url = URL.createObjectURL(blob);
-      var a = document.createElement('a');
-      var nameFieldId = cfg.nameFieldId || 'nome_cognome';
-      var nomeEl = document.getElementById(cfg.fieldPrefix + nameFieldId);
-      var safeName = ((nomeEl && nomeEl.value.trim()) || 'modulo').replace(/[^a-zA-Z0-9]+/g, '_');
-      var dateVal = document.getElementById('data').value || new Date().toISOString().slice(0,10);
-      a.href = url;
-      a.download = cfg.filenamePrefix + safeName + '_' + dateVal + '.pdf';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+      triggerDownload(outBytes, standardFilenameFor(cfg));
 
       setStatusStandardFinal('PDF firmato generato e scaricato.', 'ok');
+      document.getElementById('cfStep4Msg').textContent = 'Il modulo \u00e8 stato compilato, firmato e scaricato.';
+      goToStep(4);
     } catch (err) {
       console.error(err);
       setStatusStandardFinal('Errore nella generazione: ' + err.message, 'err');
@@ -1863,6 +2063,8 @@
       setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
 
       setDocStatusCessioneFinal('PDF firmato generato e scaricato.', 'ok');
+      document.getElementById('cfStep4Msg').textContent = 'La cessione del contratto \u00e8 stata compilata, firmata e scaricata.';
+      goToStep(4);
     } catch (err) {
       console.error(err);
       setDocStatusCessioneFinal('Errore nella generazione: ' + err.message, 'err');
