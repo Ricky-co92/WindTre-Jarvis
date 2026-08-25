@@ -72,7 +72,7 @@
   #app-root .status.ok { color: #7fe8a0; font-weight: 600; }
   #app-root .req { color: var(--wt-orange); }
   #app-root .docpage { position: relative; display:inline-block; margin: 10px 10px 10px 0; border: 1px solid var(--line); border-radius: 6px; overflow: visible; cursor: crosshair; line-height:0; }
-  #app-root .docpage canvas { display:block; max-width: 100%; }
+  #app-root .docpage canvas { display:block; max-width: 100%; height: auto; }
   #app-root .stamp-marker {
     position:absolute; pointer-events:none; border: 1.5px dashed var(--wt-orange);
     background: rgba(255,176,32,.12); border-radius: 4px; padding: 2px 6px;
