@@ -3,7 +3,71 @@
   var activeCatFilters = [];   // es. ['consumer','business'] o []
   var activeTipoFilters = [];  // es. ['mobile','fisso'] o []
   var activeBadgeFilters = []; // es. ['Opzione aggiuntiva'] o []
+  var activeOpzioneOnly = false;
   var selectedIds = {};        // { id: true }
+  var customColumns = [];      // [{id, key, label, ordine}]
+
+  // ================= COLONNE PERSONALIZZATE =================
+  async function loadCustomColumns() {
+    try {
+      var { data, error } = await sb.from('wt_custom_columns').select('*').order('ordine');
+      if (error) throw error;
+      customColumns = data || [];
+    } catch (err) {
+      console.error('Errore caricamento colonne personalizzate:', err);
+      customColumns = [];
+    }
+  }
+
+  function slugify(label) {
+    return label.toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '') || ('col_' + Date.now());
+  }
+
+  document.getElementById('gdAddColumn').addEventListener('click', async function () {
+    var label = prompt('Nome della nuova colonna (es. "Sconto attivatore", "Codice interno"):');
+    if (!label || !label.trim()) return;
+    var key = slugify(label.trim());
+    if (customColumns.some(function (c) { return c.key === key; })) {
+      alert('Esiste gi\u00e0 una colonna con questo nome.');
+      return;
+    }
+    var ordine = customColumns.length;
+    try {
+      var { error } = await sb.from('wt_custom_columns').insert({ key: key, label: label.trim(), ordine: ordine });
+      if (error) throw error;
+      await loadCustomColumns();
+      renderGestioneHeader();
+      renderGestioneTable();
+    } catch (err) {
+      alert('Errore nella creazione della colonna: ' + err.message);
+    }
+  });
+
+  function renderGestioneHeader() {
+    var headerRow = document.getElementById('gdHeaderRow');
+    var headerEnd = document.getElementById('gdHeaderEnd');
+    if (!headerRow || !headerEnd) return;
+    headerRow.querySelectorAll('.gd-custom-col').forEach(function (th) { th.remove(); });
+    customColumns.forEach(function (col) {
+      var th = document.createElement('th');
+      th.className = 'gd-custom-col';
+      th.innerHTML = escapeHtml(col.label) + '<button type="button" class="gd-col-remove" title="Elimina colonna">&times;</button>';
+      th.querySelector('.gd-col-remove').addEventListener('click', async function () {
+        if (!confirm('Eliminare la colonna "' + col.label + '"? I dati salvati in questa colonna per ogni offerta andranno persi dalla visualizzazione.')) return;
+        try {
+          await sb.from('wt_custom_columns').delete().eq('id', col.id);
+          await loadCustomColumns();
+          renderGestioneHeader();
+          renderGestioneTable();
+        } catch (err) {
+          alert('Errore: ' + err.message);
+        }
+      });
+      headerRow.insertBefore(th, headerEnd);
+    });
+  }
 
   // ================= CARICAMENTO DATI =================
   async function loadOfferte() {
@@ -13,6 +77,8 @@
       var { data, error } = await sb.from('wt_offerte').select('*').order('categoria').order('tipo').order('ordine');
       if (error) throw error;
       offerte = data || [];
+      await loadCustomColumns();
+      renderGestioneHeader();
     } catch (err) {
       console.error('Errore caricamento offerte:', err);
       offerte = [];
@@ -56,6 +122,11 @@
       toggleFilter(chip, activeTipoFilters, chip.dataset.filterTipo);
     });
   });
+  document.getElementById('ofOpzioneFilter').addEventListener('click', function () {
+    activeOpzioneOnly = !activeOpzioneOnly;
+    this.classList.toggle('active', activeOpzioneOnly);
+    renderGrid();
+  });
   function toggleFilter(chip, arr, value) {
     var idx = arr.indexOf(value);
     if (idx > -1) { arr.splice(idx, 1); chip.classList.remove('active'); }
@@ -68,7 +139,8 @@
       var catOk = activeCatFilters.length === 0 || activeCatFilters.indexOf(o.categoria) > -1;
       var tipoOk = activeTipoFilters.length === 0 || activeTipoFilters.indexOf(o.tipo) > -1;
       var badgeOk = activeBadgeFilters.length === 0 || activeBadgeFilters.indexOf(o.badge) > -1;
-      return catOk && tipoOk && badgeOk;
+      var opzioneOk = !activeOpzioneOnly || o.is_opzione === true;
+      return catOk && tipoOk && badgeOk && opzioneOk;
     });
   }
 
@@ -191,6 +263,7 @@
     document.getElementById('ofFormPrezzoConv').value = o ? (o.prezzo_convergente || '') : '';
     document.getElementById('ofFormNotaConv').value = o ? (o.nota_convergenza || '') : '';
     document.getElementById('ofFormBadge').value = o ? (o.badge || '') : '';
+    document.getElementById('ofFormOpzione').checked = o ? !!o.is_opzione : false;
     document.getElementById('ofFormDettagli').value = o ? (o.dettagli || '') : '';
     document.getElementById('ofFormDelete').classList.toggle('hidden', !o);
     document.getElementById('ofFormStatus').textContent = '';
@@ -216,6 +289,7 @@
       prezzo_convergente: document.getElementById('ofFormPrezzoConv').value.trim(),
       nota_convergenza: document.getElementById('ofFormNotaConv').value.trim(),
       badge: document.getElementById('ofFormBadge').value.trim(),
+      is_opzione: document.getElementById('ofFormOpzione').checked,
       dettagli: document.getElementById('ofFormDettagli').value.trim()
     };
     if (id) record.id = id;
@@ -365,7 +439,8 @@
         categoria: o.categoria, tipo: o.tipo, nome: o.nome,
         prezzo_principale: o.prezzo_principale || '', prezzo_secondario: o.prezzo_secondario || '',
         prezzo_convergente: o.prezzo_convergente || '', nota_convergenza: o.nota_convergenza || '',
-        badge: o.badge || '', dettagli: o.dettagli || ''
+        badge: o.badge || '', is_opzione: !!o.is_opzione, dettagli: o.dettagli || '',
+        extra: Object.assign({}, o.extra || {})
       }};
       tbody.appendChild(buildGdRow(key));
     });
@@ -394,6 +469,22 @@
     tr.appendChild(td('<input type="text" data-f="prezzo_convergente" value="' + attrEsc(row.values.prezzo_convergente) + '">'));
     tr.appendChild(td('<input type="text" data-f="nota_convergenza" value="' + attrEsc(row.values.nota_convergenza) + '">'));
     tr.appendChild(td('<input type="text" data-f="badge" value="' + attrEsc(row.values.badge) + '">'));
+    var opzCell = document.createElement('td');
+    opzCell.className = 'gd-flag-cell';
+    opzCell.innerHTML = '<input type="checkbox" data-f="is_opzione"' + (row.values.is_opzione ? ' checked' : '') + '>';
+    tr.appendChild(opzCell);
+    customColumns.forEach(function (col) {
+      var cell = document.createElement('td');
+      var val = (row.values.extra && row.values.extra[col.key]) || '';
+      cell.innerHTML = '<input type="text" data-extra="' + col.key + '" value="' + attrEsc(val) + '">';
+      cell.querySelector('input').addEventListener('input', function (ev) {
+        if (!row.values.extra) row.values.extra = {};
+        row.values.extra[col.key] = ev.target.value;
+        row.dirty = true;
+        tr.className = row.isNew ? 'gd-new' : 'gd-dirty';
+      });
+      tr.appendChild(cell);
+    });
     tr.appendChild(td('<textarea data-f="dettagli">' + escapeHtml(row.values.dettagli) + '</textarea>'));
     var delCell = document.createElement('td');
     delCell.innerHTML = '<button type="button" class="gd-del-btn" title="Elimina">\uD83D\uDDD1</button>';
@@ -402,10 +493,17 @@
 
     tr.querySelectorAll('[data-f]').forEach(function (el) {
       el.addEventListener('input', function () {
-        row.values[el.dataset.f] = el.value;
+        row.values[el.dataset.f] = el.type === 'checkbox' ? el.checked : el.value;
         row.dirty = true;
         tr.className = row.isNew ? 'gd-new' : 'gd-dirty';
       });
+      if (el.type === 'checkbox') {
+        el.addEventListener('change', function () {
+          row.values[el.dataset.f] = el.checked;
+          row.dirty = true;
+          tr.className = row.isNew ? 'gd-new' : 'gd-dirty';
+        });
+      }
     });
     return tr;
   }
@@ -432,7 +530,7 @@
     var key = 'r' + (gdRowCounter++);
     gdRows[key] = { id: null, isNew: true, dirty: true, values: {
       categoria: 'consumer', tipo: 'mobile', nome: '', prezzo_principale: '', prezzo_secondario: '',
-      prezzo_convergente: '', nota_convergenza: '', badge: '', dettagli: ''
+      prezzo_convergente: '', nota_convergenza: '', badge: '', is_opzione: false, dettagli: '', extra: {}
     }};
     document.getElementById('gdTbody').appendChild(buildGdRow(key));
   });
