@@ -280,6 +280,11 @@
   }
 
   /* ===== GESTIONE DATI (tabella editabile) ===== */
+  .gd-panel{
+    border-radius:4px 16px 16px 16px; position:relative; margin-bottom:20px;
+    background:rgba(13,25,36,.55); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+    padding:28px; border:1px solid rgba(143,232,255,.15);
+  }
   .gd-table-wrap{overflow-x:auto; border:1px solid rgba(143,232,255,.15); border-radius:6px;}
   .gd-table{border-collapse:collapse; width:100%; min-width:1100px; font-size:12.5px;}
   .gd-table thead th{
@@ -1394,7 +1399,7 @@
 
   <!-- GESTIONE DATI -->
   <div id="view-gestione" class="hidden">
-    <div class="panel">
+    <div class="gd-panel">
       <div class="panel-head">
         <div class="title">◈ gestione dati offerte</div>
         <div class="panel-actions">
