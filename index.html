@@ -313,8 +313,9 @@
   .gd-col-remove{position:absolute; top:6px; right:2px; background:none; border:none; color:#7fc4dc; font-size:13px; cursor:pointer; line-height:1;}
   .gd-col-remove:hover{color:#ff6767;}
   .gd-table th:first-child, .gd-table td:first-child{position:sticky; left:0; z-index:2; background:#0d1924;}
+  .gd-table th:nth-child(2), .gd-table td:nth-child(2){position:sticky; left:38px; z-index:2; background:#0d1924;}
   .gd-table th:last-child, .gd-table td:last-child{position:sticky; right:0; z-index:2; background:#0d1924; text-align:center;}
-  .gd-table thead th:first-child, .gd-table thead th:last-child{z-index:3;}
+  .gd-table thead th:first-child, .gd-table thead th:last-child, .gd-table thead th:nth-child(2){z-index:3;}
 </style>
 </head>
 <body>
@@ -1373,6 +1374,7 @@
             <div class="field"><label>Badge (opz.)</label><input type="text" id="ofFormBadge" placeholder="5G, NEW, Solo 2&deg; SIM..."></div>
             <div class="field"><label class="radio-opt" style="display:flex;align-items:center;gap:8px;margin-top:22px;"><input type="checkbox" id="ofFormOpzione" style="width:18px;height:18px;accent-color:#ffb020;"> &Egrave; un'opzione aggiuntiva</label></div>
           </div>
+          <div id="ofFormExtraFields"></div>
           <div class="row">
             <div class="field wide"><label>Dettagli (una riga per bullet)</label><textarea id="ofFormDettagli" rows="4" placeholder="Giga illimitati&#10;Minuti illimitati&#10;200 SMS"></textarea></div>
           </div>
@@ -1429,6 +1431,7 @@
           <thead>
             <tr id="gdHeaderRow">
               <th><input type="checkbox" id="gdSelectAll" title="Seleziona tutte"></th>
+              <th></th>
               <th>Categoria</th><th>Tipo</th><th>Nome</th><th>Prezzo princ.</th><th>Prezzo second.</th>
               <th>Prezzo convergente</th><th>Nota convergenza</th><th>Badge</th><th>Opzione</th><th>Dettagli</th><th id="gdHeaderEnd"></th>
             </tr>

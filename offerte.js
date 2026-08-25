@@ -267,6 +267,17 @@
     document.getElementById('ofFormDettagli').value = o ? (o.dettagli || '') : '';
     document.getElementById('ofFormDelete').classList.toggle('hidden', !o);
     document.getElementById('ofFormStatus').textContent = '';
+
+    var extraWrap = document.getElementById('ofFormExtraFields');
+    extraWrap.innerHTML = '';
+    var extraVals = (o && o.extra) || {};
+    customColumns.forEach(function (col) {
+      var row = document.createElement('div');
+      row.className = 'row';
+      row.innerHTML = '<div class="field wide"><label>' + escapeHtml(col.label) + '</label>' +
+        '<input type="text" data-extra-key="' + col.key + '" value="' + attrEsc(extraVals[col.key] || '') + '"></div>';
+      extraWrap.appendChild(row);
+    });
   }
   function hideAdminForm() {
     document.getElementById('ofAdminForm').classList.add('hidden');
@@ -292,6 +303,11 @@
       is_opzione: document.getElementById('ofFormOpzione').checked,
       dettagli: document.getElementById('ofFormDettagli').value.trim()
     };
+    var extra = {};
+    document.querySelectorAll('#ofFormExtraFields [data-extra-key]').forEach(function (input) {
+      extra[input.dataset.extraKey] = input.value;
+    });
+    record.extra = extra;
     if (id) record.id = id;
     statusEl.textContent = 'Salvataggio...';
     statusEl.className = 'status';
@@ -464,6 +480,17 @@
       updateGdDeleteButton();
     });
     tr.appendChild(selCell);
+
+    var editCell = document.createElement('td');
+    editCell.className = 'gd-flag-cell';
+    editCell.innerHTML = '<button type="button" class="gd-del-btn" style="color:#7fc4dc" title="Apri scheda completa">\u270e</button>';
+    editCell.querySelector('button').addEventListener('click', function () {
+      var full = offerte.find(function (o) { return o.id === row.id; }) || Object.assign({ id: row.id }, row.values);
+      document.getElementById('ofAdminBackdrop').classList.remove('hidden');
+      renderAdminList();
+      showAdminForm(full);
+    });
+    tr.appendChild(editCell);
 
     function td(inputHtml) {
       var cell = document.createElement('td');
