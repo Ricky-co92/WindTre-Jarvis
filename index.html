@@ -310,13 +310,13 @@
     <div class="cf-step1-layout">
       <div class="cf-module-list" id="moduleGrid">
         <button type="button" class="module-card" data-mode="mobile">Recesso Mobile</button>
-        <button type="button" class="module-card" data-mode="micro">Recesso Micro Mobile</button>
-        <button type="button" class="module-card" data-mode="fisso">Recesso Rete Fissa</button>
-        <button type="button" class="module-card" data-mode="cessione">Cessione Contratto</button>
-        <button type="button" class="module-card" data-mode="morte">Autocert Cert. Morte</button>
-        <button type="button" class="module-card" data-mode="decesso">Autocert Atto Notorio</button>
-        <button type="button" class="module-card" data-mode="firmadoc">Firma Doc</button>
+        <button type="button" class="module-card" data-mode="micro">Recesso Biz Mobile</button>
+        <button type="button" class="module-card" data-mode="fisso">Recesso Fisso</button>
+        <button type="button" class="module-card" data-mode="cessione">Subentro</button>
+        <button type="button" class="module-card" data-mode="morte">Autodich Cert. Morte</button>
+        <button type="button" class="module-card" data-mode="decesso">Autodich Atto Notorio</button>
         <button type="button" class="module-card" data-mode="energy">Att. Utenza Energy</button>
+        <button type="button" class="module-card" data-mode="firmadoc">Firma Doc</button>
       </div>
 
       <div class="cf-detail-panel">
@@ -360,13 +360,13 @@
         <label>Modulo da compilare</label>
         <select id="moduleSelect">
           <option value="mobile">Recesso Mobile</option>
-          <option value="micro">Recesso Micro Mobile</option>
-          <option value="fisso">Recesso Rete Fissa</option>
-          <option value="cessione">Cessione Contratto</option>
-          <option value="morte">Autocert Cert Morte</option>
-          <option value="decesso">Autocert Atto Notorio</option>
+          <option value="micro">Recesso Biz Mobile</option>
+          <option value="fisso">Recesso Fisso</option>
+          <option value="cessione">Subentro</option>
+          <option value="morte">Autodich Cert. Morte</option>
+          <option value="decesso">Autodich Atto Notorio</option>
+          <option value="energy">Att. Utenza Energy</option>
           <option value="firmadoc">Firma Doc</option>
-          <option value="energy">Att Utenza Energy</option>
         </select>
       </div>
     </div>
@@ -1085,7 +1085,7 @@
     <div class="cf-step2-preview">
       <div class="cf-preview-sticky">
         <div class="cf-detail-title" style="font-size:14px;">Anteprima in tempo reale</div>
-        <div class="cf-preview-box" id="cfLivePreview"><p class="sub cf-empty-hint">L'anteprima si aggiorna mentre scrivi (non disponibile per Cessione Contratto e Firma Doc).</p></div>
+        <div class="cf-preview-box" id="cfLivePreview"><p class="sub cf-empty-hint">L'anteprima si aggiorna mentre scrivi (non disponibile per Subentro e Firma Doc).</p></div>
       </div>
     </div>
     </div>
@@ -1193,6 +1193,7 @@
       <div class="cf-detail-title">Fatto</div>
       <p class="cf-detail-desc" id="cfStep4Msg">Il PDF &egrave; stato scaricato.</p>
       <div class="actions" style="justify-content:center;">
+        <button type="button" class="btn-hud ghost" id="cfStep4Back">&larr; Torna indietro per modificare</button>
         <button type="button" class="btn-hud accent" id="cfStep4Restart">Compila un altro modulo</button>
       </div>
     </div>

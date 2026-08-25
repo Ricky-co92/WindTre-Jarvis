@@ -743,8 +743,8 @@
 
   // ================= STEP 1: scelta modulo, anteprima, descrizione =================
   var MODULE_LABELS = {
-    mobile: 'Recesso Mobile', micro: 'Recesso Micro Mobile', fisso: 'Recesso Rete Fissa',
-    cessione: 'Cessione Contratto', morte: 'Autocert Cert. Morte', decesso: 'Autocert Atto Notorio',
+    mobile: 'Recesso Mobile', micro: 'Recesso Biz Mobile', fisso: 'Recesso Fisso',
+    cessione: 'Subentro', morte: 'Autodich Cert. Morte', decesso: 'Autodich Atto Notorio',
     firmadoc: 'Firma Doc', energy: 'Att. Utenza Energy'
   };
   var DEFAULT_DESCRIPTIONS = {
@@ -844,6 +844,13 @@
 
   document.getElementById('cfStep2Back').addEventListener('click', function() { goToStep(1); });
   document.getElementById('cfStep3Back').addEventListener('click', function() { goToStep(2); });
+  document.getElementById('cfStep4Back').addEventListener('click', function() {
+    if (currentMode === 'cessione' || currentMode === 'firmadoc') {
+      goToStep(2);
+    } else {
+      goToStep(3);
+    }
+  });
   document.getElementById('cfStep4Restart').addEventListener('click', function() {
     document.querySelectorAll('.module-card').forEach(function(c) { c.classList.remove('active'); });
     document.getElementById('cfDetailTitle').textContent = 'Seleziona un modulo';
@@ -1478,7 +1485,7 @@
       filenamePrefix: 'Recesso_Mobile_',
       fields: {
         nome_cognome:        { x: 114, top: 144.5, bottom: 155.5, size: 10 },
-        codice_fiscale:      { x: 100, top: 165,   bottom: 176,   size: 10 },
+        codice_fiscale:      { x: 100, top: 168.5, bottom: 177.2, size: 8, boxed: true, boxX0: 107.47, boxWidth: 12.62, boxCount: 16 },
         doc_tipo:            { x: 152, top: 179.5, bottom: 190.5, size: 9 },
         doc_numero:          { x: 332, top: 179.5, bottom: 190.5, size: 9 },
         numero_titolare:     { x: 194, top: 193.5, bottom: 204.5, size: 9 },
@@ -1903,7 +1910,7 @@
   var CESSIONE_FIELDS = {
     ced_nome:                  { x: 205, top: 115, bottom: 124, size: 7.5 },
     ced_cognome:               { x: 398, top: 115, bottom: 124, size: 7.5 },
-    ced_cf:                    { x: 82,  top: 124, bottom: 133, size: 7.5 },
+    ced_cf:                    { x: 82,  top: 124.6, bottom: 131.6, size: 6.5, boxed: true, boxX0: 79.53, boxWidth: 7.43, boxCount: 15 },
     ced_piva:                  { x: 372, top: 124, bottom: 133, size: 7 },
     ced_telefono:              { x: 92,  top: 133, bottom: 142, size: 7 },
     ced_impresa_denominazione: { x: 157, top: 143, bottom: 152, size: 7 },
@@ -1911,7 +1918,7 @@
     ced_impresa_telefono:      { x: 457, top: 152, bottom: 161, size: 7 },
     ces_nome:                  { x: 205, top: 172, bottom: 181, size: 7.5 },
     ces_cognome:               { x: 398, top: 172, bottom: 181, size: 7.5 },
-    ces_cf:                    { x: 82,  top: 181, bottom: 190, size: 7.5 },
+    ces_cf:                    { x: 82,  top: 181.5, bottom: 188.5, size: 6.5, boxed: true, boxX0: 79.53, boxWidth: 7.43, boxCount: 15 },
     ces_piva:                  { x: 372, top: 181, bottom: 190, size: 7 },
     ces_sesso:                 { x: 85,  top: 190, bottom: 199, size: 6.5 },
     ces_comune_nascita:        { x: 147, top: 190, bottom: 199, size: 7 },
