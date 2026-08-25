@@ -65,7 +65,22 @@
     customColumns.forEach(function (col) {
       var th = document.createElement('th');
       th.className = 'gd-custom-col';
-      th.innerHTML = escapeHtml(col.label) + '<button type="button" class="gd-col-remove" title="Elimina colonna">&times;</button>';
+      var eyeIcon = col.show_on_card ? '\uD83D\uDC41\uFE0F' : '\uD83D\uDEAB';
+      var eyeTitle = col.show_on_card ? 'Visibile sulle card: clicca per nascondere' : 'Nascosta sulle card: clicca per mostrare';
+      th.innerHTML = escapeHtml(col.label) +
+        '<button type="button" class="gd-col-eye" title="' + eyeTitle + '">' + eyeIcon + '</button>' +
+        '<button type="button" class="gd-col-remove" title="Elimina colonna">&times;</button>';
+      th.querySelector('.gd-col-eye').addEventListener('click', async function () {
+        var newVal = !col.show_on_card;
+        try {
+          await sb.from('wt_custom_columns').update({ show_on_card: newVal }).eq('id', col.id);
+          await loadCustomColumns();
+          renderGestioneHeader();
+          renderGrid();
+        } catch (err) {
+          alert('Errore: ' + err.message);
+        }
+      });
       th.querySelector('.gd-col-remove').addEventListener('click', async function () {
         if (!confirm('Eliminare la colonna "' + col.label + '"? I dati salvati in questa colonna per ogni offerta andranno persi dalla visualizzazione.')) return;
         try {
@@ -73,6 +88,7 @@
           await loadCustomColumns();
           renderGestioneHeader();
           renderGestioneTable();
+          renderGrid();
         } catch (err) {
           alert('Errore: ' + err.message);
         }
@@ -181,6 +197,11 @@
       var badgeHtml = o.badge ? '<div class="of-badge">' + escapeHtml(o.badge) + '</div>' : '';
       var dettagliArr = (o.dettagli || '').split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
       var dettagliHtml = dettagliArr.map(function (d) { return '<div>' + escapeHtml(d) + '</div>'; }).join('');
+      var extraCardHtml = customColumns.filter(function (col) {
+        return col.show_on_card && o.extra && o.extra[col.key];
+      }).map(function (col) {
+        return '<div class="of-extra-field"><b>' + escapeHtml(col.label) + ':</b> ' + escapeHtml(o.extra[col.key]) + '</div>';
+      }).join('');
 
       var prezzoBlockHtml;
       if (o.tipo === 'fisso' && o.prezzo_convergente) {
@@ -206,6 +227,7 @@
         '<div class="of-nome">' + escapeHtml(o.nome) + '</div>' +
         prezzoBlockHtml +
         '<div class="of-dettagli">' + dettagliHtml + '</div>' +
+        extraCardHtml +
         '<div class="of-tag">' + CAT_LABEL[o.categoria] + ' &middot; ' + TIPO_LABEL[o.tipo] + '</div>';
       card.querySelector('.of-edit-btn').addEventListener('click', function (ev) {
         ev.stopPropagation();
