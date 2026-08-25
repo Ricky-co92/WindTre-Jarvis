@@ -269,8 +269,9 @@ async function handleLogout(){
 
 async function onLogin(user){
   currentUser = user;
-  const displayName = (user.user_metadata && (user.user_metadata.full_name || user.user_metadata.name))
+  const rawName = (user.user_metadata && (user.user_metadata.full_name || user.user_metadata.name))
     || user.email.split("@")[0];
+  const displayName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
   document.getElementById("user-name").textContent = displayName;
   document.getElementById("welcome-text").textContent = "bentornato, " + displayName;
   document.getElementById("screen-login").classList.add("hidden");
@@ -280,7 +281,7 @@ async function onLogin(user){
 }
 
 // ---------- NAV ----------
-const VIEWS = ["home","compilatore","offerte","sellingnote"];
+const VIEWS = ["home","compilatore","offerte"];
 function switchView(view){
   document.querySelectorAll(".nav-item").forEach(el=>{
     el.classList.toggle("active", el.dataset.view === view);

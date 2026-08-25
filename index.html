@@ -213,6 +213,65 @@
     .topbar .orb{font-size:0.95rem;letter-spacing:0.3px;}
     .panel{padding:16px;}
   }
+  /* ===== ANALIZZATORE OFFERTE ===== */
+  .of-toolbar{display:flex;flex-wrap:wrap;gap:18px;align-items:center;margin-bottom:20px;}
+  .of-filter-group{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .of-filter-label{font-family:'Rajdhani',sans-serif;font-size:12px;color:#7fc4dc;text-transform:uppercase;letter-spacing:.05em;font-weight:700;}
+  .of-chip{background:rgba(42,184,217,.06);border:1px solid rgba(143,232,255,.25);color:#8fb8cc;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.02em;padding:8px 16px;border-radius:20px;cursor:pointer;transition:all .15s ease;}
+  .of-chip:hover{border-color:#8fe8ff;}
+  .of-chip.active{background:rgba(143,232,255,.15);border-color:#8fe8ff;color:#eafcff;box-shadow:0 0 10px rgba(143,232,255,.25);}
+  .of-manage-btn{margin-left:auto;border-color:#ffb020;color:#ffe6b0;}
+  .of-manage-btn:hover{background:rgba(255,176,32,.12);}
+  .of-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;}
+  .of-card{position:relative;background:rgba(13,25,36,.6);border:1px solid rgba(143,232,255,.2);border-radius:4px 14px 14px 14px;padding:18px;cursor:pointer;transition:all .15s ease;}
+  .of-card:hover{border-color:#8fe8ff;}
+  .of-card.selected{border-color:#ffb020;background:rgba(255,176,32,.06);box-shadow:0 0 14px rgba(255,176,32,.15);}
+  .of-card .of-check{position:absolute;top:14px;right:14px;width:20px;height:20px;border:1.5px solid rgba(143,232,255,.4);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:13px;color:transparent;}
+  .of-card.selected .of-check{background:#ffb020;border-color:#ffb020;color:#05141c;}
+  .of-card .of-badge{display:inline-block;font-size:10.5px;font-family:'Rajdhani',sans-serif;font-weight:700;text-transform:uppercase;color:#ffe6b0;background:rgba(255,176,32,.15);border:1px solid rgba(255,176,32,.4);border-radius:3px;padding:2px 7px;margin-bottom:8px;}
+  .of-card .of-nome{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:15.5px;color:#eafcff;margin-bottom:10px;padding-right:24px;}
+  .of-card .of-prezzo1{font-family:'Orbitron',sans-serif;font-size:1.3rem;color:#8fe8ff;text-shadow:0 0 8px rgba(143,232,255,.4);}
+  .of-card .of-prezzo2{font-size:11.5px;color:#7fc4dc;margin-top:2px;}
+  .of-card .of-dettagli{margin-top:12px;font-size:12.5px;color:#b8dae8;line-height:1.7;}
+  .of-card .of-dettagli div{padding-left:14px;position:relative;}
+  .of-card .of-dettagli div::before{content:'\2713';position:absolute;left:0;color:#8fe8ff;font-size:11px;}
+  .of-card .of-tag{position:absolute;bottom:14px;right:14px;font-size:10px;color:#557b8c;text-transform:uppercase;letter-spacing:.04em;}
+
+  .of-selling-bar{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:60;background:#0d1924;border:1px solid #ffb020;border-radius:10px;padding:14px 20px;display:flex;align-items:center;gap:20px;box-shadow:0 8px 30px rgba(0,0,0,.5),0 0 20px rgba(255,176,32,.2);font-family:'Rajdhani',sans-serif;font-weight:700;color:#ffe6b0;}
+  .of-btn{background:rgba(42,184,217,.1);border:1px solid #2ab8d9;color:#c8f2ff;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13.5px;text-transform:uppercase;padding:9px 18px;border-radius:3px;cursor:pointer;letter-spacing:.02em;}
+  .of-btn:hover{background:rgba(42,184,217,.18);}
+  .of-btn.accent{border-color:#ffb020;color:#ffe6b0;}
+  .of-btn.accent:hover{background:rgba(255,176,32,.12);}
+  .of-btn.ghost{border-color:rgba(143,232,255,.25);color:#8fb8cc;background:transparent;}
+  .of-btn.danger{border-color:#c0392b;color:#ff8f7a;}
+  .of-btn.danger:hover{background:rgba(192,57,43,.15);}
+
+  .of-modal-backdrop{position:fixed;inset:0;background:rgba(1,5,8,.7);z-index:70;display:flex;align-items:center;justify-content:center;padding:20px;}
+  .of-modal{background:#0d1924;border:1px solid rgba(143,232,255,.3);border-radius:4px 16px 16px 16px;max-width:640px;width:100%;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.6);}
+  .of-modal-head{display:flex;justify-content:space-between;align-items:center;padding:18px 22px;border-bottom:1px solid rgba(143,232,255,.15);}
+  .of-modal-head .title{font-family:'Rajdhani',sans-serif;font-weight:700;color:#4fc8e8;text-transform:uppercase;font-size:16px;}
+  .of-modal-close{background:none;border:none;color:#8fb8cc;font-size:22px;cursor:pointer;line-height:1;}
+  .of-modal-body{padding:20px 22px;overflow-y:auto;}
+  .of-admin-list{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;max-height:240px;overflow-y:auto;}
+  .of-admin-row{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border:1px solid rgba(143,232,255,.15);border-radius:4px;font-size:13px;color:#c8e8f2;cursor:pointer;}
+  .of-admin-row:hover{border-color:#8fe8ff;}
+  .of-admin-row .tag{font-size:10px;color:#7fc4dc;text-transform:uppercase;}
+  .of-admin-form{border:1px solid rgba(143,232,255,.2);border-radius:4px 12px 12px 12px;padding:16px 18px;margin-top:10px;}
+  .of-admin-form legend{font-family:'Rajdhani',sans-serif;font-weight:700;color:#4fc8e8;text-transform:uppercase;font-size:12.5px;padding:0 6px;}
+  .of-admin-form .row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
+  .of-admin-form .field{flex:1 1 160px;display:flex;flex-direction:column;gap:4px;}
+  .of-admin-form .field.wide{flex:1 1 100%;}
+  .of-admin-form label{font-family:'Rajdhani',sans-serif;font-size:12px;color:#7fc4dc;text-transform:uppercase;letter-spacing:.03em;}
+  .of-admin-form input,.of-admin-form select,.of-admin-form textarea{background:rgba(42,184,217,.06);border:1px solid rgba(143,232,255,.25);border-radius:4px;color:#eafcff;padding:9px 10px;font-family:'Inter',sans-serif;font-size:13.5px;}
+  .of-admin-form textarea{resize:vertical;}
+  .of-admin-form .actions{display:flex;gap:10px;align-items:center;margin-top:6px;flex-wrap:wrap;}
+  #ofSellingList{display:flex;flex-direction:column;gap:10px;}
+  .of-sn-item{display:flex;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid rgba(143,232,255,.15);border-radius:4px;font-size:13px;color:#c8e8f2;}
+  .of-sn-item b{color:#eafcff;}
+  @media (max-width:640px){
+    .of-manage-btn{margin-left:0;}
+    .of-selling-bar{flex-direction:column;gap:10px;left:12px;right:12px;transform:none;}
+  }
 </style>
 </head>
 <body>
@@ -221,8 +280,8 @@
 <div id="screen-login">
   <div id="login">
     <div class="core-anim" id="core-login"></div>
-    <h1>WindTre-Jarvis</h1>
-    <div class="sub">Automazioni di lavoro</div>
+    <h1>JARVIS</h1>
+    <div class="sub">Sistema di Automazioni Lavorative</div>
     <form id="login-form" autocomplete="on">
       <div class="field"><label>Identificativo</label><input type="email" id="login-email" name="username" autocomplete="username" required></div>
       <div class="field"><label>Chiave di accesso</label><input type="password" id="login-password" name="password" autocomplete="current-password" required></div>
@@ -239,14 +298,13 @@
   <div class="nav-item active" data-view="home" data-text="Home">Home</div>
   <div class="nav-item" data-view="compilatore" data-text="Compilatore Moduli">Compilatore Moduli</div>
   <div class="nav-item" data-view="offerte" data-text="Analizzatore Offerte">Analizzatore Offerte</div>
-  <div class="nav-item" data-view="sellingnote" data-text="Selling Note">Selling Note</div>
 </div>
 
 <!-- ===== APP ===== -->
 <div id="app" class="hidden">
   <div class="topbar">
     <button class="hamburger" id="btn-hamburger"><span></span><span></span><span></span></button>
-    <div class="orb" id="topbar-title">WindTre-Jarvis</div>
+    <div class="orb" id="topbar-title">JARVIS</div>
     <div class="right">
       <span class="email" id="user-name"></span>
       <span class="logout" id="btn-logout">Esci</span>
@@ -255,20 +313,6 @@
 
   <!-- HOME -->
   <div id="view-home">
-    <div class="side-mods">
-      <div class="hex-mod">
-        <div class="corner-tick ct-tr"></div><div class="corner-tick ct-bl"></div>
-        <div class="hex-ring"><svg viewBox="0 0 88 88">
-          <circle class="hex-ring-outer" cx="44" cy="44" r="41"/>
-          <g class="hex-ticks" id="mod-time-ticks"></g>
-          <circle class="hex-ring-bg" cx="44" cy="44" r="35"/>
-          <circle class="hex-ring-fg" cx="44" cy="44" r="35" stroke-dasharray="146 74" transform="rotate(-90 44 44)"/>
-          <circle class="hex-ring-accent" cx="44" cy="44" r="28" stroke-dasharray="18 158" transform="rotate(-90 44 44)"/>
-        </svg><div class="hex-val" id="clock">--:--</div></div>
-        <div class="hex-lbl" id="dateStr">—</div>
-      </div>
-    </div>
-
     <div class="center-col">
       <div class="core-anim" id="core-home"></div>
       <div class="welcome" id="welcome-text">bentornato</div>
@@ -1207,30 +1251,115 @@
 
   <!-- ANALIZZATORE OFFERTE -->
   <div id="view-offerte" class="hidden">
+    <div class="of-toolbar">
+      <div class="of-filter-group">
+        <span class="of-filter-label">Categoria</span>
+        <button type="button" class="of-chip" data-filter-cat="consumer">Consumer</button>
+        <button type="button" class="of-chip" data-filter-cat="business">Business</button>
+      </div>
+      <div class="of-filter-group">
+        <span class="of-filter-label">Tipo</span>
+        <button type="button" class="of-chip" data-filter-tipo="mobile">Mobile</button>
+        <button type="button" class="of-chip" data-filter-tipo="fisso">Fisso</button>
+      </div>
+      <button type="button" class="of-chip of-manage-btn" id="ofManageBtn">+ Gestisci offerte</button>
+    </div>
+
     <div class="panel">
-      <div class="panel-head"><div class="title">◈ analizzatore offerte canvas</div></div>
-      <div class="placeholder-msg">
-        <span class="big">Modulo da costruire</span>
-        Upload documento offerta → riassunto schematico automatico. In sviluppo.
+      <div class="panel-head">
+        <div class="title">◈ offerte</div>
+        <span class="status" id="ofCount"></span>
+      </div>
+      <div class="of-grid" id="ofGrid">
+        <p class="sub" id="ofEmptyMsg">Nessuna offerta trovata. Usa "Gestisci offerte" per aggiungerne.</p>
       </div>
     </div>
   </div>
 
-  <!-- SELLING NOTE -->
-  <div id="view-sellingnote" class="hidden">
-    <div class="panel">
-      <div class="panel-head"><div class="title">◈ generatore selling note</div></div>
-      <div class="placeholder-msg">
-        <span class="big">Modulo da costruire</span>
-        In attesa dei dettagli del formato Selling Note.
+  <!-- Barra flottante selezione -->
+  <div class="of-selling-bar hidden" id="ofSellingBar">
+    <span id="ofSelCount">0 offerte selezionate</span>
+    <div style="display:flex; gap:10px;">
+      <button type="button" class="of-btn ghost" id="ofClearSel">Deseleziona tutto</button>
+      <button type="button" class="of-btn accent" id="ofOpenSellingNote">Genera Selling Note</button>
+    </div>
+  </div>
+
+  <!-- Modale gestione offerte -->
+  <div class="of-modal-backdrop hidden" id="ofAdminBackdrop">
+    <div class="of-modal">
+      <div class="of-modal-head">
+        <div class="title">Gestisci offerte</div>
+        <button type="button" class="of-modal-close" id="ofAdminClose">&times;</button>
+      </div>
+      <div class="of-modal-body">
+        <div class="of-admin-list" id="ofAdminList"></div>
+        <button type="button" class="of-btn" id="ofAddNew">+ Nuova offerta</button>
+        <fieldset class="of-admin-form hidden" id="ofAdminForm">
+          <legend id="ofFormLegend">Nuova offerta</legend>
+          <input type="hidden" id="ofFormId">
+          <div class="row">
+            <div class="field">
+              <label>Categoria</label>
+              <select id="ofFormCategoria"><option value="consumer">Consumer</option><option value="business">Business</option></select>
+            </div>
+            <div class="field">
+              <label>Tipo</label>
+              <select id="ofFormTipo"><option value="mobile">Mobile</option><option value="fisso">Fisso</option></select>
+            </div>
+          </div>
+          <div class="row">
+            <div class="field wide"><label>Nome offerta</label><input type="text" id="ofFormNome" placeholder="Es. Unlimited 5G"></div>
+          </div>
+          <div class="row">
+            <div class="field"><label>Prezzo principale</label><input type="text" id="ofFormPrezzo1" placeholder="9,99&euro;/mese"></div>
+            <div class="field"><label>Prezzo secondario (opz.)</label><input type="text" id="ofFormPrezzo2" placeholder="dal 2&deg; anno 24,99&euro;/mese"></div>
+          </div>
+          <div class="row">
+            <div class="field"><label>Badge (opz.)</label><input type="text" id="ofFormBadge" placeholder="5G, NEW, Solo 2&deg; SIM..."></div>
+          </div>
+          <div class="row">
+            <div class="field wide"><label>Dettagli (una riga per bullet)</label><textarea id="ofFormDettagli" rows="4" placeholder="Giga illimitati&#10;Minuti illimitati&#10;200 SMS"></textarea></div>
+          </div>
+          <div class="actions">
+            <button type="button" class="of-btn accent" id="ofFormSave">Salva</button>
+            <button type="button" class="of-btn ghost" id="ofFormCancel">Annulla</button>
+            <button type="button" class="of-btn danger hidden" id="ofFormDelete">Elimina</button>
+            <span class="status" id="ofFormStatus"></span>
+          </div>
+        </fieldset>
       </div>
     </div>
   </div>
-</div>
+
+  <!-- Modale Selling Note -->
+  <div class="of-modal-backdrop hidden" id="ofSellingBackdrop">
+    <div class="of-modal">
+      <div class="of-modal-head">
+        <div class="title">Selling Note</div>
+        <button type="button" class="of-modal-close" id="ofSellingClose">&times;</button>
+      </div>
+      <div class="of-modal-body">
+        <div id="ofSellingList"></div>
+        <div class="row" style="margin-top:14px">
+          <div class="field wide">
+            <label>Note personalizzate</label>
+            <textarea id="ofSellingNote" rows="4" placeholder="Es. sconto concordato, promemoria per il cliente..."></textarea>
+          </div>
+        </div>
+        <div class="actions">
+          <button type="button" class="of-btn accent" id="ofGeneratePdf">Scarica PDF</button>
+          <span class="status" id="ofSellingStatus"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
 
 <script src="config.js"></script>
 <script src="app.js"></script>
 <script src="compilatore.js?v=3"></script>
+<script src="offerte.js?v=1"></script>
 <div id="login-flash"></div>
 <div id="login-iris"></div>
 <div id="transition-label">Accesso consentito</div>
