@@ -21,6 +21,9 @@
     }
     renderBadgeFilters();
     renderGrid();
+    if (document.getElementById('view-gestione') && !document.getElementById('view-gestione').classList.contains('hidden')) {
+      renderGestioneTable();
+    }
   }
 
   function renderBadgeFilters() {
@@ -343,10 +346,128 @@
     }
   });
 
+  // ================= GESTIONE DATI (tabella editabile) =================
+  var gdRows = {};      // { rowKey: { id, isNew, dirty, values:{...} } }
+  var gdRowCounter = 0;
+
+  function gdFieldNames() {
+    return ['categoria', 'tipo', 'nome', 'prezzo_principale', 'prezzo_secondario', 'prezzo_convergente', 'nota_convergenza', 'badge', 'dettagli'];
+  }
+
+  function renderGestioneTable() {
+    var tbody = document.getElementById('gdTbody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    gdRows = {};
+    offerte.forEach(function (o) {
+      var key = 'r' + (gdRowCounter++);
+      gdRows[key] = { id: o.id, isNew: false, dirty: false, values: {
+        categoria: o.categoria, tipo: o.tipo, nome: o.nome,
+        prezzo_principale: o.prezzo_principale || '', prezzo_secondario: o.prezzo_secondario || '',
+        prezzo_convergente: o.prezzo_convergente || '', nota_convergenza: o.nota_convergenza || '',
+        badge: o.badge || '', dettagli: o.dettagli || ''
+      }};
+      tbody.appendChild(buildGdRow(key));
+    });
+  }
+
+  function buildGdRow(key) {
+    var row = gdRows[key];
+    var tr = document.createElement('tr');
+    tr.dataset.key = key;
+    tr.className = row.isNew ? 'gd-new' : (row.dirty ? 'gd-dirty' : '');
+
+    function td(inputHtml) {
+      var cell = document.createElement('td');
+      cell.innerHTML = inputHtml;
+      return cell;
+    }
+
+    var catSel = '<select data-f="categoria"><option value="consumer"' + (row.values.categoria === 'consumer' ? ' selected' : '') + '>Consumer</option><option value="business"' + (row.values.categoria === 'business' ? ' selected' : '') + '>Business</option></select>';
+    var tipoSel = '<select data-f="tipo"><option value="mobile"' + (row.values.tipo === 'mobile' ? ' selected' : '') + '>Mobile</option><option value="fisso"' + (row.values.tipo === 'fisso' ? ' selected' : '') + '>Fisso</option></select>';
+
+    tr.appendChild(td(catSel));
+    tr.appendChild(td(tipoSel));
+    tr.appendChild(td('<input type="text" class="gd-nome-input" data-f="nome" value="' + attrEsc(row.values.nome) + '">'));
+    tr.appendChild(td('<input type="text" data-f="prezzo_principale" value="' + attrEsc(row.values.prezzo_principale) + '">'));
+    tr.appendChild(td('<input type="text" data-f="prezzo_secondario" value="' + attrEsc(row.values.prezzo_secondario) + '">'));
+    tr.appendChild(td('<input type="text" data-f="prezzo_convergente" value="' + attrEsc(row.values.prezzo_convergente) + '">'));
+    tr.appendChild(td('<input type="text" data-f="nota_convergenza" value="' + attrEsc(row.values.nota_convergenza) + '">'));
+    tr.appendChild(td('<input type="text" data-f="badge" value="' + attrEsc(row.values.badge) + '">'));
+    tr.appendChild(td('<textarea data-f="dettagli">' + escapeHtml(row.values.dettagli) + '</textarea>'));
+    var delCell = document.createElement('td');
+    delCell.innerHTML = '<button type="button" class="gd-del-btn" title="Elimina">\uD83D\uDDD1</button>';
+    delCell.querySelector('button').addEventListener('click', function () { gdDeleteRow(key); });
+    tr.appendChild(delCell);
+
+    tr.querySelectorAll('[data-f]').forEach(function (el) {
+      el.addEventListener('input', function () {
+        row.values[el.dataset.f] = el.value;
+        row.dirty = true;
+        tr.className = row.isNew ? 'gd-new' : 'gd-dirty';
+      });
+    });
+    return tr;
+  }
+
+  function attrEsc(s) { return escapeHtml(s).replace(/"/g, '&quot;'); }
+
+  function gdDeleteRow(key) {
+    var row = gdRows[key];
+    if (row.isNew) {
+      delete gdRows[key];
+      document.querySelector('#gdTbody tr[data-key="' + key + '"]').remove();
+      return;
+    }
+    if (!confirm('Eliminare questa offerta?')) return;
+    sb.from('wt_offerte').delete().eq('id', row.id).then(function (res) {
+      if (res.error) { alert('Errore: ' + res.error.message); return; }
+      delete gdRows[key];
+      document.querySelector('#gdTbody tr[data-key="' + key + '"]').remove();
+      loadOfferte();
+    });
+  }
+
+  document.getElementById('gdAddRow') && document.getElementById('gdAddRow').addEventListener('click', function () {
+    var key = 'r' + (gdRowCounter++);
+    gdRows[key] = { id: null, isNew: true, dirty: true, values: {
+      categoria: 'consumer', tipo: 'mobile', nome: '', prezzo_principale: '', prezzo_secondario: '',
+      prezzo_convergente: '', nota_convergenza: '', badge: '', dettagli: ''
+    }};
+    document.getElementById('gdTbody').appendChild(buildGdRow(key));
+  });
+
+  document.getElementById('gdSaveAll') && document.getElementById('gdSaveAll').addEventListener('click', async function () {
+    var statusEl = document.getElementById('gdStatus');
+    var dirtyKeys = Object.keys(gdRows).filter(function (k) { return gdRows[k].dirty; });
+    if (!dirtyKeys.length) { statusEl.textContent = 'Nessuna modifica da salvare.'; statusEl.className = 'status'; return; }
+    statusEl.textContent = 'Salvataggio di ' + dirtyKeys.length + ' righe...';
+    statusEl.className = 'status';
+    var errors = [];
+    for (var i = 0; i < dirtyKeys.length; i++) {
+      var row = gdRows[dirtyKeys[i]];
+      if (!row.values.nome.trim()) continue; // salta righe vuote
+      var record = Object.assign({}, row.values);
+      if (row.id) record.id = row.id;
+      var res = await sb.from('wt_offerte').upsert(record);
+      if (res.error) errors.push(row.values.nome + ': ' + res.error.message);
+    }
+    if (errors.length) {
+      statusEl.textContent = 'Errori: ' + errors.join(' | ');
+      statusEl.className = 'status err';
+    } else {
+      statusEl.textContent = 'Tutte le modifiche sono state salvate.';
+      statusEl.className = 'status ok';
+    }
+    await loadOfferte();
+    renderGestioneTable();
+  });
+
   // ================= INIT =================
-  document.querySelectorAll('.nav-item[data-view="offerte"]').forEach(function (el) {
+  document.querySelectorAll('.nav-item[data-view="offerte"], .nav-item[data-view="gestione"]').forEach(function (el) {
     el.addEventListener('click', function () {
       if (!offerte.length) loadOfferte();
+      else if (el.dataset.view === 'gestione') renderGestioneTable();
     });
   });
   // carica comunque al primo avvio se l'utente arriva già sulla view (fallback)

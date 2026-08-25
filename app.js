@@ -281,7 +281,7 @@ async function onLogin(user){
 }
 
 // ---------- NAV ----------
-const VIEWS = ["home","compilatore","offerte"];
+const VIEWS = ["home","compilatore","offerte","gestione"];
 function switchView(view){
   document.querySelectorAll(".nav-item").forEach(el=>{
     el.classList.toggle("active", el.dataset.view === view);

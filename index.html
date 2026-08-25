@@ -278,6 +278,28 @@
     .of-manage-btn{margin-left:0;}
     .of-selling-bar{flex-direction:column;gap:10px;left:12px;right:12px;transform:none;}
   }
+
+  /* ===== GESTIONE DATI (tabella editabile) ===== */
+  .gd-table-wrap{overflow-x:auto; border:1px solid rgba(143,232,255,.15); border-radius:6px;}
+  .gd-table{border-collapse:collapse; width:100%; min-width:1100px; font-size:12.5px;}
+  .gd-table thead th{
+    background:rgba(42,184,217,.1); color:#4fc8e8; font-family:'Rajdhani',sans-serif; font-weight:700;
+    text-transform:uppercase; letter-spacing:.03em; font-size:11px; padding:10px 8px; text-align:left;
+    position:sticky; top:0; border-bottom:1px solid rgba(143,232,255,.25); white-space:nowrap;
+  }
+  .gd-table tbody tr{border-bottom:1px solid rgba(143,232,255,.08);}
+  .gd-table tbody tr.gd-dirty{background:rgba(255,176,32,.06);}
+  .gd-table tbody tr.gd-new{background:rgba(127,232,160,.06);}
+  .gd-table td{padding:4px;vertical-align:top;}
+  .gd-table input, .gd-table select, .gd-table textarea{
+    width:100%; min-width:90px; background:rgba(42,184,217,.05); border:1px solid rgba(143,232,255,.18);
+    border-radius:3px; color:#eafcff; padding:6px 7px; font-family:'Inter',sans-serif; font-size:12.5px;
+  }
+  .gd-table textarea{min-width:160px; min-height:36px; resize:vertical;}
+  .gd-table input:focus, .gd-table select:focus, .gd-table textarea:focus{outline:none; border-color:#8fe8ff;}
+  .gd-table .gd-nome-input{min-width:140px;}
+  .gd-del-btn{background:none;border:none;color:#c0392b;font-size:15px;cursor:pointer;padding:6px;}
+  .gd-del-btn:hover{color:#ff6767;}
 </style>
 </head>
 <body>
@@ -304,6 +326,7 @@
   <div class="nav-item active" data-view="home" data-text="Home">Home</div>
   <div class="nav-item" data-view="compilatore" data-text="Compilatore Moduli">Compilatore Moduli</div>
   <div class="nav-item" data-view="offerte" data-text="Analizzatore Offerte">Analizzatore Offerte</div>
+  <div class="nav-item" data-view="gestione" data-text="Gestione Dati">Gestione Dati</div>
 </div>
 
 <!-- ===== APP ===== -->
@@ -1367,6 +1390,32 @@
       </div>
     </div>
   </div>
+  </div>
+
+  <!-- GESTIONE DATI -->
+  <div id="view-gestione" class="hidden">
+    <div class="panel">
+      <div class="panel-head">
+        <div class="title">◈ gestione dati offerte</div>
+        <div class="panel-actions">
+          <button type="button" class="of-btn" id="gdAddRow">+ Nuova riga</button>
+          <button type="button" class="of-btn accent" id="gdSaveAll">Salva tutte le modifiche</button>
+          <span class="status" id="gdStatus"></span>
+        </div>
+      </div>
+      <p class="sub" style="margin:0 0 14px">Modifica le celle direttamente, poi premi "Salva tutte le modifiche". Le righe modificate sono evidenziate.</p>
+      <div class="gd-table-wrap">
+        <table class="gd-table" id="gdTable">
+          <thead>
+            <tr>
+              <th>Categoria</th><th>Tipo</th><th>Nome</th><th>Prezzo princ.</th><th>Prezzo second.</th>
+              <th>Prezzo convergente</th><th>Nota convergenza</th><th>Badge</th><th>Dettagli</th><th></th>
+            </tr>
+          </thead>
+          <tbody id="gdTbody"></tbody>
+        </table>
+      </div>
+    </div>
   </div>
 
 <script src="config.js"></script>
