@@ -464,11 +464,12 @@
   });
 
   // ================= INIT =================
-  document.querySelectorAll('.nav-item[data-view="offerte"], .nav-item[data-view="gestione"]').forEach(function (el) {
-    el.addEventListener('click', function () {
-      if (!offerte.length) loadOfferte();
-      else if (el.dataset.view === 'gestione') renderGestioneTable();
-    });
+  document.addEventListener('jarvis:view', function (ev) {
+    var view = ev.detail && ev.detail.view;
+    if (view !== 'offerte' && view !== 'gestione') return;
+    if (!offerte.length) { loadOfferte(); return; }
+    if (view === 'gestione') renderGestioneTable();
+    else renderGrid();
   });
   // carica comunque al primo avvio se l'utente arriva già sulla view (fallback)
   if (document.getElementById('ofGrid')) loadOfferte();

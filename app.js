@@ -289,4 +289,5 @@ function switchView(view){
   VIEWS.forEach(v=>{
     document.getElementById("view-"+v).classList.toggle("hidden", view!==v);
   });
+  document.dispatchEvent(new CustomEvent("jarvis:view", { detail: { view: view } }));
 }
