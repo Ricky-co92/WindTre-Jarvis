@@ -838,6 +838,8 @@
     document.getElementById('moduleSelectRow').classList.remove('hidden');
     updateProgress();
     goToStep(2);
+    if (PROGRESS_FIELD_IDS[selectedMode]) updateLivePreview();
+    else document.getElementById('cfLivePreview').innerHTML = '<p class="sub cf-empty-hint">Anteprima live non disponibile per questo modulo: usa "Genera anteprima" pi\u00f9 sotto.</p>';
   });
 
   document.getElementById('cfStep2Back').addEventListener('click', function() { goToStep(1); });
@@ -877,7 +879,30 @@
   }
   document.addEventListener('input', function(ev) {
     if (ev.target && ev.target.tagName === 'INPUT' && PROGRESS_FIELD_IDS[currentMode]) updateProgress();
+    if (ev.target && (ev.target.tagName === 'INPUT' || ev.target.tagName === 'SELECT') && PROGRESS_FIELD_IDS[currentMode]) scheduleLivePreview();
   });
+  document.addEventListener('change', function(ev) {
+    if (ev.target && ev.target.type === 'radio' && PROGRESS_FIELD_IDS[currentMode]) scheduleLivePreview();
+  });
+
+  var livePreviewTimer = null;
+  function scheduleLivePreview() {
+    clearTimeout(livePreviewTimer);
+    livePreviewTimer = setTimeout(updateLivePreview, 700);
+  }
+  async function updateLivePreview() {
+    var box = document.getElementById('cfLivePreview');
+    if (!box || cfCurrentStep !== 2) return;
+    var cfg = MODES[currentMode];
+    if (!cfg) return;
+    try {
+      var bytes = await buildFilledStandardBytes(cfg);
+      box.innerHTML = '';
+      await renderPdfPreviewAllPages(bytes, box);
+    } catch (err) {
+      console.error('Anteprima live non aggiornata:', err);
+    }
+  }
 
   // ================= STEP 3: scelta scarica-subito / firma+data =================
   document.getElementById('cfChoiceDownload').addEventListener('click', function() {
@@ -939,6 +964,16 @@
   // so there is never a background/highlight box covering the printed lines.
   function drawVal(page, font, pageHeight, spec, text) {
     if (!text) return;
+    if (spec.boxed) {
+      var y0 = pageHeight - spec.bottom + 2;
+      var chars = String(text).toUpperCase().slice(0, spec.boxCount).split('');
+      chars.forEach(function(ch, i) {
+        var boxCenter = spec.boxX0 + spec.boxWidth * (i + 0.5);
+        var w = font.widthOfTextAtSize(ch, spec.size);
+        page.drawText(ch, { x: boxCenter - w / 2, y: y0, size: spec.size, font: font });
+      });
+      return;
+    }
     var y = pageHeight - spec.bottom + 2;
     page.drawText(String(text), { x: spec.x, y: y, size: spec.size, font: font });
   }
@@ -1483,7 +1518,7 @@
         partita_iva:          { x: 445, top: 145,   bottom: 155.5, size: 9 },
         referente_legale:     { x: 142, top: 157,   bottom: 167.4, size: 9 },
         rappresentante_legale:{ x: 146, top: 169,   bottom: 179.2, size: 9 },
-        codice_fiscale:       { x: 98,  top: 192,   bottom: 202.9, size: 9 },
+        codice_fiscale:       { x: 98,  top: 192,   bottom: 202.9, size: 8, boxed: true, boxX0: 95.5, boxWidth: 12.6, boxCount: 16 },
         doc_tipo:             { x: 150, top: 204,   bottom: 214.7, size: 8 },
         doc_numero:           { x: 330, top: 204,   bottom: 214.7, size: 8 },
         numero_rappresentante:{ x: 173, top: 216,   bottom: 226.5, size: 8 },

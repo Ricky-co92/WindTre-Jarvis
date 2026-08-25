@@ -154,6 +154,13 @@
   #app-root .cf-progress-track { height:6px; border-radius:3px; background:rgba(42,184,217,.12); overflow:hidden; }
   #app-root .cf-progress-fill { height:100%; background:linear-gradient(90deg,#2ab8d9,var(--wt-orange)); border-radius:3px; transition: width .25s ease; width:0%; }
 
+  /* ===== STEP 2: layout campi + anteprima live ===== */
+  #app-root .cf-step2-layout { display:grid; grid-template-columns: 1fr; gap:22px; align-items:start; }
+  @media (min-width:900px){ #app-root .cf-step2-layout { grid-template-columns: 1fr 320px; } }
+  #app-root .cf-step2-preview { min-width:0; }
+  #app-root .cf-preview-sticky { position:sticky; top:12px; display:flex; flex-direction:column; gap:10px; }
+  #app-root .cf-preview-sticky .cf-preview-box { min-height:300px; max-height:70vh; }
+
   /* ===== STEP 3: firma/data scelta ===== */
   #app-root .cf-choice-row { display:flex; gap:14px; flex-wrap:wrap; margin: 18px 0; }
   #app-root .cf-choice-card {
