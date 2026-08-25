@@ -4,8 +4,20 @@
   var activeTipoFilters = [];  // es. ['mobile','fisso'] o []
   var activeBadgeFilters = []; // es. ['Opzione aggiuntiva'] o []
   var activeOpzioneOnly = false;
+  var ofSearchTerm = '';
+  var gdSearchTerm = '';
   var selectedIds = {};        // { id: true }
   var customColumns = [];      // [{id, key, label, ordine}]
+
+  function matchesSearch(o, term) {
+    if (!term) return true;
+    var haystack = [
+      o.nome, o.dettagli, o.badge, o.prezzo_principale, o.prezzo_secondario,
+      o.prezzo_convergente, o.nota_convergenza
+    ];
+    if (o.extra) haystack = haystack.concat(Object.values(o.extra));
+    return haystack.some(function (v) { return v && String(v).toLowerCase().indexOf(term) > -1; });
+  }
 
   // ================= COLONNE PERSONALIZZATE =================
   async function loadCustomColumns() {
@@ -127,6 +139,10 @@
     this.classList.toggle('active', activeOpzioneOnly);
     renderGrid();
   });
+  document.getElementById('ofSearchInput').addEventListener('input', function () {
+    ofSearchTerm = this.value.trim().toLowerCase();
+    renderGrid();
+  });
   function toggleFilter(chip, arr, value) {
     var idx = arr.indexOf(value);
     if (idx > -1) { arr.splice(idx, 1); chip.classList.remove('active'); }
@@ -140,7 +156,8 @@
       var tipoOk = activeTipoFilters.length === 0 || activeTipoFilters.indexOf(o.tipo) > -1;
       var badgeOk = activeBadgeFilters.length === 0 || activeBadgeFilters.indexOf(o.badge) > -1;
       var opzioneOk = !activeOpzioneOnly || o.is_opzione === true;
-      return catOk && tipoOk && badgeOk && opzioneOk;
+      var searchOk = matchesSearch(o, ofSearchTerm);
+      return catOk && tipoOk && badgeOk && opzioneOk && searchOk;
     });
   }
 
@@ -453,7 +470,7 @@
     gdSelected = {};
     updateGdDeleteButton();
     document.getElementById('gdSelectAll').checked = false;
-    offerte.forEach(function (o) {
+    offerte.filter(function (o) { return matchesSearch(o, gdSearchTerm); }).forEach(function (o) {
       var key = 'r' + (gdRowCounter++);
       gdRows[key] = { id: o.id, isNew: false, dirty: false, values: {
         categoria: o.categoria, tipo: o.tipo, nome: o.nome,
@@ -572,6 +589,11 @@
     btn.classList.toggle('hidden', n === 0);
     btn.textContent = 'Elimina selezionate (' + n + ')';
   }
+
+  document.getElementById('gdSearchInput').addEventListener('input', function () {
+    gdSearchTerm = this.value.trim().toLowerCase();
+    renderGestioneTable();
+  });
 
   document.getElementById('gdSelectAll').addEventListener('change', function (ev) {
     var checked = ev.target.checked;
