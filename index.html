@@ -340,6 +340,16 @@
   .of-detail-field .dl{font-size:11px; color:#7fc4dc; text-transform:uppercase; letter-spacing:.04em; margin-bottom:2px;}
   .of-detail-field .dv{font-size:14px; color:#eafcff; white-space:pre-line;}
   .of-detail-field .dv.dv-empty{color:#557b8c; font-style:italic;}
+
+  /* ===== Configuratore Card ===== */
+  .of-config-layout{display:grid; grid-template-columns:1fr 260px; gap:24px;}
+  @media (max-width:640px){ .of-config-layout{grid-template-columns:1fr;} }
+  .of-config-fields{display:flex; flex-direction:column; gap:6px;}
+  .of-config-row{display:flex; align-items:center; gap:10px; padding:9px 12px; border:1px solid rgba(143,232,255,.15); border-radius:6px;}
+  .of-config-row .ofc-label{flex:1; font-size:13.5px; color:#eafcff;}
+  .of-config-row button{background:none; border:none; font-size:16px; cursor:pointer; padding:2px 4px;}
+  .of-config-preview{position:sticky; top:0;}
+  .of-config-preview-label{font-family:'Rajdhani',sans-serif; font-size:12px; color:#7fc4dc; text-transform:uppercase; letter-spacing:.05em; margin-bottom:8px;}
 </style>
 </head>
 <body>
@@ -1512,13 +1522,12 @@
         <span class="of-filter-label">Tipo</span>
         <button type="button" class="of-chip" data-filter-tipo="mobile">Mobile</button>
         <button type="button" class="of-chip" data-filter-tipo="fisso">Fisso</button>
+        <button type="button" class="of-chip" data-filter-tipo="opzione">Opzione</button>
       </div>
       <div class="of-filter-group" id="ofBadgeFilterGroup">
         <span class="of-filter-label">Badge</span>
       </div>
-      <div class="of-filter-group">
-        <button type="button" class="of-chip" id="ofOpzioneFilter">Solo opzioni aggiuntive</button>
-      </div>
+      <button type="button" class="of-chip of-manage-btn" id="ofConfigCardBtn">&#127912; Configura Card</button>
       <button type="button" class="of-chip of-manage-btn" id="ofAddNewCard">+ Nuova tariffa</button>
     </div>
 
@@ -1534,6 +1543,26 @@
   </div>
 
   <!-- Modale dettaglio / modifica tariffa -->
+  <!-- Modale Configura Card -->
+  <div class="of-modal-backdrop hidden" id="ofConfigBackdrop">
+    <div class="of-modal" style="max-width:840px;">
+      <div class="of-modal-head">
+        <div class="title">Configura Card</div>
+        <button type="button" class="of-modal-close" id="ofConfigClose">&times;</button>
+      </div>
+      <div class="of-modal-body">
+        <p class="sub" style="margin:0 0 14px">Scegli quali campi mostrare sulle card e quale mettere in evidenza (es. il canone). L'anteprima a destra si aggiorna subito.</p>
+        <div class="of-config-layout">
+          <div class="of-config-fields" id="ofConfigFieldsList"></div>
+          <div class="of-config-preview">
+            <div class="of-config-preview-label">Anteprima</div>
+            <div class="of-grid" id="ofConfigPreviewGrid" style="grid-template-columns:1fr;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="of-modal-backdrop hidden" id="ofDetailBackdrop">
     <div class="of-modal">
       <div class="of-modal-head">
@@ -1563,7 +1592,7 @@
             </div>
             <div class="field">
               <label>Tipo</label>
-              <select id="ofFormTipo"><option value="mobile">Mobile</option><option value="fisso">Fisso</option></select>
+              <select id="ofFormTipo"><option value="mobile">Mobile</option><option value="fisso">Fisso</option><option value="opzione">Opzione</option></select>
             </div>
           </div>
           <div class="row">

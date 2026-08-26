@@ -3,7 +3,6 @@
   var customFields = [];      // [{id,key,label,ordine,show_on_card,field_type}]
   var activeCatFilters = [];
   var activeTipoFilters = [];
-  var activeOpzioneOnly = false;
   var ofSearchTerm = '';
   var gdSearchTerm = '';
   var gdSortField = null;     // 'categoria' | 'tipo' | 'nome' | field.key
@@ -12,7 +11,7 @@
   var _activeBadgeFilters = [];
 
   var CAT_LABEL = { consumer: 'Consumer', business: 'Business' };
-  var TIPO_LABEL = { mobile: 'Mobile', fisso: 'Fisso' };
+  var TIPO_LABEL = { mobile: 'Mobile', fisso: 'Fisso', opzione: 'Opzione' };
 
   function escapeHtml(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
@@ -150,11 +149,6 @@
   document.querySelectorAll('.of-chip[data-filter-tipo]').forEach(function (chip) {
     chip.addEventListener('click', function () { toggleFilter(chip, activeTipoFilters, chip.dataset.filterTipo); });
   });
-  document.getElementById('ofOpzioneFilter').addEventListener('click', function () {
-    activeOpzioneOnly = !activeOpzioneOnly;
-    this.classList.toggle('active', activeOpzioneOnly);
-    renderGrid();
-  });
   document.getElementById('ofSearchInput').addEventListener('input', function () {
     ofSearchTerm = this.value.trim().toLowerCase();
     renderGrid();
@@ -195,53 +189,54 @@
       var tipoOk = activeTipoFilters.length === 0 || activeTipoFilters.indexOf(o.tipo) > -1;
       var badge = fieldVal(o, 'badge');
       var badgeOk = _activeBadgeFilters.length === 0 || _activeBadgeFilters.indexOf(badge) > -1;
-      var opzioneOk = !activeOpzioneOnly || fieldVal(o, 'is_opzione') === true;
       var searchOk = matchesSearch(o, ofSearchTerm);
-      return catOk && tipoOk && badgeOk && opzioneOk && searchOk;
+      return catOk && tipoOk && badgeOk && searchOk;
     });
+  }
+
+  // ================= GRIGLIA CARD =================
+  function buildCardInnerHtml(o) {
+    var cardFields = customFields.filter(function (f) { return f.show_on_card && !f.card_prominent; });
+    var prominentField = customFields.filter(function (f) { return f.card_prominent; })[0];
+    var badge = fieldVal(o, 'badge');
+    var badgeHtml = badge ? '<div class="of-badge">' + escapeHtml(badge) + '</div>' : '';
+    var prominentHtml = '';
+    if (prominentField) {
+      var pv = fieldVal(o, prominentField.key);
+      if (pv && prominentField.field_type !== 'checkbox') {
+        prominentHtml = '<div class="of-prominent">' + escapeHtml(pv) + '</div>';
+      }
+    }
+    var fieldsHtml = cardFields.map(function (f) {
+      var v = fieldVal(o, f.key);
+      if (f.field_type === 'checkbox') {
+        return v === true ? '<div class="of-extra-field"><b>' + escapeHtml(f.label) + '</b></div>' : '';
+      }
+      if (!v) return '';
+      return '<div class="of-extra-field"><b>' + escapeHtml(f.label) + ':</b> ' + escapeHtml(v) + '</div>';
+    }).join('');
+    return badgeHtml +
+      '<div class="of-nome">' + escapeHtml(o.nome) + '</div>' +
+      prominentHtml +
+      fieldsHtml +
+      '<div class="of-tag">' + CAT_LABEL[o.categoria] + ' &middot; ' + TIPO_LABEL[o.tipo] + '</div>';
   }
 
   // ================= GRIGLIA CARD =================
   function renderGrid() {
     var grid = document.getElementById('ofGrid');
-    var list = filteredOfferte().slice().sort(function (a, b) {
-      return (fieldVal(a, 'is_opzione') === true ? 1 : 0) - (fieldVal(b, 'is_opzione') === true ? 1 : 0);
-    });
+    var list = filteredOfferte();
     document.getElementById('ofCount').textContent = list.length + ' tariffe';
     if (!list.length) {
       grid.innerHTML = '<p class="sub">Nessuna tariffa corrisponde ai filtri scelti.</p>';
       return;
     }
     grid.innerHTML = '';
-    var cardFields = customFields.filter(function (f) { return f.show_on_card && !f.card_prominent; });
-    var prominentField = customFields.filter(function (f) { return f.card_prominent; })[0];
     list.forEach(function (o) {
       var card = document.createElement('div');
       card.className = 'of-card';
       card.dataset.id = o.id;
-      var badge = fieldVal(o, 'badge');
-      var badgeHtml = badge ? '<div class="of-badge">' + escapeHtml(badge) + '</div>' : '';
-      var prominentHtml = '';
-      if (prominentField) {
-        var pv = fieldVal(o, prominentField.key);
-        if (pv && prominentField.field_type !== 'checkbox') {
-          prominentHtml = '<div class="of-prominent">' + escapeHtml(pv) + '</div>';
-        }
-      }
-      var fieldsHtml = cardFields.map(function (f) {
-        var v = fieldVal(o, f.key);
-        if (f.field_type === 'checkbox') {
-          return v === true ? '<div class="of-extra-field"><b>' + escapeHtml(f.label) + '</b></div>' : '';
-        }
-        if (!v) return '';
-        return '<div class="of-extra-field"><b>' + escapeHtml(f.label) + ':</b> ' + escapeHtml(v) + '</div>';
-      }).join('');
-      card.innerHTML =
-        badgeHtml +
-        '<div class="of-nome">' + escapeHtml(o.nome) + '</div>' +
-        prominentHtml +
-        fieldsHtml +
-        '<div class="of-tag">' + CAT_LABEL[o.categoria] + ' &middot; ' + TIPO_LABEL[o.tipo] + '</div>';
+      card.innerHTML = buildCardInnerHtml(o);
       card.addEventListener('click', function () { openDetail(o.id); });
       grid.appendChild(card);
     });
@@ -250,6 +245,64 @@
   document.getElementById('ofAddNewCard').addEventListener('click', function () {
     openDetail(null, true);
   });
+
+  // ================= CONFIGURATORE CARD =================
+  var SAMPLE_OFFERTA = {
+    categoria: 'consumer', tipo: 'mobile', nome: 'Nome Tariffa Esempio',
+    extra: { badge: '5G', prezzo_principale: '9,99\u20ac/mese', dettagli: 'Giga illimitati\nMinuti illimitati\n200 SMS' }
+  };
+
+  document.getElementById('ofConfigCardBtn').addEventListener('click', function () {
+    document.getElementById('ofConfigBackdrop').classList.remove('hidden');
+    renderConfigFieldsList();
+    renderConfigPreview();
+  });
+  document.getElementById('ofConfigClose').addEventListener('click', function () {
+    document.getElementById('ofConfigBackdrop').classList.add('hidden');
+  });
+  document.getElementById('ofConfigBackdrop').addEventListener('click', function (ev) {
+    if (ev.target.id === 'ofConfigBackdrop') document.getElementById('ofConfigBackdrop').classList.add('hidden');
+  });
+
+  function renderConfigFieldsList() {
+    var list = document.getElementById('ofConfigFieldsList');
+    list.innerHTML = '';
+    customFields.forEach(function (f) {
+      var row = document.createElement('div');
+      row.className = 'of-config-row';
+      var eyeBtn = document.createElement('button');
+      eyeBtn.type = 'button';
+      eyeBtn.title = f.show_on_card ? 'Visibile sulla card: clicca per nascondere' : 'Nascosto: clicca per mostrare';
+      eyeBtn.textContent = f.show_on_card ? '\uD83D\uDC41\uFE0F' : '\uD83D\uDEAB';
+      eyeBtn.addEventListener('click', async function () { await toggleFieldShowOnCard(f); renderConfigFieldsList(); renderConfigPreview(); });
+      var starBtn = document.createElement('button');
+      starBtn.type = 'button';
+      starBtn.title = f.card_prominent ? 'In evidenza: clicca per togliere' : 'Metti in evidenza (es. il canone)';
+      starBtn.textContent = f.card_prominent ? '\u2B50' : '\u2606';
+      starBtn.addEventListener('click', async function () { await setProminentField(f); renderConfigFieldsList(); renderConfigPreview(); });
+      var label = document.createElement('span');
+      label.className = 'ofc-label';
+      label.textContent = f.label;
+      row.appendChild(label);
+      row.appendChild(starBtn);
+      row.appendChild(eyeBtn);
+      list.appendChild(row);
+    });
+    if (!customFields.length) {
+      list.innerHTML = '<p class="sub">Nessun campo ancora creato. Aggiungine uno da "Gestione Dati".</p>';
+    }
+  }
+
+  function renderConfigPreview() {
+    var wrap = document.getElementById('ofConfigPreviewGrid');
+    var sample = offerte[0] || SAMPLE_OFFERTA;
+    var card = document.createElement('div');
+    card.className = 'of-card';
+    card.style.cursor = 'default';
+    card.innerHTML = buildCardInnerHtml(sample);
+    wrap.innerHTML = '';
+    wrap.appendChild(card);
+  }
 
   // ================= MODALE DETTAGLIO / MODIFICA =================
   function openDetail(id, startInEdit) {
@@ -484,7 +537,7 @@
     }
 
     var catSel = '<select data-f="categoria"><option value="consumer"' + (row.values.categoria === 'consumer' ? ' selected' : '') + '>Consumer</option><option value="business"' + (row.values.categoria === 'business' ? ' selected' : '') + '>Business</option></select>';
-    var tipoSel = '<select data-f="tipo"><option value="mobile"' + (row.values.tipo === 'mobile' ? ' selected' : '') + '>Mobile</option><option value="fisso"' + (row.values.tipo === 'fisso' ? ' selected' : '') + '>Fisso</option></select>';
+    var tipoSel = '<select data-f="tipo"><option value="mobile"' + (row.values.tipo === 'mobile' ? ' selected' : '') + '>Mobile</option><option value="fisso"' + (row.values.tipo === 'fisso' ? ' selected' : '') + '>Fisso</option><option value="opzione"' + (row.values.tipo === 'opzione' ? ' selected' : '') + '>Opzione</option></select>';
     tr.appendChild(td(catSel));
     tr.appendChild(td(tipoSel));
     tr.appendChild(td('<input type="text" class="gd-nome-input" data-f="nome" value="' + attrEsc(row.values.nome) + '">'));
