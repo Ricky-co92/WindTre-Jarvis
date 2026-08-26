@@ -264,12 +264,45 @@
     if (ev.target.id === 'ofConfigBackdrop') document.getElementById('ofConfigBackdrop').classList.add('hidden');
   });
 
+  async function moveField(field, direction) {
+    var idx = customFields.indexOf(field);
+    var swapIdx = idx + direction;
+    if (swapIdx < 0 || swapIdx >= customFields.length) return;
+    var other = customFields[swapIdx];
+    try {
+      await Promise.all([
+        sb.from('wt_custom_columns').update({ ordine: other.ordine }).eq('id', field.id),
+        sb.from('wt_custom_columns').update({ ordine: field.ordine }).eq('id', other.id)
+      ]);
+      await loadCustomFields();
+      renderGestioneHeader();
+      renderGestioneTable();
+      renderGrid();
+      renderConfigFieldsList();
+      renderConfigPreview();
+    } catch (err) {
+      alert('Errore: ' + err.message);
+    }
+  }
+
   function renderConfigFieldsList() {
     var list = document.getElementById('ofConfigFieldsList');
     list.innerHTML = '';
-    customFields.forEach(function (f) {
+    customFields.forEach(function (f, idx) {
       var row = document.createElement('div');
       row.className = 'of-config-row';
+      var upBtn = document.createElement('button');
+      upBtn.type = 'button'; upBtn.title = 'Sposta su';
+      upBtn.textContent = '\u25b2';
+      upBtn.disabled = idx === 0;
+      upBtn.style.opacity = idx === 0 ? '.3' : '1';
+      upBtn.addEventListener('click', function () { moveField(f, -1); });
+      var downBtn = document.createElement('button');
+      downBtn.type = 'button'; downBtn.title = 'Sposta gi\u00f9';
+      downBtn.textContent = '\u25bc';
+      downBtn.disabled = idx === customFields.length - 1;
+      downBtn.style.opacity = idx === customFields.length - 1 ? '.3' : '1';
+      downBtn.addEventListener('click', function () { moveField(f, 1); });
       var eyeBtn = document.createElement('button');
       eyeBtn.type = 'button';
       eyeBtn.title = f.show_on_card ? 'Visibile sulla card: clicca per nascondere' : 'Nascosto: clicca per mostrare';
@@ -283,6 +316,8 @@
       var label = document.createElement('span');
       label.className = 'ofc-label';
       label.textContent = f.label;
+      row.appendChild(upBtn);
+      row.appendChild(downBtn);
       row.appendChild(label);
       row.appendChild(starBtn);
       row.appendChild(eyeBtn);
