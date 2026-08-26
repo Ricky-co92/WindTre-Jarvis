@@ -416,6 +416,8 @@
         <button type="button" class="module-card" data-mode="decesso">Autodich Atto Notorio</button>
         <button type="button" class="module-card" data-mode="energy">Att. Utenza Energy</button>
         <button type="button" class="module-card" data-mode="firmadoc">Firma Doc</button>
+        <button type="button" class="module-card" data-mode="oltresogliasingolo">Oltresoglia Singolo</button>
+        <button type="button" class="module-card" data-mode="oltresoglia10sim">Oltresoglia 10 SIM</button>
       </div>
 
       <div class="cf-detail-panel">
@@ -466,6 +468,8 @@
           <option value="decesso">Autodich Atto Notorio</option>
           <option value="energy">Att. Utenza Energy</option>
           <option value="firmadoc">Firma Doc</option>
+          <option value="oltresogliasingolo">Oltresoglia Singolo</option>
+          <option value="oltresoglia10sim">Oltresoglia 10 SIM</option>
         </select>
       </div>
     </div>
@@ -919,6 +923,181 @@
       <p class="sub" style="margin:6px 0 0">La sezione specifica per la Regione Veneto (pagina 2) non &egrave; inclusa qui: barrala a mano sul PDF finale se necessario.</p>
     </fieldset>
   </div>
+<div id="panel-oltresogliasingolo" class="tab-panel" data-hidden="true">
+    <fieldset>
+      <legend>Dati Cliente</legend>
+      <div class="row">
+        <div class="field wide"><label>Ragione Sociale/Denominazione <span class="req">*</span></label><input type="text" id="ol_ragione_sociale"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Forma giuridica</label><input type="text" id="ol_forma_giuridica" placeholder="SRL, SPA, SNC..."></div>
+        <div class="field"><label>Partita IVA / Codice Fiscale Azienda <span class="req">*</span></label><input type="text" id="ol_piva_cf"></div>
+      </div>
+      <div class="row">
+        <div class="field narrow"><label>CCIAA</label><input type="text" id="ol_ccia"></div>
+        <div class="field narrow"><label>Prov. CCIAA</label><input type="text" id="ol_prov_ccia"></div>
+        <div class="field narrow"><label>Anno Iscrizione</label><input type="text" id="ol_anno_iscrizione"></div>
+      </div>
+      <div class="row">
+        <div class="field wide"><label>Sede Legale (via)</label><input type="text" id="ol_sede_legale"></div>
+        <div class="field narrow"><label>N&deg;</label><input type="text" id="ol_numero_civico_sede"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Localit&agrave;</label><input type="text" id="ol_localita_sede"></div>
+        <div class="field narrow"><label>CAP</label><input type="text" id="ol_cap_sede"></div>
+        <div class="field"><label>Comune</label><input type="text" id="ol_comune_sede"></div>
+        <div class="field narrow"><label>Prov.</label><input type="text" id="ol_prov_sede"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Settore Merceologico</label><input type="text" id="ol_settore_merceologico"></div>
+        <div class="field narrow"><label>N&deg; Dipendenti</label><input type="text" id="ol_numero_dipendenti"></div>
+        <div class="field"><label>N&deg; telefono fisso (dopo lo 0)</label><input type="text" id="ol_telefono_fisso"></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Dati del Delegato</legend>
+      <div class="row">
+        <div class="field"><label>Nome</label><input type="text" id="ol_delegato_nome"></div>
+        <div class="field"><label>Cognome <span class="req">*</span></label><input type="text" id="ol_delegato_cognome"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Comune di nascita</label><input type="text" id="ol_delegato_comune_nascita"></div>
+        <div class="field narrow"><label>Prov.</label><input type="text" id="ol_delegato_prov_nascita"></div>
+        <div class="field"><label>Data di nascita</label><input type="text" id="ol_delegato_data_nascita" placeholder="GG/MM/AAAA"></div>
+      </div>
+      <div class="row">
+        <div class="field wide"><label>Indirizzo di residenza</label><input type="text" id="ol_delegato_indirizzo"></div>
+        <div class="field narrow"><label>N&deg;</label><input type="text" id="ol_delegato_civico"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Localit&agrave;</label><input type="text" id="ol_delegato_localita"></div>
+        <div class="field narrow"><label>CAP</label><input type="text" id="ol_delegato_cap"></div>
+        <div class="field"><label>Comune</label><input type="text" id="ol_delegato_comune"></div>
+        <div class="field narrow"><label>Prov.</label><input type="text" id="ol_delegato_prov"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Posizione in Azienda</label><input type="text" id="ol_delegato_posizione" placeholder="DR, PR, AD, VP, SG, AL"></div>
+        <div class="field"><label>Codice Fiscale</label><input type="text" id="ol_delegato_cf"></div>
+      </div>
+      <div class="row">
+        <div class="field narrow"><label>Doc. Identit&agrave; - Tipo</label><input type="text" id="ol_delegato_doc_tipo" placeholder="CI, PA, PS"></div>
+        <div class="field narrow"><label>Data rilascio</label><input type="text" id="ol_delegato_doc_rilascio"></div>
+        <div class="field"><label>Numero documento</label><input type="text" id="ol_delegato_doc_numero"></div>
+        <div class="field narrow"><label>Naz.</label><input type="text" id="ol_delegato_doc_naz"></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Dati SIM</legend>
+      <p class="sub" style="margin:0 0 12px">Il prefisso &egrave; gi&agrave; stampato sul modulo: inserisci solo le cifre restanti.</p>
+      <div class="row">
+        <div class="field"><label>Numero telefono mobile (dopo il 3)</label><input type="text" id="ol_numero_telefono_mobile"></div>
+        <div class="field"><label>Numero SIM (dopo 893988)</label><input type="text" id="ol_numero_sim"></div>
+      </div>
+    </fieldset>
+  </div>
+<div id="panel-oltresoglia10sim" class="tab-panel" data-hidden="true">
+    <fieldset>
+      <legend>Dati Cliente</legend>
+      <div class="row">
+        <div class="field wide"><label>Ragione Sociale/Denominazione <span class="req">*</span></label><input type="text" id="ol10_ragione_sociale"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Forma giuridica</label><input type="text" id="ol10_forma_giuridica" placeholder="SRL, SPA, SNC..."></div>
+        <div class="field"><label>Partita IVA / Codice Fiscale Azienda <span class="req">*</span></label><input type="text" id="ol10_piva_cf"></div>
+      </div>
+      <div class="row">
+        <div class="field narrow"><label>CCIAA</label><input type="text" id="ol10_ccia"></div>
+        <div class="field narrow"><label>Prov. CCIAA</label><input type="text" id="ol10_prov_ccia"></div>
+        <div class="field narrow"><label>Anno Iscrizione</label><input type="text" id="ol10_anno_iscrizione"></div>
+      </div>
+      <div class="row">
+        <div class="field wide"><label>Sede Legale (via)</label><input type="text" id="ol10_sede_legale"></div>
+        <div class="field narrow"><label>N&deg;</label><input type="text" id="ol10_numero_civico_sede"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Localit&agrave;</label><input type="text" id="ol10_localita_sede"></div>
+        <div class="field narrow"><label>CAP</label><input type="text" id="ol10_cap_sede"></div>
+        <div class="field"><label>Comune</label><input type="text" id="ol10_comune_sede"></div>
+        <div class="field narrow"><label>Prov.</label><input type="text" id="ol10_prov_sede"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Settore Merceologico</label><input type="text" id="ol10_settore_merceologico"></div>
+        <div class="field narrow"><label>N&deg; Dipendenti</label><input type="text" id="ol10_numero_dipendenti"></div>
+        <div class="field"><label>N&deg; telefono fisso (dopo lo 0)</label><input type="text" id="ol10_telefono_fisso"></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Dati del Delegato</legend>
+      <div class="row">
+        <div class="field"><label>Nome</label><input type="text" id="ol10_delegato_nome"></div>
+        <div class="field"><label>Cognome <span class="req">*</span></label><input type="text" id="ol10_delegato_cognome"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Comune di nascita</label><input type="text" id="ol10_delegato_comune_nascita"></div>
+        <div class="field narrow"><label>Prov.</label><input type="text" id="ol10_delegato_prov_nascita"></div>
+        <div class="field"><label>Data di nascita</label><input type="text" id="ol10_delegato_data_nascita" placeholder="GG/MM/AAAA"></div>
+      </div>
+      <div class="row">
+        <div class="field wide"><label>Indirizzo di residenza</label><input type="text" id="ol10_delegato_indirizzo"></div>
+        <div class="field narrow"><label>N&deg;</label><input type="text" id="ol10_delegato_civico"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Localit&agrave;</label><input type="text" id="ol10_delegato_localita"></div>
+        <div class="field narrow"><label>CAP</label><input type="text" id="ol10_delegato_cap"></div>
+        <div class="field"><label>Comune</label><input type="text" id="ol10_delegato_comune"></div>
+        <div class="field narrow"><label>Prov.</label><input type="text" id="ol10_delegato_prov"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Posizione in Azienda</label><input type="text" id="ol10_delegato_posizione" placeholder="DR, PR, AD, VP, SG, AL"></div>
+        <div class="field"><label>Codice Fiscale</label><input type="text" id="ol10_delegato_cf"></div>
+      </div>
+      <div class="row">
+        <div class="field narrow"><label>Doc. Identit&agrave; - Tipo</label><input type="text" id="ol10_delegato_doc_tipo" placeholder="CI, PA, PS"></div>
+        <div class="field narrow"><label>Data rilascio</label><input type="text" id="ol10_delegato_doc_rilascio"></div>
+        <div class="field"><label>Numero documento</label><input type="text" id="ol10_delegato_doc_numero"></div>
+        <div class="field narrow"><label>Naz.</label><input type="text" id="ol10_delegato_doc_naz"></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Dati SIM (fino a 10)</legend>
+      <p class="sub" style="margin:0 0 12px">Il prefisso &egrave; gi&agrave; stampato sul modulo: inserisci solo le cifre restanti per ogni SIM che attivi. Lascia vuote le righe che non ti servono.</p>
+      <div class="row">
+        <div class="field"><label>SIM 1 &mdash; Numero (dopo 893988)</label><input type="text" id="ol10_sim1_numero"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>SIM 2 &mdash; Numero (dopo 893988)</label><input type="text" id="ol10_sim2_numero"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>SIM 3 &mdash; Numero (dopo 893988)</label><input type="text" id="ol10_sim3_numero"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>SIM 4 &mdash; Numero (dopo 893988)</label><input type="text" id="ol10_sim4_numero"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>SIM 5 &mdash; Numero (dopo 893988)</label><input type="text" id="ol10_sim5_numero"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>SIM 6 &mdash; Numero (dopo 893988)</label><input type="text" id="ol10_sim6_numero"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>SIM 7 &mdash; Numero (dopo 893988)</label><input type="text" id="ol10_sim7_numero"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>SIM 8 &mdash; Numero (dopo 893988)</label><input type="text" id="ol10_sim8_numero"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>SIM 9 &mdash; Numero (dopo 893988)</label><input type="text" id="ol10_sim9_numero"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>SIM 10 &mdash; Numero (dopo 893988)</label><input type="text" id="ol10_sim10_numero"></div>
+      </div>
+    </fieldset>
+  </div>
+
 <div id="panel-cessione" class="tab-panel" data-hidden="true">
     <fieldset>
       <legend>Attuale Intestatario (Cedente)</legend>

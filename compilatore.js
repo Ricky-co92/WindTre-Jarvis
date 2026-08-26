@@ -688,9 +688,17 @@
     energy: {
       h1: 'Richiesta nuova fornitura energia elettrica/gas',
       sub: 'Dichiarazione sostitutiva WindTre Luce&Gas per usi domestici, con attestazione di regolarit\u00e0 urbanistica dell\u2019immobile.'
+    },
+    oltresogliasingolo: {
+      h1: 'Proposta di Contratto WindTre \u2014 P.IVA (Singolo)',
+      sub: 'Compila i dati aziendali, del delegato e della SIM. Il documento ha pi\u00f9 punti firma: posizionali dove serve nello step successivo.'
+    },
+    oltresoglia10sim: {
+      h1: 'Proposta di Contratto WindTre \u2014 P.IVA (fino a 10 SIM)',
+      sub: 'Compila i dati aziendali, del delegato e le SIM che attivi. Il documento ha pi\u00f9 punti firma: posizionali dove serve nello step successivo.'
     }
   };
-  var ALL_MODES_LIST = ['mobile', 'micro', 'fisso', 'cessione', 'morte', 'decesso', 'firmadoc', 'energy'];
+  var ALL_MODES_LIST = ['mobile', 'micro', 'fisso', 'cessione', 'morte', 'decesso', 'firmadoc', 'energy', 'oltresogliasingolo', 'oltresoglia10sim'];
   function switchMode(mode) {
     if (mode !== currentMode) {
       standardFilledBytes = null;
@@ -745,7 +753,8 @@
   var MODULE_LABELS = {
     mobile: 'Recesso Mobile', micro: 'Recesso Biz Mobile', fisso: 'Recesso Fisso',
     cessione: 'Subentro', morte: 'Autodich Cert. Morte', decesso: 'Autodich Atto Notorio',
-    firmadoc: 'Firma Doc', energy: 'Att. Utenza Energy'
+    firmadoc: 'Firma Doc', energy: 'Att. Utenza Energy',
+    oltresogliasingolo: 'Oltresoglia Singolo', oltresoglia10sim: 'Oltresoglia 10 SIM'
   };
   var DEFAULT_DESCRIPTIONS = {
     mobile: 'Richiesta di recesso da un contratto mobile privato.',
@@ -755,7 +764,9 @@
     morte: 'Autocertificazione di decesso ai sensi dell\u2019art. 46 D.P.R. 445/2000.',
     decesso: 'Lettera a WindTre per la disattivazione della linea del titolare deceduto, a cura dell\u2019erede.',
     firmadoc: 'Carica un PDF qualsiasi e apponi firma e data dove serve, senza compilare nessun modulo.',
-    energy: 'Dichiarazione sostitutiva per nuova fornitura energia elettrica/gas a uso domestico.'
+    energy: 'Dichiarazione sostitutiva per nuova fornitura energia elettrica/gas a uso domestico.',
+    oltresogliasingolo: 'Proposta di contratto WindTre P.IVA per l\u2019attivazione di una singola SIM.',
+    oltresoglia10sim: 'Proposta di contratto WindTre P.IVA per l\u2019attivazione di pi\u00f9 SIM (fino a 10) sulla stessa azienda.'
   };
   var moduleDescriptions = {};
   var selectedMode = null;
@@ -870,7 +881,9 @@
     fisso: ['f_nome_cognome','f_codice_fiscale','f_doc_tipo','f_doc_numero','f_numero_titolare','f_recapito_alternativo','f_indirizzo_via','f_indirizzo_numero','f_indirizzo_citta','f_provincia','f_cap','f_utenza'],
     morte: ['m_nome_cognome','m_cf','m_comune_nascita','m_prov_nascita','m_data_nascita','m_comune_residenza','m_prov_residenza','m_via_residenza','m_civico_residenza','m_nome_deceduto','m_grado_parentela','m_data_decesso','m_luogo_data'],
     decesso: ['d_data_lettera','d_linea_numero','d_nome_cognome_erede','d_comune_nascita_erede','d_data_nascita_erede','d_cf_erede','d_comune_residenza_erede','d_via_residenza_erede','d_civico_residenza_erede','d_data_decesso','d_nome_deceduto','d_altri_eredi_1'],
-    energy: ['en_pod_pdr','en_sott_cognome','en_sott_nome','en_sott_nato_a','en_sott_data_nascita','en_sott_cf','en_cliente_cognome_nome','en_cliente_cf','en_fornitura_indirizzo','en_fornitura_civico','en_fornitura_citta','en_fornitura_cap','en_fornitura_provincia']
+    energy: ['en_pod_pdr','en_sott_cognome','en_sott_nome','en_sott_nato_a','en_sott_data_nascita','en_sott_cf','en_cliente_cognome_nome','en_cliente_cf','en_fornitura_indirizzo','en_fornitura_civico','en_fornitura_citta','en_fornitura_cap','en_fornitura_provincia'],
+    oltresogliasingolo: ['ol_ragione_sociale','ol_piva_cf','ol_sede_legale','ol_delegato_nome','ol_delegato_cognome','ol_delegato_cf','ol_numero_telefono_mobile','ol_numero_sim'],
+    oltresoglia10sim: ['ol10_ragione_sociale','ol10_piva_cf','ol10_sede_legale','ol10_delegato_nome','ol10_delegato_cognome','ol10_delegato_cf','ol10_sim1_numero']
   };
   function updateProgress() {
     var wrap = document.getElementById('cfProgressWrap');
@@ -1460,7 +1473,9 @@
     cessione: 'templates/cessione_contratto.pdf',
     morte: 'templates/autocert_morte.pdf',
     decesso: 'templates/autocert_decesso.pdf',
-    energy: 'templates/energy.pdf'
+    energy: 'templates/energy.pdf',
+    oltresogliasingolo: 'templates/oltresoglia_singolo.pdf',
+    oltresoglia10sim: 'templates/oltresoglia_10sim.pdf'
   };
   var _templateBytesCache = {};
   async function getTemplateBytes(url) {
@@ -1703,6 +1718,134 @@
         cb_nessun_provvedimento:  { x0: 37.2,  top: 651.3, x1: 42.9,  bottom: 656.9 }
       }
     }
+,
+    oltresogliasingolo: {
+      templateUrl: TEMPLATE_FILES.oltresogliasingolo,
+      fieldPrefix: 'ol_',
+      requiredIds: ['ol_ragione_sociale', 'ol_piva_cf', 'ol_delegato_cognome'],
+      motivoRadioName: null,
+      pagamentoRadioName: null,
+      modalitaRadioName: null,
+      allCheckboxKeys: [],
+      filenamePrefix: 'Oltresoglia_Singolo_',
+      nameFieldId: 'ragione_sociale',
+      numPages: 2,
+      fieldIds: ['ragione_sociale','forma_giuridica','piva_cf','ccia','prov_ccia','anno_iscrizione',
+        'sede_legale','numero_civico_sede','localita_sede','cap_sede','comune_sede','prov_sede',
+        'settore_merceologico','numero_dipendenti','telefono_fisso',
+        'delegato_nome','delegato_cognome','delegato_comune_nascita','delegato_prov_nascita','delegato_data_nascita',
+        'delegato_indirizzo','delegato_civico','delegato_localita','delegato_cap','delegato_comune','delegato_prov',
+        'delegato_posizione','delegato_cf','delegato_doc_tipo','delegato_doc_rilascio','delegato_doc_numero','delegato_doc_naz',
+        'numero_telefono_mobile', 'numero_sim'],
+      fields: {
+        ragione_sociale:    { x: 138, top: 120.0, bottom: 127.8, size: 8 },
+        forma_giuridica:    { x: 378, top: 120.0, bottom: 127.8, size: 8 },
+        piva_cf:            { x: 145, top: 128.6, bottom: 136.4, size: 8 },
+        ccia:               { x: 318, top: 128.6, bottom: 136.4, size: 8 },
+        prov_ccia:          { x: 384, top: 128.6, bottom: 136.4, size: 8 },
+        anno_iscrizione:    { x: 487, top: 128.6, bottom: 136.4, size: 8 },
+        sede_legale:        { x: 82,  top: 137.2, bottom: 145.0, size: 8 },
+        numero_civico_sede: { x: 412, top: 137.2, bottom: 145.0, size: 8 },
+        localita_sede:      { x: 68,  top: 145.9, bottom: 153.7, size: 8 },
+        cap_sede:           { x: 270, top: 145.9, bottom: 153.7, size: 7.5 },
+        comune_sede:        { x: 370, top: 145.9, bottom: 153.7, size: 7.5 },
+        prov_sede:          { x: 495, top: 145.9, bottom: 153.7, size: 7.5 },
+        settore_merceologico:{ x: 108, top: 155.7, bottom: 163.5, size: 8 },
+        numero_dipendenti:  { x: 370, top: 155.7, bottom: 163.5, size: 8 },
+        telefono_fisso:     { x: 463, top: 155.7, bottom: 163.5, size: 8 },
+        delegato_nome:      { x: 64,  top: 186.6, bottom: 194.5, size: 8 },
+        delegato_cognome:   { x: 302, top: 186.6, bottom: 194.5, size: 8 },
+        delegato_comune_nascita: { x: 101, top: 195.3, bottom: 203.1, size: 8 },
+        delegato_prov_nascita:   { x: 334, top: 195.3, bottom: 203.1, size: 8 },
+        delegato_data_nascita:   { x: 414, top: 195.3, bottom: 203.1, size: 8 },
+        delegato_indirizzo:  { x: 79,  top: 203.9, bottom: 211.7, size: 7.5 },
+        delegato_civico:     { x: 484, top: 203.9, bottom: 211.7, size: 7.5 },
+        delegato_localita:   { x: 68,  top: 212.5, bottom: 220.3, size: 7.5 },
+        delegato_cap:        { x: 270, top: 212.5, bottom: 220.3, size: 7 },
+        delegato_comune:     { x: 370, top: 212.5, bottom: 220.3, size: 7 },
+        delegato_prov:       { x: 495, top: 212.5, bottom: 220.3, size: 7 },
+        delegato_posizione:  { x: 333, top: 221.1, bottom: 228.9, size: 8 },
+        delegato_cf:         { x: 412, top: 221.1, bottom: 228.9, size: 7.5 },
+        delegato_doc_tipo:      { x: 132, top: 229.7, bottom: 237.6, size: 7.5 },
+        delegato_doc_rilascio:  { x: 231, top: 229.7, bottom: 237.6, size: 7.5 },
+        delegato_doc_numero:    { x: 442, top: 229.7, bottom: 237.6, size: 7.5 },
+        delegato_doc_naz:       { x: 500, top: 229.7, bottom: 237.6, size: 7.5 },
+        numero_telefono_mobile: { x: 136, top: 112.1, bottom: 119.9, size: 8, page: 1 },
+        numero_sim:             { x: 160, top: 120.7, bottom: 128.5, size: 8, page: 1 }
+      }
+    },
+    oltresoglia10sim: {
+      templateUrl: TEMPLATE_FILES.oltresoglia10sim,
+      fieldPrefix: 'ol10_',
+      requiredIds: ['ol10_ragione_sociale', 'ol10_piva_cf', 'ol10_delegato_cognome'],
+      motivoRadioName: null,
+      pagamentoRadioName: null,
+      modalitaRadioName: null,
+      allCheckboxKeys: [],
+      filenamePrefix: 'Oltresoglia_10SIM_',
+      nameFieldId: 'ragione_sociale',
+      numPages: 2,
+      fieldIds: ['ragione_sociale','forma_giuridica','piva_cf','ccia','prov_ccia','anno_iscrizione',
+        'sede_legale','numero_civico_sede','localita_sede','cap_sede','comune_sede','prov_sede',
+        'settore_merceologico','numero_dipendenti','telefono_fisso',
+        'delegato_nome','delegato_cognome','delegato_comune_nascita','delegato_prov_nascita','delegato_data_nascita',
+        'delegato_indirizzo','delegato_civico','delegato_localita','delegato_cap','delegato_comune','delegato_prov',
+        'delegato_posizione','delegato_cf','delegato_doc_tipo','delegato_doc_rilascio','delegato_doc_numero','delegato_doc_naz',
+        'sim1_numero',
+'sim2_numero',
+'sim3_numero',
+'sim4_numero',
+'sim5_numero',
+'sim6_numero',
+'sim7_numero',
+'sim8_numero',
+'sim9_numero',
+'sim10_numero'],
+      fields: {
+        ragione_sociale:    { x: 138, top: 120.0, bottom: 127.8, size: 8 },
+        forma_giuridica:    { x: 378, top: 120.0, bottom: 127.8, size: 8 },
+        piva_cf:            { x: 145, top: 128.6, bottom: 136.4, size: 8 },
+        ccia:               { x: 318, top: 128.6, bottom: 136.4, size: 8 },
+        prov_ccia:          { x: 384, top: 128.6, bottom: 136.4, size: 8 },
+        anno_iscrizione:    { x: 487, top: 128.6, bottom: 136.4, size: 8 },
+        sede_legale:        { x: 82,  top: 137.2, bottom: 145.0, size: 8 },
+        numero_civico_sede: { x: 412, top: 137.2, bottom: 145.0, size: 8 },
+        localita_sede:      { x: 68,  top: 145.9, bottom: 153.7, size: 8 },
+        cap_sede:           { x: 270, top: 145.9, bottom: 153.7, size: 7.5 },
+        comune_sede:        { x: 370, top: 145.9, bottom: 153.7, size: 7.5 },
+        prov_sede:          { x: 495, top: 145.9, bottom: 153.7, size: 7.5 },
+        settore_merceologico:{ x: 108, top: 155.7, bottom: 163.5, size: 8 },
+        numero_dipendenti:  { x: 370, top: 155.7, bottom: 163.5, size: 8 },
+        telefono_fisso:     { x: 463, top: 155.7, bottom: 163.5, size: 8 },
+        delegato_nome:      { x: 64,  top: 186.6, bottom: 194.5, size: 8 },
+        delegato_cognome:   { x: 302, top: 186.6, bottom: 194.5, size: 8 },
+        delegato_comune_nascita: { x: 101, top: 195.3, bottom: 203.1, size: 8 },
+        delegato_prov_nascita:   { x: 334, top: 195.3, bottom: 203.1, size: 8 },
+        delegato_data_nascita:   { x: 414, top: 195.3, bottom: 203.1, size: 8 },
+        delegato_indirizzo:  { x: 79,  top: 203.9, bottom: 211.7, size: 7.5 },
+        delegato_civico:     { x: 484, top: 203.9, bottom: 211.7, size: 7.5 },
+        delegato_localita:   { x: 68,  top: 212.5, bottom: 220.3, size: 7.5 },
+        delegato_cap:        { x: 270, top: 212.5, bottom: 220.3, size: 7 },
+        delegato_comune:     { x: 370, top: 212.5, bottom: 220.3, size: 7 },
+        delegato_prov:       { x: 495, top: 212.5, bottom: 220.3, size: 7 },
+        delegato_posizione:  { x: 333, top: 221.1, bottom: 228.9, size: 8 },
+        delegato_cf:         { x: 412, top: 221.1, bottom: 228.9, size: 7.5 },
+        delegato_doc_tipo:      { x: 132, top: 229.7, bottom: 237.6, size: 7.5 },
+        delegato_doc_rilascio:  { x: 231, top: 229.7, bottom: 237.6, size: 7.5 },
+        delegato_doc_numero:    { x: 442, top: 229.7, bottom: 237.6, size: 7.5 },
+        delegato_doc_naz:       { x: 500, top: 229.7, bottom: 237.6, size: 7.5 },
+        sim1_numero: { x: 227, top: 112.40, bottom: 119.70, size: 7, page: 1 },
+        sim2_numero: { x: 227, top: 120.45, bottom: 127.75, size: 7, page: 1 },
+        sim3_numero: { x: 227, top: 128.50, bottom: 135.80, size: 7, page: 1 },
+        sim4_numero: { x: 227, top: 136.55, bottom: 143.85, size: 7, page: 1 },
+        sim5_numero: { x: 227, top: 144.60, bottom: 151.90, size: 7, page: 1 },
+        sim6_numero: { x: 227, top: 152.65, bottom: 159.95, size: 7, page: 1 },
+        sim7_numero: { x: 227, top: 160.70, bottom: 168.00, size: 7, page: 1 },
+        sim8_numero: { x: 227, top: 168.75, bottom: 176.05, size: 7, page: 1 },
+        sim9_numero: { x: 227, top: 176.80, bottom: 184.10, size: 7, page: 1 },
+        sim10_numero: { x: 227, top: 184.85, bottom: 192.15, size: 7, page: 1 }
+      }
+    }
   };
 
   var LOGICAL_IDS = ['nome_cognome', 'codice_fiscale', 'doc_tipo', 'doc_numero', 'numero_titolare',
@@ -1724,13 +1867,18 @@
 
     var PDFLib = window.PDFLib;
     var pdfDoc = await PDFLib.PDFDocument.load(await getTemplateBytes(cfg.templateUrl));
-    var page = pdfDoc.getPage(0);
+    var allPages = pdfDoc.getPages();
+    var page = allPages[0];
     var pageHeight = page.getHeight();
     var font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
     var fontBold = await pdfDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
 
     ids.forEach(function(id) {
-      if (cfg.fields[id]) drawVal(page, font, pageHeight, cfg.fields[id], values[id]);
+      var spec = cfg.fields[id];
+      if (!spec) return;
+      var pg = allPages[spec.page || 0];
+      if (!pg) return;
+      drawVal(pg, font, pg.getHeight(), spec, values[id]);
     });
 
     var motivo = document.querySelector('input[name=' + cfg.motivoRadioName + ']:checked');
