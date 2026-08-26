@@ -217,14 +217,14 @@
   .of-search-row{margin-bottom:16px;}
   .of-search-input{
     width:100%; max-width:480px; background:rgba(42,184,217,.06); border:1px solid rgba(143,232,255,.25);
-    border-radius:20px; color:#eafcff; padding:10px 18px; font-family:'Inter',sans-serif; font-size:14px;
+    border-radius:4px; color:#eafcff; padding:10px 18px; font-family:'Inter',sans-serif; font-size:14px;
   }
   .of-search-input::placeholder{color:rgba(234,252,255,.35);}
   .of-search-input:focus{outline:none; border-color:#8fe8ff; box-shadow:0 0 0 2px rgba(143,232,255,.15);}
   .of-toolbar{display:flex;flex-wrap:wrap;gap:18px;align-items:center;margin-bottom:20px;}
   .of-filter-group{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
   .of-filter-label{font-family:'Rajdhani',sans-serif;font-size:12px;color:#7fc4dc;text-transform:uppercase;letter-spacing:.05em;font-weight:700;}
-  .of-chip{background:rgba(42,184,217,.06);border:1px solid rgba(143,232,255,.25);color:#8fb8cc;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.02em;padding:8px 16px;border-radius:20px;cursor:pointer;transition:all .15s ease;}
+  .of-chip{background:rgba(42,184,217,.06);border:1px solid rgba(143,232,255,.25);color:#8fb8cc;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.02em;padding:8px 16px;border-radius:4px;cursor:pointer;transition:all .15s ease;}
   .of-chip:hover{border-color:#8fe8ff;}
   .of-chip.active{background:rgba(143,232,255,.15);border-color:#8fe8ff;color:#eafcff;box-shadow:0 0 10px rgba(143,232,255,.25);}
   .of-manage-btn{margin-left:auto;border-color:#ffb020;color:#ffe6b0;}
@@ -274,6 +274,7 @@
   .of-admin-row:hover{border-color:#8fe8ff;}
   .of-admin-row .tag{font-size:10px;color:#7fc4dc;text-transform:uppercase;}
   .of-admin-form{border:1px solid rgba(143,232,255,.2);border-radius:4px 12px 12px 12px;padding:16px 18px;margin-top:10px;}
+  .of-admin-form legend{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:11px;color:#4fc8e8;text-transform:uppercase;letter-spacing:.05em;padding:0 6px;}
   .of-admin-form legend{font-family:'Rajdhani',sans-serif;font-weight:700;color:#4fc8e8;text-transform:uppercase;font-size:12.5px;padding:0 6px;}
   .of-admin-form .row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
   .of-admin-form .field{flex:1 1 160px;display:flex;flex-direction:column;gap:4px;}
@@ -377,7 +378,7 @@
   <div class="nav-item active" data-view="home" data-text="Home">Home</div>
   <div class="nav-item" data-view="compilatore" data-text="Compilatore Moduli">Compilatore Moduli</div>
   <div class="nav-item" data-view="offerte" data-text="Dettaglio Tariffe">Dettaglio Tariffe</div>
-  <div class="nav-item" data-view="gestione" data-text="Gestione Dati">Gestione Dati</div>
+  <div class="nav-item" data-view="gestione" data-text="Database Offerte">Database Offerte</div>
 </div>
 
 <!-- ===== APP ===== -->
@@ -1525,17 +1526,18 @@
         <button type="button" class="of-chip" data-filter-tipo="fisso">Fisso</button>
         <button type="button" class="of-chip" data-filter-tipo="opzione">Opzione</button>
       </div>
-      <div class="of-filter-group" id="ofBadgeFilterGroup">
+      <div class="of-filter-group" style="margin-left:auto;">
+        <button type="button" class="of-chip of-manage-btn" id="ofConfigCardBtn">&#127912; Configura Card</button>
+        <button type="button" class="of-chip of-manage-btn" id="ofAddNewCard">+ Nuova tariffa</button>
+      </div>
+      <div class="of-filter-group hidden" id="ofBadgeFilterGroup">
         <span class="of-filter-label">Badge</span>
       </div>
-      <button type="button" class="of-chip of-manage-btn" id="ofConfigCardBtn">&#127912; Configura Card</button>
-      <button type="button" class="of-chip of-manage-btn" id="ofAddNewCard">+ Nuova tariffa</button>
     </div>
 
     <div class="panel">
       <div class="panel-head">
         <div class="title">◈ dettaglio tariffe</div>
-        <span class="status" id="ofCount"></span>
       </div>
       <div class="of-grid" id="ofGrid">
         <p class="sub" id="ofEmptyMsg">Nessuna tariffa trovata. Usa "+ Nuova tariffa" per aggiungerne.</p>
@@ -1554,7 +1556,10 @@
       <div class="of-modal-body">
         <p class="sub" style="margin:0 0 14px">Scegli quali campi mostrare sulle card e quale mettere in evidenza (es. il canone). L'anteprima a destra si aggiorna subito.</p>
         <div class="of-config-layout">
-          <div class="of-config-fields" id="ofConfigFieldsList"></div>
+          <fieldset class="of-admin-form" style="margin-top:0;">
+            <legend>Campi</legend>
+            <div class="of-config-fields" id="ofConfigFieldsList"></div>
+          </fieldset>
           <div class="of-config-preview">
             <div class="of-config-preview-label">Anteprima</div>
             <div class="of-grid" id="ofConfigPreviewGrid" style="grid-template-columns:1fr;"></div>
@@ -1585,6 +1590,7 @@
 
         <!-- Vista modifica -->
         <fieldset class="of-admin-form hidden" id="ofEditForm">
+          <legend id="ofEditFormLegend">Dati Tariffa</legend>
           <input type="hidden" id="ofFormId">
           <div class="row">
             <div class="field">
@@ -1615,7 +1621,7 @@
   <div id="view-gestione" class="hidden">
     <div class="gd-panel">
       <div class="panel-head">
-        <div class="title">◈ gestione dati offerte</div>
+        <div class="title">◈ database offerte</div>
         <div class="panel-actions">
           <button type="button" class="of-btn" id="gdAddColumn">+ Aggiungi colonna</button>
           <button type="button" class="of-btn" id="gdAddRow">+ Nuova riga</button>

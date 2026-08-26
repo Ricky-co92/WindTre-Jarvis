@@ -36,7 +36,7 @@
       grid.innerHTML = '<p class="sub">Errore nel caricamento. Verifica che la tabella wt_offerte esista su Supabase.</p>';
       return;
     }
-    renderBadgeFilters();
+    // filtro Badge disattivato su richiesta: resta solo Categoria/Tipo
     renderGrid();
     if (document.getElementById('view-gestione') && !document.getElementById('view-gestione').classList.contains('hidden')) {
       renderGestioneTable();
@@ -226,7 +226,6 @@
   function renderGrid() {
     var grid = document.getElementById('ofGrid');
     var list = filteredOfferte();
-    document.getElementById('ofCount').textContent = list.length + ' tariffe';
     if (!list.length) {
       grid.innerHTML = '<p class="sub">Nessuna tariffa corrisponde ai filtri scelti.</p>';
       return;
@@ -247,10 +246,6 @@
   });
 
   // ================= CONFIGURATORE CARD =================
-  var SAMPLE_OFFERTA = {
-    categoria: 'consumer', tipo: 'mobile', nome: 'Nome Tariffa Esempio',
-    extra: { badge: '5G', prezzo_principale: '9,99\u20ac/mese', dettagli: 'Giga illimitati\nMinuti illimitati\n200 SMS' }
-  };
 
   document.getElementById('ofConfigCardBtn').addEventListener('click', function () {
     document.getElementById('ofConfigBackdrop').classList.remove('hidden');
@@ -328,9 +323,19 @@
     }
   }
 
+  function buildFullSampleOfferta() {
+    var extra = {};
+    customFields.forEach(function (f) {
+      if (f.field_type === 'checkbox') extra[f.key] = true;
+      else if (f.field_type === 'textarea') extra[f.key] = 'Prima riga di esempio\nSeconda riga di esempio\nTerza riga di esempio';
+      else extra[f.key] = 'Esempio ' + f.label.toLowerCase();
+    });
+    return { categoria: 'consumer', tipo: 'mobile', nome: 'Nome Tariffa di Esempio', extra: extra };
+  }
+
   function renderConfigPreview() {
     var wrap = document.getElementById('ofConfigPreviewGrid');
-    var sample = offerte[0] || SAMPLE_OFFERTA;
+    var sample = buildFullSampleOfferta();
     var card = document.createElement('div');
     card.className = 'of-card';
     card.style.cursor = 'default';
@@ -389,6 +394,7 @@
 
   function showEditForm(o) {
     document.getElementById('ofDetailTitle').textContent = o ? 'Modifica tariffa' : 'Nuova tariffa';
+    document.getElementById('ofEditFormLegend').textContent = o ? 'Dati Tariffa' : 'Nuova Tariffa';
     document.getElementById('ofDetailView').classList.add('hidden');
     document.getElementById('ofEditForm').classList.remove('hidden');
     document.getElementById('ofFormId').value = o ? o.id : '';
