@@ -204,7 +204,7 @@
     if (prominentField) {
       var pv = fieldVal(o, prominentField.key);
       if (pv && prominentField.field_type !== 'checkbox') {
-        prominentHtml = '<div class="of-prominent">' + escapeHtml(pv) + '</div>';
+        prominentHtml = '<div class="of-prominent-label">' + escapeHtml(prominentField.label) + '</div><div class="of-prominent">' + escapeHtml(pv) + '</div>';
       }
     }
     var fieldsHtml = cardFields.map(function (f) {
