@@ -113,6 +113,23 @@
     }
   }
 
+  async function setProminentField(field) {
+    var newVal = !field.card_prominent;
+    try {
+      // solo un campo alla volta può essere "in evidenza": spengo gli altri
+      var updates = customFields.map(function (f) {
+        var val = (f.id === field.id) ? newVal : false;
+        return sb.from('wt_custom_columns').update({ card_prominent: val }).eq('id', f.id);
+      });
+      await Promise.all(updates);
+      await loadCustomFields();
+      renderGestioneHeader();
+      renderGrid();
+    } catch (err) {
+      alert('Errore: ' + err.message);
+    }
+  }
+
   async function removeField(field) {
     if (!confirm('Eliminare il campo "' + field.label + '"? I dati salvati per ogni tariffa in questo campo andranno persi dalla visualizzazione.')) return;
     try {
@@ -196,13 +213,21 @@
       return;
     }
     grid.innerHTML = '';
-    var cardFields = customFields.filter(function (f) { return f.show_on_card; });
+    var cardFields = customFields.filter(function (f) { return f.show_on_card && !f.card_prominent; });
+    var prominentField = customFields.filter(function (f) { return f.card_prominent; })[0];
     list.forEach(function (o) {
       var card = document.createElement('div');
       card.className = 'of-card';
       card.dataset.id = o.id;
       var badge = fieldVal(o, 'badge');
       var badgeHtml = badge ? '<div class="of-badge">' + escapeHtml(badge) + '</div>' : '';
+      var prominentHtml = '';
+      if (prominentField) {
+        var pv = fieldVal(o, prominentField.key);
+        if (pv && prominentField.field_type !== 'checkbox') {
+          prominentHtml = '<div class="of-prominent">' + escapeHtml(pv) + '</div>';
+        }
+      }
       var fieldsHtml = cardFields.map(function (f) {
         var v = fieldVal(o, f.key);
         if (f.field_type === 'checkbox') {
@@ -214,6 +239,7 @@
       card.innerHTML =
         badgeHtml +
         '<div class="of-nome">' + escapeHtml(o.nome) + '</div>' +
+        prominentHtml +
         fieldsHtml +
         '<div class="of-tag">' + CAT_LABEL[o.categoria] + ' &middot; ' + TIPO_LABEL[o.tipo] + '</div>';
       card.addEventListener('click', function () { openDetail(o.id); });
@@ -380,10 +406,14 @@
       var eyeBtn = document.createElement('button');
       eyeBtn.type = 'button'; eyeBtn.className = 'gd-col-eye'; eyeBtn.title = eyeTitle; eyeBtn.textContent = eyeIcon;
       eyeBtn.addEventListener('click', function (ev) { ev.stopPropagation(); toggleFieldShowOnCard(f); });
+      var starBtn = document.createElement('button');
+      starBtn.type = 'button'; starBtn.className = 'gd-col-star'; starBtn.title = f.card_prominent ? 'In evidenza sulla card: clicca per togliere' : 'Metti in evidenza sulla card (es. il canone)';
+      starBtn.textContent = f.card_prominent ? '\u2B50' : '\u2606';
+      starBtn.addEventListener('click', function (ev) { ev.stopPropagation(); setProminentField(f); });
       var rmBtn = document.createElement('button');
       rmBtn.type = 'button'; rmBtn.className = 'gd-col-remove'; rmBtn.title = 'Elimina campo'; rmBtn.innerHTML = '&times;';
       rmBtn.addEventListener('click', function (ev) { ev.stopPropagation(); removeField(f); });
-      addSortTh(f.label, f.key, [eyeBtn, rmBtn], 'gd-custom-col');
+      addSortTh(f.label, f.key, [starBtn, eyeBtn, rmBtn], 'gd-custom-col');
     });
 
     var endTh = document.createElement('th');
