@@ -1,114 +1,38 @@
 (function () {
   var offerte = [];
-  var activeCatFilters = [];   // es. ['consumer','business'] o []
-  var activeTipoFilters = [];  // es. ['mobile','fisso'] o []
-  var activeBadgeFilters = []; // es. ['Opzione aggiuntiva'] o []
+  var customFields = [];      // [{id,key,label,ordine,show_on_card,field_type}]
+  var activeCatFilters = [];
+  var activeTipoFilters = [];
   var activeOpzioneOnly = false;
   var ofSearchTerm = '';
   var gdSearchTerm = '';
-  var selectedIds = {};        // { id: true }
-  var customColumns = [];      // [{id, key, label, ordine}]
+  var gdSortField = null;     // 'categoria' | 'tipo' | 'nome' | field.key
+  var gdSortDir = 1;          // 1 asc, -1 desc
+  var currentDetailId = null;
+  var _activeBadgeFilters = [];
 
-  function matchesSearch(o, term) {
-    if (!term) return true;
-    var haystack = [
-      o.nome, o.dettagli, o.badge, o.prezzo_principale, o.prezzo_secondario,
-      o.prezzo_convergente, o.nota_convergenza
-    ];
-    if (o.extra) haystack = haystack.concat(Object.values(o.extra));
-    return haystack.some(function (v) { return v && String(v).toLowerCase().indexOf(term) > -1; });
-  }
+  var CAT_LABEL = { consumer: 'Consumer', business: 'Business' };
+  var TIPO_LABEL = { mobile: 'Mobile', fisso: 'Fisso' };
 
-  // ================= COLONNE PERSONALIZZATE =================
-  async function loadCustomColumns() {
-    try {
-      var { data, error } = await sb.from('wt_custom_columns').select('*').order('ordine');
-      if (error) throw error;
-      customColumns = data || [];
-    } catch (err) {
-      console.error('Errore caricamento colonne personalizzate:', err);
-      customColumns = [];
-    }
-  }
-
-  function slugify(label) {
-    return label.toLowerCase()
-      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '') || ('col_' + Date.now());
-  }
-
-  document.getElementById('gdAddColumn').addEventListener('click', async function () {
-    var label = prompt('Nome della nuova colonna (es. "Sconto attivatore", "Codice interno"):');
-    if (!label || !label.trim()) return;
-    var key = slugify(label.trim());
-    if (customColumns.some(function (c) { return c.key === key; })) {
-      alert('Esiste gi\u00e0 una colonna con questo nome.');
-      return;
-    }
-    var ordine = customColumns.length;
-    try {
-      var { error } = await sb.from('wt_custom_columns').insert({ key: key, label: label.trim(), ordine: ordine });
-      if (error) throw error;
-      await loadCustomColumns();
-      renderGestioneHeader();
-      renderGestioneTable();
-    } catch (err) {
-      alert('Errore nella creazione della colonna: ' + err.message);
-    }
-  });
-
-  function renderGestioneHeader() {
-    var headerRow = document.getElementById('gdHeaderRow');
-    var headerEnd = document.getElementById('gdHeaderEnd');
-    if (!headerRow || !headerEnd) return;
-    headerRow.querySelectorAll('.gd-custom-col').forEach(function (th) { th.remove(); });
-    customColumns.forEach(function (col) {
-      var th = document.createElement('th');
-      th.className = 'gd-custom-col';
-      var eyeIcon = col.show_on_card ? '\uD83D\uDC41\uFE0F' : '\uD83D\uDEAB';
-      var eyeTitle = col.show_on_card ? 'Visibile sulle card: clicca per nascondere' : 'Nascosta sulle card: clicca per mostrare';
-      th.innerHTML = escapeHtml(col.label) +
-        '<button type="button" class="gd-col-eye" title="' + eyeTitle + '">' + eyeIcon + '</button>' +
-        '<button type="button" class="gd-col-remove" title="Elimina colonna">&times;</button>';
-      th.querySelector('.gd-col-eye').addEventListener('click', async function () {
-        var newVal = !col.show_on_card;
-        try {
-          await sb.from('wt_custom_columns').update({ show_on_card: newVal }).eq('id', col.id);
-          await loadCustomColumns();
-          renderGestioneHeader();
-          renderGrid();
-        } catch (err) {
-          alert('Errore: ' + err.message);
-        }
-      });
-      th.querySelector('.gd-col-remove').addEventListener('click', async function () {
-        if (!confirm('Eliminare la colonna "' + col.label + '"? I dati salvati in questa colonna per ogni offerta andranno persi dalla visualizzazione.')) return;
-        try {
-          await sb.from('wt_custom_columns').delete().eq('id', col.id);
-          await loadCustomColumns();
-          renderGestioneHeader();
-          renderGestioneTable();
-          renderGrid();
-        } catch (err) {
-          alert('Errore: ' + err.message);
-        }
-      });
-      headerRow.insertBefore(th, headerEnd);
+  function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
     });
   }
+  function attrEsc(s) { return escapeHtml(s).replace(/"/g, '&quot;'); }
 
   // ================= CARICAMENTO DATI =================
   async function loadOfferte() {
     var grid = document.getElementById('ofGrid');
-    grid.innerHTML = '<p class="sub">Caricamento offerte&hellip;</p>';
+    grid.innerHTML = '<p class="sub">Caricamento tariffe&hellip;</p>';
     try {
-      var { data, error } = await sb.from('wt_offerte').select('*').order('categoria').order('tipo').order('ordine');
-      if (error) throw error;
-      offerte = data || [];
-      await loadCustomColumns();
+      var res1 = await sb.from('wt_offerte').select('*').order('categoria').order('tipo').order('ordine');
+      if (res1.error) throw res1.error;
+      offerte = res1.data || [];
+      await loadCustomFields();
       renderGestioneHeader();
     } catch (err) {
-      console.error('Errore caricamento offerte:', err);
+      console.error('Errore caricamento tariffe:', err);
       offerte = [];
       grid.innerHTML = '<p class="sub">Errore nel caricamento. Verifica che la tabella wt_offerte esista su Supabase.</p>';
       return;
@@ -120,35 +44,94 @@
     }
   }
 
-  function renderBadgeFilters() {
-    var group = document.getElementById('ofBadgeFilterGroup');
-    var badges = [];
-    offerte.forEach(function (o) {
-      if (o.badge && badges.indexOf(o.badge) === -1) badges.push(o.badge);
-    });
-    // rimuove i chip precedenti (mantiene la label)
-    group.querySelectorAll('.of-chip').forEach(function (c) { c.remove(); });
-    badges.forEach(function (b) {
-      var chip = document.createElement('button');
-      chip.type = 'button';
-      chip.className = 'of-chip' + (activeBadgeFilters.indexOf(b) > -1 ? ' active' : '');
-      chip.textContent = b;
-      chip.addEventListener('click', function () { toggleFilter(chip, activeBadgeFilters, b); });
-      group.appendChild(chip);
-    });
-    group.classList.toggle('hidden', badges.length === 0);
+  async function loadCustomFields() {
+    try {
+      var { data, error } = await sb.from('wt_custom_columns').select('*').order('ordine');
+      if (error) throw error;
+      customFields = data || [];
+    } catch (err) {
+      console.error('Errore caricamento campi:', err);
+      customFields = [];
+    }
   }
 
-  // ================= FILTRI =================
+  function fieldVal(o, key) {
+    return (o.extra && o.extra[key] !== undefined) ? o.extra[key] : '';
+  }
+
+  function matchesSearch(o, term) {
+    if (!term) return true;
+    var haystack = [o.nome];
+    customFields.forEach(function (f) { haystack.push(fieldVal(o, f.key)); });
+    return haystack.some(function (v) { return v && String(v).toLowerCase().indexOf(term) > -1; });
+  }
+
+  // ================= CAMPI PERSONALIZZATI =================
+  function slugify(label) {
+    return label.toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '') || ('col_' + Date.now());
+  }
+
+  document.getElementById('gdAddColumn').addEventListener('click', async function () {
+    var label = prompt('Nome del nuovo campo (es. "Sconto attivatore", "Codice interno"):');
+    if (!label || !label.trim()) return;
+    var key = slugify(label.trim());
+    if (customFields.some(function (f) { return f.key === key; })) {
+      alert('Esiste gi\u00e0 un campo con questo nome.');
+      return;
+    }
+    var typeChoice = prompt('Tipo di campo: scrivi "testo", "paragrafo" (multi-riga) o "flag" (s\u00ec/no)', 'testo');
+    var field_type = 'text';
+    if (typeChoice) {
+      var t = typeChoice.trim().toLowerCase();
+      if (t.indexOf('parag') === 0) field_type = 'textarea';
+      else if (t.indexOf('flag') === 0 || t.indexOf('si') === 0 || t.indexOf('s\u00ec') === 0) field_type = 'checkbox';
+    }
+    var ordine = customFields.length;
+    try {
+      var { error } = await sb.from('wt_custom_columns').insert({ key: key, label: label.trim(), ordine: ordine, field_type: field_type, show_on_card: true });
+      if (error) throw error;
+      await loadCustomFields();
+      renderGestioneHeader();
+      renderGestioneTable();
+      renderGrid();
+    } catch (err) {
+      alert('Errore nella creazione del campo: ' + err.message);
+    }
+  });
+
+  async function toggleFieldShowOnCard(field) {
+    var newVal = !field.show_on_card;
+    try {
+      await sb.from('wt_custom_columns').update({ show_on_card: newVal }).eq('id', field.id);
+      await loadCustomFields();
+      renderGestioneHeader();
+      renderGrid();
+    } catch (err) {
+      alert('Errore: ' + err.message);
+    }
+  }
+
+  async function removeField(field) {
+    if (!confirm('Eliminare il campo "' + field.label + '"? I dati salvati per ogni tariffa in questo campo andranno persi dalla visualizzazione.')) return;
+    try {
+      await sb.from('wt_custom_columns').delete().eq('id', field.id);
+      await loadCustomFields();
+      renderGestioneHeader();
+      renderGestioneTable();
+      renderGrid();
+    } catch (err) {
+      alert('Errore: ' + err.message);
+    }
+  }
+
+  // ================= FILTRI (Dettaglio Tariffe) =================
   document.querySelectorAll('.of-chip[data-filter-cat]').forEach(function (chip) {
-    chip.addEventListener('click', function () {
-      toggleFilter(chip, activeCatFilters, chip.dataset.filterCat);
-    });
+    chip.addEventListener('click', function () { toggleFilter(chip, activeCatFilters, chip.dataset.filterCat); });
   });
   document.querySelectorAll('.of-chip[data-filter-tipo]').forEach(function (chip) {
-    chip.addEventListener('click', function () {
-      toggleFilter(chip, activeTipoFilters, chip.dataset.filterTipo);
-    });
+    chip.addEventListener('click', function () { toggleFilter(chip, activeTipoFilters, chip.dataset.filterTipo); });
   });
   document.getElementById('ofOpzioneFilter').addEventListener('click', function () {
     activeOpzioneOnly = !activeOpzioneOnly;
@@ -165,201 +148,194 @@
     else { arr.push(value); chip.classList.add('active'); }
     renderGrid();
   }
+  function renderBadgeFilters() {
+    var group = document.getElementById('ofBadgeFilterGroup');
+    var badges = [];
+    offerte.forEach(function (o) {
+      var b = fieldVal(o, 'badge');
+      if (b && badges.indexOf(b) === -1) badges.push(b);
+    });
+    group.querySelectorAll('.of-chip').forEach(function (c) { c.remove(); });
+    badges.forEach(function (b) {
+      var chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'of-chip' + (_activeBadgeFilters.indexOf(b) > -1 ? ' active' : '');
+      chip.textContent = b;
+      chip.addEventListener('click', function () {
+        var idx = _activeBadgeFilters.indexOf(b);
+        if (idx > -1) { _activeBadgeFilters.splice(idx, 1); chip.classList.remove('active'); }
+        else { _activeBadgeFilters.push(b); chip.classList.add('active'); }
+        renderGrid();
+      });
+      group.appendChild(chip);
+    });
+    group.classList.toggle('hidden', badges.length === 0);
+  }
 
   function filteredOfferte() {
     return offerte.filter(function (o) {
       var catOk = activeCatFilters.length === 0 || activeCatFilters.indexOf(o.categoria) > -1;
       var tipoOk = activeTipoFilters.length === 0 || activeTipoFilters.indexOf(o.tipo) > -1;
-      var badgeOk = activeBadgeFilters.length === 0 || activeBadgeFilters.indexOf(o.badge) > -1;
-      var opzioneOk = !activeOpzioneOnly || o.is_opzione === true;
+      var badge = fieldVal(o, 'badge');
+      var badgeOk = _activeBadgeFilters.length === 0 || _activeBadgeFilters.indexOf(badge) > -1;
+      var opzioneOk = !activeOpzioneOnly || fieldVal(o, 'is_opzione') === true;
       var searchOk = matchesSearch(o, ofSearchTerm);
       return catOk && tipoOk && badgeOk && opzioneOk && searchOk;
     });
   }
 
-  // ================= RENDER GRIGLIA =================
-  var CAT_LABEL = { consumer: 'Consumer', business: 'Business' };
-  var TIPO_LABEL = { mobile: 'Mobile', fisso: 'Fisso' };
-
+  // ================= GRIGLIA CARD =================
   function renderGrid() {
     var grid = document.getElementById('ofGrid');
     var list = filteredOfferte().slice().sort(function (a, b) {
-      return (a.is_opzione === true ? 1 : 0) - (b.is_opzione === true ? 1 : 0);
+      return (fieldVal(a, 'is_opzione') === true ? 1 : 0) - (fieldVal(b, 'is_opzione') === true ? 1 : 0);
     });
-    document.getElementById('ofCount').textContent = list.length + ' offerte';
+    document.getElementById('ofCount').textContent = list.length + ' tariffe';
     if (!list.length) {
-      grid.innerHTML = '<p class="sub">Nessuna offerta corrisponde ai filtri scelti.</p>';
+      grid.innerHTML = '<p class="sub">Nessuna tariffa corrisponde ai filtri scelti.</p>';
       return;
     }
     grid.innerHTML = '';
+    var cardFields = customFields.filter(function (f) { return f.show_on_card; });
     list.forEach(function (o) {
       var card = document.createElement('div');
-      card.className = 'of-card' + (selectedIds[o.id] ? ' selected' : '');
+      card.className = 'of-card';
       card.dataset.id = o.id;
-      var badgeHtml = o.badge ? '<div class="of-badge">' + escapeHtml(o.badge) + '</div>' : '';
-      var dettagliArr = (o.dettagli || '').split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
-      var dettagliHtml = dettagliArr.map(function (d) { return '<div>' + escapeHtml(d) + '</div>'; }).join('');
-      var extraCardHtml = customColumns.filter(function (col) {
-        return col.show_on_card && o.extra && o.extra[col.key];
-      }).map(function (col) {
-        return '<div class="of-extra-field"><b>' + escapeHtml(col.label) + ':</b> ' + escapeHtml(o.extra[col.key]) + '</div>';
+      var badge = fieldVal(o, 'badge');
+      var badgeHtml = badge ? '<div class="of-badge">' + escapeHtml(badge) + '</div>' : '';
+      var fieldsHtml = cardFields.map(function (f) {
+        var v = fieldVal(o, f.key);
+        if (f.field_type === 'checkbox') {
+          return v === true ? '<div class="of-extra-field"><b>' + escapeHtml(f.label) + '</b></div>' : '';
+        }
+        if (!v) return '';
+        return '<div class="of-extra-field"><b>' + escapeHtml(f.label) + ':</b> ' + escapeHtml(v) + '</div>';
       }).join('');
-
-      var prezzoBlockHtml;
-      if (o.tipo === 'fisso' && o.prezzo_convergente) {
-        // Fisso con prezzo convergente: il convergente è il prezzo in evidenza (come nel portale w3)
-        var convLabel = o.nota_convergenza ? escapeHtml(o.nota_convergenza) : 'Prezzo convergente';
-        prezzoBlockHtml =
-          '<div class="of-prezzo-conv-label">' + convLabel + '</div>' +
-          '<div class="of-prezzo-conv-main">' + escapeHtml(o.prezzo_convergente) + '</div>' +
-          (o.prezzo_principale ? '<div class="of-prezzo-solo">Solo fisso: ' + escapeHtml(o.prezzo_principale) + '</div>' : '') +
-          (o.prezzo_secondario ? '<div class="of-prezzo2">' + escapeHtml(o.prezzo_secondario) + '</div>' : '');
-      } else {
-        // Mobile (o Fisso senza convergente): comportamento invariato
-        prezzoBlockHtml =
-          '<div class="of-prezzo1">' + escapeHtml(o.prezzo_principale || '') + '</div>' +
-          (o.prezzo_secondario ? '<div class="of-prezzo2">' + escapeHtml(o.prezzo_secondario) + '</div>' : '') +
-          (o.prezzo_convergente ? '<div class="of-prezzo-conv">' + escapeHtml(o.prezzo_convergente) + (o.nota_convergenza ? ' &mdash; ' + escapeHtml(o.nota_convergenza) : '') + '</div>' : '');
-      }
-
       card.innerHTML =
-        '<button type="button" class="of-edit-btn" title="Modifica">\u270e</button>' +
-        '<div class="of-check">\u2713</div>' +
         badgeHtml +
         '<div class="of-nome">' + escapeHtml(o.nome) + '</div>' +
-        prezzoBlockHtml +
-        '<div class="of-dettagli">' + dettagliHtml + '</div>' +
-        extraCardHtml +
+        fieldsHtml +
         '<div class="of-tag">' + CAT_LABEL[o.categoria] + ' &middot; ' + TIPO_LABEL[o.tipo] + '</div>';
-      card.querySelector('.of-edit-btn').addEventListener('click', function (ev) {
-        ev.stopPropagation();
-        document.getElementById('ofAdminBackdrop').classList.remove('hidden');
-        renderAdminList();
-        showAdminForm(o);
-      });
-      card.addEventListener('click', function () { toggleSelect(o.id); });
+      card.addEventListener('click', function () { openDetail(o.id); });
       grid.appendChild(card);
     });
   }
 
-  function escapeHtml(s) {
-    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
-      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
-    });
-  }
-
-  // ================= SELEZIONE + BARRA FLOTTANTE =================
-  function toggleSelect(id) {
-    if (selectedIds[id]) delete selectedIds[id]; else selectedIds[id] = true;
-    renderGrid();
-    updateSellingBar();
-  }
-  function updateSellingBar() {
-    var n = Object.keys(selectedIds).length;
-    var bar = document.getElementById('ofSellingBar');
-    bar.classList.toggle('hidden', n === 0);
-    document.getElementById('ofSelCount').textContent = n + (n === 1 ? ' offerta selezionata' : ' offerte selezionate');
-  }
-  document.getElementById('ofClearSel').addEventListener('click', function () {
-    selectedIds = {};
-    renderGrid();
-    updateSellingBar();
+  document.getElementById('ofAddNewCard').addEventListener('click', function () {
+    openDetail(null, true);
   });
 
-  // ================= MODALE GESTIONE OFFERTE =================
-  document.getElementById('ofManageBtn').addEventListener('click', function () {
-    document.getElementById('ofAdminBackdrop').classList.remove('hidden');
-    renderAdminList();
-    hideAdminForm();
+  // ================= MODALE DETTAGLIO / MODIFICA =================
+  function openDetail(id, startInEdit) {
+    currentDetailId = id;
+    document.getElementById('ofDetailBackdrop').classList.remove('hidden');
+    var o = id ? offerte.filter(function (x) { return x.id === id; })[0] : null;
+    if (startInEdit) showEditForm(o);
+    else showDetailView(o);
+  }
+  document.getElementById('ofDetailClose').addEventListener('click', function () {
+    document.getElementById('ofDetailBackdrop').classList.add('hidden');
   });
-  document.getElementById('ofAdminClose').addEventListener('click', function () {
-    document.getElementById('ofAdminBackdrop').classList.add('hidden');
-  });
-  document.getElementById('ofAdminBackdrop').addEventListener('click', function (ev) {
-    if (ev.target.id === 'ofAdminBackdrop') document.getElementById('ofAdminBackdrop').classList.add('hidden');
+  document.getElementById('ofDetailBackdrop').addEventListener('click', function (ev) {
+    if (ev.target.id === 'ofDetailBackdrop') document.getElementById('ofDetailBackdrop').classList.add('hidden');
   });
 
-  function renderAdminList() {
-    var listEl = document.getElementById('ofAdminList');
-    if (!offerte.length) { listEl.innerHTML = '<p class="sub">Nessuna offerta ancora inserita.</p>'; return; }
-    listEl.innerHTML = '';
-    offerte.forEach(function (o) {
-      var row = document.createElement('div');
-      row.className = 'of-admin-row';
-      row.innerHTML = '<span>' + escapeHtml(o.nome) + '</span><span class="tag">' + CAT_LABEL[o.categoria] + ' &middot; ' + TIPO_LABEL[o.tipo] + '</span>';
-      row.addEventListener('click', function () { showAdminForm(o); });
-      listEl.appendChild(row);
-    });
+  function showDetailView(o) {
+    document.getElementById('ofDetailTitle').textContent = 'Dettaglio tariffa';
+    document.getElementById('ofDetailView').classList.remove('hidden');
+    document.getElementById('ofEditForm').classList.add('hidden');
+    document.getElementById('ofDetailName').textContent = o.nome;
+    document.getElementById('ofDetailTag').textContent = CAT_LABEL[o.categoria] + ' \u00b7 ' + TIPO_LABEL[o.tipo];
+    var wrap = document.getElementById('ofDetailFields');
+    wrap.innerHTML = customFields.map(function (f) {
+      var v = fieldVal(o, f.key);
+      var displayVal;
+      if (f.field_type === 'checkbox') displayVal = v === true ? 'S\u00ec' : 'No';
+      else displayVal = v ? escapeHtml(v) : '';
+      var emptyClass = (!v && f.field_type !== 'checkbox') ? ' dv-empty' : '';
+      return '<div class="of-detail-field"><div class="dl">' + escapeHtml(f.label) + '</div><div class="dv' + emptyClass + '">' + (displayVal || 'Non impostato') + '</div></div>';
+    }).join('');
   }
 
-  function showAdminForm(o) {
-    document.getElementById('ofAdminForm').classList.remove('hidden');
-    document.getElementById('ofFormLegend').textContent = o ? 'Modifica offerta' : 'Nuova offerta';
+  document.getElementById('ofDetailEditBtn').addEventListener('click', function () {
+    var o = offerte.filter(function (x) { return x.id === currentDetailId; })[0];
+    showEditForm(o);
+  });
+  document.getElementById('ofDetailDeleteBtn').addEventListener('click', async function () {
+    if (!currentDetailId) return;
+    if (!confirm('Eliminare questa tariffa?')) return;
+    try {
+      await sb.from('wt_offerte').delete().eq('id', currentDetailId);
+      document.getElementById('ofDetailBackdrop').classList.add('hidden');
+      await loadOfferte();
+    } catch (err) {
+      alert('Errore: ' + err.message);
+    }
+  });
+
+  function showEditForm(o) {
+    document.getElementById('ofDetailTitle').textContent = o ? 'Modifica tariffa' : 'Nuova tariffa';
+    document.getElementById('ofDetailView').classList.add('hidden');
+    document.getElementById('ofEditForm').classList.remove('hidden');
     document.getElementById('ofFormId').value = o ? o.id : '';
     document.getElementById('ofFormCategoria').value = o ? o.categoria : 'consumer';
     document.getElementById('ofFormTipo').value = o ? o.tipo : 'mobile';
     document.getElementById('ofFormNome').value = o ? o.nome : '';
-    document.getElementById('ofFormPrezzo1').value = o ? (o.prezzo_principale || '') : '';
-    document.getElementById('ofFormPrezzo2').value = o ? (o.prezzo_secondario || '') : '';
-    document.getElementById('ofFormPrezzoConv').value = o ? (o.prezzo_convergente || '') : '';
-    document.getElementById('ofFormNotaConv').value = o ? (o.nota_convergenza || '') : '';
-    document.getElementById('ofFormBadge').value = o ? (o.badge || '') : '';
-    document.getElementById('ofFormOpzione').checked = o ? !!o.is_opzione : false;
-    document.getElementById('ofFormDettagli').value = o ? (o.dettagli || '') : '';
-    document.getElementById('ofFormDelete').classList.toggle('hidden', !o);
     document.getElementById('ofFormStatus').textContent = '';
 
     var extraWrap = document.getElementById('ofFormExtraFields');
     extraWrap.innerHTML = '';
-    var extraVals = (o && o.extra) || {};
-    customColumns.forEach(function (col) {
+    customFields.forEach(function (f) {
+      var v = o ? fieldVal(o, f.key) : '';
       var row = document.createElement('div');
       row.className = 'row';
-      row.innerHTML = '<div class="field wide"><label>' + escapeHtml(col.label) + '</label>' +
-        '<input type="text" data-extra-key="' + col.key + '" value="' + attrEsc(extraVals[col.key] || '') + '"></div>';
+      if (f.field_type === 'checkbox') {
+        row.innerHTML = '<div class="field wide"><label class="radio-opt" style="display:flex;align-items:center;gap:8px;"><input type="checkbox" data-extra-key="' + f.key + '" data-type="checkbox"' + (v === true ? ' checked' : '') + ' style="width:18px;height:18px;accent-color:#ffb020;"> ' + escapeHtml(f.label) + '</label></div>';
+      } else if (f.field_type === 'textarea') {
+        row.innerHTML = '<div class="field wide"><label>' + escapeHtml(f.label) + '</label><textarea data-extra-key="' + f.key + '" rows="3">' + escapeHtml(v) + '</textarea></div>';
+      } else {
+        row.innerHTML = '<div class="field wide"><label>' + escapeHtml(f.label) + '</label><input type="text" data-extra-key="' + f.key + '" value="' + attrEsc(v) + '"></div>';
+      }
       extraWrap.appendChild(row);
     });
   }
-  function hideAdminForm() {
-    document.getElementById('ofAdminForm').classList.add('hidden');
-  }
 
-  document.getElementById('ofAddNew').addEventListener('click', function () { showAdminForm(null); });
-  document.getElementById('ofFormCancel').addEventListener('click', hideAdminForm);
+  document.getElementById('ofFormCancel').addEventListener('click', function () {
+    if (currentDetailId) {
+      var o = offerte.filter(function (x) { return x.id === currentDetailId; })[0];
+      showDetailView(o);
+    } else {
+      document.getElementById('ofDetailBackdrop').classList.add('hidden');
+    }
+  });
 
   document.getElementById('ofFormSave').addEventListener('click', async function () {
     var statusEl = document.getElementById('ofFormStatus');
     var id = document.getElementById('ofFormId').value;
     var nome = document.getElementById('ofFormNome').value.trim();
-    if (!nome) { statusEl.textContent = 'Il nome è obbligatorio.'; statusEl.className = 'status err'; return; }
+    if (!nome) { statusEl.textContent = 'Il nome \u00e8 obbligatorio.'; statusEl.className = 'status err'; return; }
+    var extra = {};
+    document.querySelectorAll('#ofFormExtraFields [data-extra-key]').forEach(function (input) {
+      extra[input.dataset.extraKey] = input.dataset.type === 'checkbox' ? input.checked : input.value;
+    });
     var record = {
       categoria: document.getElementById('ofFormCategoria').value,
       tipo: document.getElementById('ofFormTipo').value,
       nome: nome,
-      prezzo_principale: document.getElementById('ofFormPrezzo1').value.trim(),
-      prezzo_secondario: document.getElementById('ofFormPrezzo2').value.trim(),
-      prezzo_convergente: document.getElementById('ofFormPrezzoConv').value.trim(),
-      nota_convergenza: document.getElementById('ofFormNotaConv').value.trim(),
-      badge: document.getElementById('ofFormBadge').value.trim(),
-      is_opzione: document.getElementById('ofFormOpzione').checked,
-      dettagli: document.getElementById('ofFormDettagli').value.trim()
+      extra: extra
     };
-    var extra = {};
-    document.querySelectorAll('#ofFormExtraFields [data-extra-key]').forEach(function (input) {
-      extra[input.dataset.extraKey] = input.value;
-    });
-    record.extra = extra;
     if (id) record.id = id;
     statusEl.textContent = 'Salvataggio...';
     statusEl.className = 'status';
     try {
-      var { error } = await sb.from('wt_offerte').upsert(record);
+      var { data, error } = await sb.from('wt_offerte').upsert(record).select();
       if (error) throw error;
-      statusEl.textContent = 'Salvato.';
-      statusEl.className = 'status ok';
       await loadOfferte();
-      renderAdminList();
-      hideAdminForm();
+      var savedId = id || (data && data[0] && data[0].id);
+      currentDetailId = savedId;
+      var saved = offerte.filter(function (x) { return x.id === savedId; })[0];
+      if (saved) showDetailView(saved);
+      else document.getElementById('ofDetailBackdrop').classList.add('hidden');
     } catch (err) {
       console.error(err);
       statusEl.textContent = 'Errore: ' + err.message;
@@ -367,123 +343,66 @@
     }
   });
 
-  document.getElementById('ofFormDelete').addEventListener('click', async function () {
-    var id = document.getElementById('ofFormId').value;
-    if (!id) return;
-    if (!confirm('Eliminare questa offerta?')) return;
-    var statusEl = document.getElementById('ofFormStatus');
-    try {
-      var { error } = await sb.from('wt_offerte').delete().eq('id', id);
-      if (error) throw error;
-      await loadOfferte();
-      renderAdminList();
-      hideAdminForm();
-    } catch (err) {
-      console.error(err);
-      statusEl.textContent = 'Errore: ' + err.message;
-      statusEl.className = 'status err';
-    }
-  });
-
-  // ================= SELLING NOTE: MODALE + PDF =================
-  document.getElementById('ofOpenSellingNote').addEventListener('click', function () {
-    var listEl = document.getElementById('ofSellingList');
-    var selected = offerte.filter(function (o) { return selectedIds[o.id]; });
-    listEl.innerHTML = selected.map(function (o) {
-      return '<div class="of-sn-item"><b>' + escapeHtml(o.nome) + '</b><span>' + escapeHtml(o.prezzo_principale || '') + '</span></div>';
-    }).join('');
-    document.getElementById('ofSellingBackdrop').classList.remove('hidden');
-  });
-  document.getElementById('ofSellingClose').addEventListener('click', function () {
-    document.getElementById('ofSellingBackdrop').classList.add('hidden');
-  });
-  document.getElementById('ofSellingBackdrop').addEventListener('click', function (ev) {
-    if (ev.target.id === 'ofSellingBackdrop') document.getElementById('ofSellingBackdrop').classList.add('hidden');
-  });
-
-  document.getElementById('ofGeneratePdf').addEventListener('click', function () {
-    var statusEl = document.getElementById('ofSellingStatus');
-    var selected = offerte.filter(function (o) { return selectedIds[o.id]; });
-    if (!selected.length) { statusEl.textContent = 'Nessuna offerta selezionata.'; statusEl.className = 'status err'; return; }
-    try {
-      var jsPDF = window.jspdf.jsPDF;
-      var doc = new jsPDF({ unit: 'pt', format: 'a4' });
-      var pageWidth = doc.internal.pageSize.getWidth();
-      var margin = 48;
-      var y = 60;
-
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(20);
-      doc.setTextColor(238, 108, 31);
-      doc.text('Selling Note', margin, y);
-      y += 18;
-      doc.setFontSize(10);
-      doc.setTextColor(120, 120, 120);
-      doc.setFont('helvetica', 'normal');
-      doc.text(new Date().toLocaleDateString('it-IT', { day: '2-digit', month: 'long', year: 'numeric' }), margin, y);
-      y += 30;
-
-      selected.forEach(function (o) {
-        if (y > 740) { doc.addPage(); y = 60; }
-        doc.setFillColor(247, 247, 247);
-        var dettagliArr = (o.dettagli || '').split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
-        var blockHeight = 46 + dettagliArr.length * 14;
-        doc.roundedRect(margin, y, pageWidth - margin * 2, blockHeight, 6, 6, 'F');
-
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(13);
-        doc.setTextColor(30, 30, 30);
-        doc.text(o.nome, margin + 14, y + 22);
-
-        doc.setFontSize(13);
-        doc.setTextColor(238, 108, 31);
-        var prezzoTxt = (o.prezzo_principale || '') + (o.prezzo_secondario ? '  (' + o.prezzo_secondario + ')' : '');
-        doc.text(prezzoTxt, pageWidth - margin - 14, y + 22, { align: 'right' });
-
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(10);
-        doc.setTextColor(70, 70, 70);
-        var dy = y + 40;
-        dettagliArr.forEach(function (d) {
-          doc.text('\u2022 ' + d, margin + 14, dy);
-          dy += 14;
-        });
-        y += blockHeight + 14;
-      });
-
-      var note = document.getElementById('ofSellingNote').value.trim();
-      if (note) {
-        if (y > 700) { doc.addPage(); y = 60; }
-        y += 10;
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(11);
-        doc.setTextColor(30, 30, 30);
-        doc.text('Note', margin, y);
-        y += 16;
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(10);
-        doc.setTextColor(70, 70, 70);
-        var noteLines = doc.splitTextToSize(note, pageWidth - margin * 2);
-        doc.text(noteLines, margin, y);
-      }
-
-      doc.save('Selling_Note_' + new Date().toISOString().slice(0, 10) + '.pdf');
-      statusEl.textContent = 'PDF generato.';
-      statusEl.className = 'status ok';
-    } catch (err) {
-      console.error(err);
-      statusEl.textContent = 'Errore nella generazione: ' + err.message;
-      statusEl.className = 'status err';
-    }
-  });
-
-  // ================= GESTIONE DATI (tabella editabile) =================
-  var gdRows = {};      // { rowKey: { id, isNew, dirty, values:{...} } }
+  // ================= GESTIONE DATI (tabella editabile e ordinabile) =================
+  var gdRows = {};
   var gdRowCounter = 0;
-  var gdSelected = {}; // { key: true }
+  var gdSelected = {};
 
-  function gdFieldNames() {
-    return ['categoria', 'tipo', 'nome', 'prezzo_principale', 'prezzo_secondario', 'prezzo_convergente', 'nota_convergenza', 'badge', 'dettagli'];
+  function renderGestioneHeader() {
+    var headerRow = document.getElementById('gdHeaderRow');
+    if (!headerRow) return;
+    while (headerRow.children.length > 2) headerRow.removeChild(headerRow.lastChild);
+
+    function addSortTh(label, sortKey, extraButtons, extraClass) {
+      var th = document.createElement('th');
+      th.className = 'gd-sort-th' + (extraClass ? ' ' + extraClass : '');
+      var arrow = gdSortField === sortKey ? (gdSortDir === 1 ? ' \u25b2' : ' \u25bc') : '';
+      var span = document.createElement('span');
+      span.textContent = label + arrow;
+      th.appendChild(span);
+      th.addEventListener('click', function (ev) {
+        if (ev.target.tagName === 'BUTTON') return;
+        if (gdSortField === sortKey) gdSortDir = -gdSortDir; else { gdSortField = sortKey; gdSortDir = 1; }
+        renderGestioneHeader();
+        renderGestioneTable();
+      });
+      if (extraButtons) extraButtons.forEach(function (b) { th.appendChild(b); });
+      headerRow.appendChild(th);
+    }
+
+    addSortTh('Categoria', 'categoria');
+    addSortTh('Tipo', 'tipo');
+    addSortTh('Nome', 'nome');
+
+    customFields.forEach(function (f) {
+      var eyeIcon = f.show_on_card ? '\uD83D\uDC41\uFE0F' : '\uD83D\uDEAB';
+      var eyeTitle = f.show_on_card ? 'Visibile sulle card: clicca per nascondere' : 'Nascosto sulle card: clicca per mostrare';
+      var eyeBtn = document.createElement('button');
+      eyeBtn.type = 'button'; eyeBtn.className = 'gd-col-eye'; eyeBtn.title = eyeTitle; eyeBtn.textContent = eyeIcon;
+      eyeBtn.addEventListener('click', function (ev) { ev.stopPropagation(); toggleFieldShowOnCard(f); });
+      var rmBtn = document.createElement('button');
+      rmBtn.type = 'button'; rmBtn.className = 'gd-col-remove'; rmBtn.title = 'Elimina campo'; rmBtn.innerHTML = '&times;';
+      rmBtn.addEventListener('click', function (ev) { ev.stopPropagation(); removeField(f); });
+      addSortTh(f.label, f.key, [eyeBtn, rmBtn], 'gd-custom-col');
+    });
+
+    var endTh = document.createElement('th');
+    headerRow.appendChild(endTh);
+  }
+
+  function sortedFilteredOfferte() {
+    var list = offerte.filter(function (o) { return matchesSearch(o, gdSearchTerm); });
+    if (!gdSortField) return list;
+    return list.slice().sort(function (a, b) {
+      var va, vb;
+      if (['categoria', 'tipo', 'nome'].indexOf(gdSortField) > -1) { va = a[gdSortField] || ''; vb = b[gdSortField] || ''; }
+      else { va = fieldVal(a, gdSortField); vb = fieldVal(b, gdSortField); }
+      if (typeof va === 'boolean' || typeof vb === 'boolean') { va = va ? 1 : 0; vb = vb ? 1 : 0; }
+      else { va = String(va).toLowerCase(); vb = String(vb).toLowerCase(); }
+      if (va < vb) return -1 * gdSortDir;
+      if (va > vb) return 1 * gdSortDir;
+      return 0;
+    });
   }
 
   function renderGestioneTable() {
@@ -494,13 +413,10 @@
     gdSelected = {};
     updateGdDeleteButton();
     document.getElementById('gdSelectAll').checked = false;
-    offerte.filter(function (o) { return matchesSearch(o, gdSearchTerm); }).forEach(function (o) {
+    sortedFilteredOfferte().forEach(function (o) {
       var key = 'r' + (gdRowCounter++);
       gdRows[key] = { id: o.id, isNew: false, dirty: false, values: {
         categoria: o.categoria, tipo: o.tipo, nome: o.nome,
-        prezzo_principale: o.prezzo_principale || '', prezzo_secondario: o.prezzo_secondario || '',
-        prezzo_convergente: o.prezzo_convergente || '', nota_convergenza: o.nota_convergenza || '',
-        badge: o.badge || '', is_opzione: !!o.is_opzione, dettagli: o.dettagli || '',
         extra: Object.assign({}, o.extra || {})
       }};
       tbody.appendChild(buildGdRow(key));
@@ -526,10 +442,8 @@
     editCell.className = 'gd-flag-cell';
     editCell.innerHTML = '<button type="button" class="gd-del-btn" style="color:#7fc4dc" title="Apri scheda completa">\u270e</button>';
     editCell.querySelector('button').addEventListener('click', function () {
-      var full = offerte.find(function (o) { return o.id === row.id; }) || Object.assign({ id: row.id }, row.values);
-      document.getElementById('ofAdminBackdrop').classList.remove('hidden');
-      renderAdminList();
-      showAdminForm(full);
+      var full = offerte.filter(function (o) { return o.id === row.id; })[0];
+      openDetail(full ? full.id : null, true);
     });
     tr.appendChild(editCell);
 
@@ -541,55 +455,47 @@
 
     var catSel = '<select data-f="categoria"><option value="consumer"' + (row.values.categoria === 'consumer' ? ' selected' : '') + '>Consumer</option><option value="business"' + (row.values.categoria === 'business' ? ' selected' : '') + '>Business</option></select>';
     var tipoSel = '<select data-f="tipo"><option value="mobile"' + (row.values.tipo === 'mobile' ? ' selected' : '') + '>Mobile</option><option value="fisso"' + (row.values.tipo === 'fisso' ? ' selected' : '') + '>Fisso</option></select>';
-
     tr.appendChild(td(catSel));
     tr.appendChild(td(tipoSel));
     tr.appendChild(td('<input type="text" class="gd-nome-input" data-f="nome" value="' + attrEsc(row.values.nome) + '">'));
-    tr.appendChild(td('<input type="text" data-f="prezzo_principale" value="' + attrEsc(row.values.prezzo_principale) + '">'));
-    tr.appendChild(td('<input type="text" data-f="prezzo_secondario" value="' + attrEsc(row.values.prezzo_secondario) + '">'));
-    tr.appendChild(td('<input type="text" data-f="prezzo_convergente" value="' + attrEsc(row.values.prezzo_convergente) + '">'));
-    tr.appendChild(td('<input type="text" data-f="nota_convergenza" value="' + attrEsc(row.values.nota_convergenza) + '">'));
-    tr.appendChild(td('<input type="text" data-f="badge" value="' + attrEsc(row.values.badge) + '">'));
-    var opzCell = document.createElement('td');
-    opzCell.className = 'gd-flag-cell';
-    opzCell.innerHTML = '<input type="checkbox" data-f="is_opzione"' + (row.values.is_opzione ? ' checked' : '') + '>';
-    tr.appendChild(opzCell);
-    customColumns.forEach(function (col) {
+
+    ['categoria', 'tipo', 'nome'].forEach(function (f) {
+      tr.querySelector('[data-f="' + f + '"]').addEventListener('input', function (ev) {
+        row.values[f] = ev.target.value;
+        row.dirty = true;
+        tr.className = row.isNew ? 'gd-new' : 'gd-dirty';
+      });
+    });
+
+    customFields.forEach(function (field) {
       var cell = document.createElement('td');
-      var val = (row.values.extra && row.values.extra[col.key]) || '';
-      cell.innerHTML = '<input type="text" data-extra="' + col.key + '" value="' + attrEsc(val) + '">';
-      cell.querySelector('input').addEventListener('input', function (ev) {
+      var v = (row.values.extra && row.values.extra[field.key] !== undefined) ? row.values.extra[field.key] : '';
+      if (field.field_type === 'textarea') {
+        cell.innerHTML = '<textarea data-extra="' + field.key + '">' + escapeHtml(v) + '</textarea>';
+      } else if (field.field_type === 'checkbox') {
+        cell.className = 'gd-flag-cell';
+        cell.innerHTML = '<input type="checkbox" data-extra="' + field.key + '"' + (v === true ? ' checked' : '') + '>';
+      } else {
+        cell.innerHTML = '<input type="text" data-extra="' + field.key + '" value="' + attrEsc(v) + '">';
+      }
+      var inputEl = cell.querySelector('[data-extra]');
+      var evName = field.field_type === 'checkbox' ? 'change' : 'input';
+      inputEl.addEventListener(evName, function () {
         if (!row.values.extra) row.values.extra = {};
-        row.values.extra[col.key] = ev.target.value;
+        row.values.extra[field.key] = field.field_type === 'checkbox' ? inputEl.checked : inputEl.value;
         row.dirty = true;
         tr.className = row.isNew ? 'gd-new' : 'gd-dirty';
       });
       tr.appendChild(cell);
     });
-    tr.appendChild(td('<textarea data-f="dettagli">' + escapeHtml(row.values.dettagli) + '</textarea>'));
+
     var delCell = document.createElement('td');
     delCell.innerHTML = '<button type="button" class="gd-del-btn" title="Elimina">\uD83D\uDDD1</button>';
     delCell.querySelector('button').addEventListener('click', function () { gdDeleteRow(key); });
     tr.appendChild(delCell);
 
-    tr.querySelectorAll('[data-f]').forEach(function (el) {
-      el.addEventListener('input', function () {
-        row.values[el.dataset.f] = el.type === 'checkbox' ? el.checked : el.value;
-        row.dirty = true;
-        tr.className = row.isNew ? 'gd-new' : 'gd-dirty';
-      });
-      if (el.type === 'checkbox') {
-        el.addEventListener('change', function () {
-          row.values[el.dataset.f] = el.checked;
-          row.dirty = true;
-          tr.className = row.isNew ? 'gd-new' : 'gd-dirty';
-        });
-      }
-    });
     return tr;
   }
-
-  function attrEsc(s) { return escapeHtml(s).replace(/"/g, '&quot;'); }
 
   function gdDeleteRow(key) {
     var row = gdRows[key];
@@ -598,7 +504,7 @@
       document.querySelector('#gdTbody tr[data-key="' + key + '"]').remove();
       return;
     }
-    if (!confirm('Eliminare questa offerta?')) return;
+    if (!confirm('Eliminare questa tariffa?')) return;
     sb.from('wt_offerte').delete().eq('id', row.id).then(function (res) {
       if (res.error) { alert('Errore: ' + res.error.message); return; }
       delete gdRows[key];
@@ -633,7 +539,7 @@
   document.getElementById('gdDeleteSelected').addEventListener('click', async function () {
     var keys = Object.keys(gdSelected);
     if (!keys.length) return;
-    if (!confirm('Eliminare ' + keys.length + ' offerte selezionate? L\'operazione non \u00e8 reversibile.')) return;
+    if (!confirm('Eliminare ' + keys.length + ' tariffe selezionate? L\'operazione non \u00e8 reversibile.')) return;
     var statusEl = document.getElementById('gdStatus');
     statusEl.textContent = 'Eliminazione in corso...';
     statusEl.className = 'status';
@@ -649,7 +555,7 @@
         if (el) el.remove();
         delete gdRows[k];
       });
-      statusEl.textContent = 'Eliminate ' + keys.length + ' offerte.';
+      statusEl.textContent = 'Eliminate ' + keys.length + ' tariffe.';
       statusEl.className = 'status ok';
       gdSelected = {};
       updateGdDeleteButton();
@@ -661,16 +567,13 @@
     }
   });
 
-  document.getElementById('gdAddRow') && document.getElementById('gdAddRow').addEventListener('click', function () {
+  document.getElementById('gdAddRow').addEventListener('click', function () {
     var key = 'r' + (gdRowCounter++);
-    gdRows[key] = { id: null, isNew: true, dirty: true, values: {
-      categoria: 'consumer', tipo: 'mobile', nome: '', prezzo_principale: '', prezzo_secondario: '',
-      prezzo_convergente: '', nota_convergenza: '', badge: '', is_opzione: false, dettagli: '', extra: {}
-    }};
+    gdRows[key] = { id: null, isNew: true, dirty: true, values: { categoria: 'consumer', tipo: 'mobile', nome: '', extra: {} } };
     document.getElementById('gdTbody').appendChild(buildGdRow(key));
   });
 
-  document.getElementById('gdSaveAll') && document.getElementById('gdSaveAll').addEventListener('click', async function () {
+  document.getElementById('gdSaveAll').addEventListener('click', async function () {
     var statusEl = document.getElementById('gdStatus');
     var dirtyKeys = Object.keys(gdRows).filter(function (k) { return gdRows[k].dirty; });
     if (!dirtyKeys.length) { statusEl.textContent = 'Nessuna modifica da salvare.'; statusEl.className = 'status'; return; }
@@ -679,19 +582,14 @@
     var errors = [];
     for (var i = 0; i < dirtyKeys.length; i++) {
       var row = gdRows[dirtyKeys[i]];
-      if (!row.values.nome.trim()) continue; // salta righe vuote
-      var record = Object.assign({}, row.values);
+      if (!row.values.nome.trim()) continue;
+      var record = { categoria: row.values.categoria, tipo: row.values.tipo, nome: row.values.nome, extra: row.values.extra || {} };
       if (row.id) record.id = row.id;
       var res = await sb.from('wt_offerte').upsert(record);
       if (res.error) errors.push(row.values.nome + ': ' + res.error.message);
     }
-    if (errors.length) {
-      statusEl.textContent = 'Errori: ' + errors.join(' | ');
-      statusEl.className = 'status err';
-    } else {
-      statusEl.textContent = 'Tutte le modifiche sono state salvate.';
-      statusEl.className = 'status ok';
-    }
+    if (errors.length) { statusEl.textContent = 'Errori: ' + errors.join(' | '); statusEl.className = 'status err'; }
+    else { statusEl.textContent = 'Tutte le modifiche sono state salvate.'; statusEl.className = 'status ok'; }
     await loadOfferte();
     renderGestioneTable();
   });
@@ -704,6 +602,5 @@
     if (view === 'gestione') renderGestioneTable();
     else renderGrid();
   });
-  // carica comunque al primo avvio se l'utente arriva già sulla view (fallback)
   if (document.getElementById('ofGrid')) loadOfferte();
 })();

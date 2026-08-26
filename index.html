@@ -326,6 +326,18 @@
   .gd-table th:nth-child(2), .gd-table td:nth-child(2){position:sticky; left:38px; z-index:2; background:#0d1924;}
   .gd-table th:last-child, .gd-table td:last-child{position:sticky; right:0; z-index:2; background:#0d1924; text-align:center;}
   .gd-table thead th:first-child, .gd-table thead th:last-child, .gd-table thead th:nth-child(2){z-index:3;}
+  .gd-sort-th{cursor:pointer; user-select:none;}
+  .gd-sort-th:hover{color:#8fe8ff;}
+  .gd-sort-arrow{margin-left:4px; opacity:.7;}
+
+  /* ===== Modale dettaglio tariffa ===== */
+  .of-detail-name{font-family:'Rajdhani',sans-serif; font-weight:700; font-size:1.3rem; color:#eafcff; margin-bottom:6px;}
+  .of-detail-tag{font-size:11px; color:#7fc4dc; text-transform:uppercase; letter-spacing:.05em; margin-bottom:18px;}
+  .of-detail-fields{display:flex; flex-direction:column; gap:10px; margin-bottom:20px;}
+  .of-detail-field{border-bottom:1px solid rgba(143,232,255,.1); padding-bottom:8px;}
+  .of-detail-field .dl{font-size:11px; color:#7fc4dc; text-transform:uppercase; letter-spacing:.04em; margin-bottom:2px;}
+  .of-detail-field .dv{font-size:14px; color:#eafcff; white-space:pre-line;}
+  .of-detail-field .dv.dv-empty{color:#557b8c; font-style:italic;}
 </style>
 </head>
 <body>
@@ -351,7 +363,7 @@
   <div class="scanline"></div>
   <div class="nav-item active" data-view="home" data-text="Home">Home</div>
   <div class="nav-item" data-view="compilatore" data-text="Compilatore Moduli">Compilatore Moduli</div>
-  <div class="nav-item" data-view="offerte" data-text="Analizzatore Offerte">Analizzatore Offerte</div>
+  <div class="nav-item" data-view="offerte" data-text="Dettaglio Tariffe">Dettaglio Tariffe</div>
   <div class="nav-item" data-view="gestione" data-text="Gestione Dati">Gestione Dati</div>
 </div>
 
@@ -1505,41 +1517,42 @@
       <div class="of-filter-group">
         <button type="button" class="of-chip" id="ofOpzioneFilter">Solo opzioni aggiuntive</button>
       </div>
-      <button type="button" class="of-chip of-manage-btn" id="ofManageBtn">+ Gestisci offerte</button>
+      <button type="button" class="of-chip of-manage-btn" id="ofAddNewCard">+ Nuova tariffa</button>
     </div>
 
     <div class="panel">
       <div class="panel-head">
-        <div class="title">◈ offerte</div>
+        <div class="title">◈ dettaglio tariffe</div>
         <span class="status" id="ofCount"></span>
       </div>
       <div class="of-grid" id="ofGrid">
-        <p class="sub" id="ofEmptyMsg">Nessuna offerta trovata. Usa "Gestisci offerte" per aggiungerne.</p>
+        <p class="sub" id="ofEmptyMsg">Nessuna tariffa trovata. Usa "+ Nuova tariffa" per aggiungerne.</p>
       </div>
     </div>
   </div>
 
-  <!-- Barra flottante selezione -->
-  <div class="of-selling-bar hidden" id="ofSellingBar">
-    <span id="ofSelCount">0 offerte selezionate</span>
-    <div style="display:flex; gap:10px;">
-      <button type="button" class="of-btn ghost" id="ofClearSel">Deseleziona tutto</button>
-      <button type="button" class="of-btn accent" id="ofOpenSellingNote">Genera Selling Note</button>
-    </div>
-  </div>
-
-  <!-- Modale gestione offerte -->
-  <div class="of-modal-backdrop hidden" id="ofAdminBackdrop">
+  <!-- Modale dettaglio / modifica tariffa -->
+  <div class="of-modal-backdrop hidden" id="ofDetailBackdrop">
     <div class="of-modal">
       <div class="of-modal-head">
-        <div class="title">Gestisci offerte</div>
-        <button type="button" class="of-modal-close" id="ofAdminClose">&times;</button>
+        <div class="title" id="ofDetailTitle">Dettaglio tariffa</div>
+        <button type="button" class="of-modal-close" id="ofDetailClose">&times;</button>
       </div>
       <div class="of-modal-body">
-        <div class="of-admin-list" id="ofAdminList"></div>
-        <button type="button" class="of-btn" id="ofAddNew">+ Nuova offerta</button>
-        <fieldset class="of-admin-form hidden" id="ofAdminForm">
-          <legend id="ofFormLegend">Nuova offerta</legend>
+
+        <!-- Vista dettaglio (sola lettura) -->
+        <div id="ofDetailView">
+          <div class="of-detail-name" id="ofDetailName"></div>
+          <div class="of-detail-tag" id="ofDetailTag"></div>
+          <div class="of-detail-fields" id="ofDetailFields"></div>
+          <div class="actions">
+            <button type="button" class="of-btn accent" id="ofDetailEditBtn">Modifica</button>
+            <button type="button" class="of-btn danger" id="ofDetailDeleteBtn">Elimina</button>
+          </div>
+        </div>
+
+        <!-- Vista modifica -->
+        <fieldset class="of-admin-form hidden" id="ofEditForm">
           <input type="hidden" id="ofFormId">
           <div class="row">
             <div class="field">
@@ -1552,58 +1565,20 @@
             </div>
           </div>
           <div class="row">
-            <div class="field wide"><label>Nome offerta</label><input type="text" id="ofFormNome" placeholder="Es. Unlimited 5G"></div>
-          </div>
-          <div class="row">
-            <div class="field"><label>Prezzo principale</label><input type="text" id="ofFormPrezzo1" placeholder="9,99&euro;/mese"></div>
-            <div class="field"><label>Prezzo secondario (opz.)</label><input type="text" id="ofFormPrezzo2" placeholder="dal 2&deg; anno 24,99&euro;/mese"></div>
-          </div>
-          <div class="row">
-            <div class="field"><label>Prezzo convergente (opz.)</label><input type="text" id="ofFormPrezzoConv" placeholder="24,99&euro;/mese"></div>
-            <div class="field"><label>Nota convergenza (opz.)</label><input type="text" id="ofFormNotaConv" placeholder="con mobile / con fisso / con Super Fibra"></div>
-          </div>
-          <div class="row">
-            <div class="field"><label>Badge (opz.)</label><input type="text" id="ofFormBadge" placeholder="5G, NEW, Solo 2&deg; SIM..."></div>
-            <div class="field"><label class="radio-opt" style="display:flex;align-items:center;gap:8px;margin-top:22px;"><input type="checkbox" id="ofFormOpzione" style="width:18px;height:18px;accent-color:#ffb020;"> &Egrave; un'opzione aggiuntiva</label></div>
+            <div class="field wide"><label>Nome tariffa</label><input type="text" id="ofFormNome" placeholder="Es. Unlimited 5G"></div>
           </div>
           <div id="ofFormExtraFields"></div>
-          <div class="row">
-            <div class="field wide"><label>Dettagli (una riga per bullet)</label><textarea id="ofFormDettagli" rows="4" placeholder="Giga illimitati&#10;Minuti illimitati&#10;200 SMS"></textarea></div>
-          </div>
           <div class="actions">
             <button type="button" class="of-btn accent" id="ofFormSave">Salva</button>
             <button type="button" class="of-btn ghost" id="ofFormCancel">Annulla</button>
-            <button type="button" class="of-btn danger hidden" id="ofFormDelete">Elimina</button>
             <span class="status" id="ofFormStatus"></span>
           </div>
         </fieldset>
+
       </div>
     </div>
   </div>
 
-  <!-- Modale Selling Note -->
-  <div class="of-modal-backdrop hidden" id="ofSellingBackdrop">
-    <div class="of-modal">
-      <div class="of-modal-head">
-        <div class="title">Selling Note</div>
-        <button type="button" class="of-modal-close" id="ofSellingClose">&times;</button>
-      </div>
-      <div class="of-modal-body">
-        <div id="ofSellingList"></div>
-        <div class="row" style="margin-top:14px">
-          <div class="field wide">
-            <label>Note personalizzate</label>
-            <textarea id="ofSellingNote" rows="4" placeholder="Es. sconto concordato, promemoria per il cliente..."></textarea>
-          </div>
-        </div>
-        <div class="actions">
-          <button type="button" class="of-btn accent" id="ofGeneratePdf">Scarica PDF</button>
-          <span class="status" id="ofSellingStatus"></span>
-        </div>
-      </div>
-    </div>
-  </div>
-  
   <!-- GESTIONE DATI -->
   <div id="view-gestione" class="hidden">
     <div class="gd-panel">
@@ -1627,8 +1602,6 @@
             <tr id="gdHeaderRow">
               <th><input type="checkbox" id="gdSelectAll" title="Seleziona tutte"></th>
               <th></th>
-              <th>Categoria</th><th>Tipo</th><th>Nome</th><th>Prezzo princ.</th><th>Prezzo second.</th>
-              <th>Prezzo convergente</th><th>Nota convergenza</th><th>Badge</th><th>Opzione</th><th>Dettagli</th><th id="gdHeaderEnd"></th>
             </tr>
           </thead>
           <tbody id="gdTbody"></tbody>
