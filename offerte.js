@@ -168,6 +168,20 @@
   }
 
   // ================= GRIGLIA CARD =================
+  async function syncChildren(parentId, checkedChildIds) {
+    var previousChildren = offerte.filter(function (x) { return x.parent_id === parentId; }).map(function (x) { return x.id; });
+    var added = checkedChildIds.filter(function (id) { return previousChildren.indexOf(id) === -1; });
+    var removed = previousChildren.filter(function (id) { return checkedChildIds.indexOf(id) === -1; });
+    var ops = [];
+    added.forEach(function (childId) {
+      ops.push(sb.from('wt_offerte').update({ parent_id: parentId }).eq('id', childId));
+    });
+    removed.forEach(function (childId) {
+      ops.push(sb.from('wt_offerte').update({ parent_id: null }).eq('id', childId));
+    });
+    if (ops.length) await Promise.all(ops);
+  }
+
   function familyOf(o) {
     var rootId = o.parent_id || o.id;
     return offerte.filter(function (x) {
@@ -396,17 +410,28 @@
     document.getElementById('ofFormNome').value = o ? o.nome : '';
     document.getElementById('ofFormStatus').textContent = '';
 
-    var parentSel = document.getElementById('ofFormParent');
-    parentSel.innerHTML = '<option value="">Nessuna &mdash; questa \u00e8 una tariffa a s\u00e9 stante</option>';
-    // esclude se stessa e le proprie eventuali "figlie" (per non creare cicli)
-    var excludeIds = o ? [o.id].concat(offerte.filter(function (x) { return x.parent_id === o.id; }).map(function (x) { return x.id; })) : [];
-    offerte.filter(function (x) { return excludeIds.indexOf(x.id) === -1; }).forEach(function (x) {
-      var opt = document.createElement('option');
-      opt.value = x.id;
-      opt.textContent = x.nome + ' (' + CAT_LABEL[x.categoria] + ' \u00b7 ' + TIPO_LABEL[x.tipo] + ')';
-      parentSel.appendChild(opt);
-    });
-    parentSel.value = (o && o.parent_id) ? o.parent_id : '';
+    var linkedList = document.getElementById('ofFormLinkedList');
+    linkedList.innerHTML = '';
+    if (!o) {
+      linkedList.innerHTML = '<p class="sub">Salva prima la tariffa per poter scegliere le tariffe figlie.</p>';
+    } else {
+      var excludeIds = [o.id];
+      if (o.parent_id) excludeIds.push(o.parent_id);
+      var selectable = offerte.filter(function (x) { return excludeIds.indexOf(x.id) === -1; });
+      if (!selectable.length) {
+        linkedList.innerHTML = '<p class="sub">Nessun\'altra tariffa disponibile.</p>';
+      } else {
+        selectable.forEach(function (x) {
+          var row = document.createElement('label');
+          row.className = 'of-link-check-row';
+          var isChild = x.parent_id === o.id;
+          row.innerHTML = '<input type="checkbox" value="' + x.id + '"' + (isChild ? ' checked' : '') + '>' +
+            '<span class="oflc-name">' + escapeHtml(x.nome) + '</span>' +
+            '<span class="oflc-tag">' + CAT_LABEL[x.categoria] + ' \u00b7 ' + TIPO_LABEL[x.tipo] + '</span>';
+          linkedList.appendChild(row);
+        });
+      }
+    }
 
     var extraWrap = document.getElementById('ofFormExtraFields');
     extraWrap.innerHTML = '';
@@ -443,11 +468,11 @@
     document.querySelectorAll('#ofFormExtraFields [data-extra-key]').forEach(function (input) {
       extra[input.dataset.extraKey] = input.dataset.type === 'checkbox' ? input.checked : input.value;
     });
+    var checkedChildIds = Array.prototype.slice.call(document.querySelectorAll('#ofFormLinkedList input[type=checkbox]:checked')).map(function (cb) { return cb.value; });
     var record = {
       categoria: document.getElementById('ofFormCategoria').value,
       tipo: document.getElementById('ofFormTipo').value,
       nome: nome,
-      parent_id: document.getElementById('ofFormParent').value || null,
       extra: extra
     };
     if (id) record.id = id;
@@ -456,8 +481,9 @@
     try {
       var { data, error } = await sb.from('wt_offerte').upsert(record).select();
       if (error) throw error;
-      await loadOfferte();
       var savedId = id || (data && data[0] && data[0].id);
+      await syncChildren(savedId, checkedChildIds);
+      await loadOfferte();
       currentDetailId = savedId;
       var saved = offerte.filter(function (x) { return x.id === savedId; })[0];
       if (saved) showDetailView(saved);
