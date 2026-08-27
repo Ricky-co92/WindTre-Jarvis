@@ -557,23 +557,10 @@
     addSortTh('Nome', 'nome');
 
     customFields.forEach(function (f) {
-      var eyeIcon = f.show_on_card ? '\uD83D\uDC41\uFE0F' : '\uD83D\uDEAB';
-      var eyeTitle = f.show_on_card ? 'Visibile sulle card: clicca per nascondere' : 'Nascosto sulle card: clicca per mostrare';
-      var eyeBtn = document.createElement('button');
-      eyeBtn.type = 'button'; eyeBtn.className = 'gd-col-eye'; eyeBtn.title = eyeTitle; eyeBtn.textContent = eyeIcon;
-      eyeBtn.addEventListener('click', function (ev) { ev.stopPropagation(); toggleFieldShowOnCard(f); });
-      var starBtn = document.createElement('button');
-      starBtn.type = 'button'; starBtn.className = 'gd-col-star'; starBtn.title = f.card_prominent ? 'In evidenza sulla card: clicca per togliere' : 'Metti in evidenza sulla card (es. il canone)';
-      starBtn.textContent = f.card_prominent ? '\u2B50' : '\u2606';
-      starBtn.addEventListener('click', function (ev) { ev.stopPropagation(); setProminentField(f); });
-      var linkBtn = document.createElement('button');
-      linkBtn.type = 'button'; linkBtn.className = 'gd-col-link'; linkBtn.title = f.is_link_group ? 'Campo gruppo convergenza: clicca per togliere' : 'Usa come gruppo convergenza (collega le card)';
-      linkBtn.textContent = f.is_link_group ? '\uD83D\uDD17' : '\u26D3\uFE0F';
-      linkBtn.addEventListener('click', function (ev) { ev.stopPropagation(); setLinkGroupField(f); });
       var rmBtn = document.createElement('button');
       rmBtn.type = 'button'; rmBtn.className = 'gd-col-remove'; rmBtn.title = 'Elimina campo'; rmBtn.innerHTML = '&times;';
       rmBtn.addEventListener('click', function (ev) { ev.stopPropagation(); removeField(f); });
-      addSortTh(f.label, f.key, [linkBtn, starBtn, eyeBtn, rmBtn], 'gd-custom-col');
+      addSortTh(f.label, f.key, [rmBtn], 'gd-custom-col');
     });
 
     var endTh = document.createElement('th');
