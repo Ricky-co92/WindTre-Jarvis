@@ -230,31 +230,25 @@
   .of-manage-btn{margin-left:auto;border-color:#ffb020;color:#ffe6b0;}
   .of-manage-btn:hover{background:rgba(255,176,32,.12);}
   .of-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;}
-  .of-card{position:relative;background:rgba(13,25,36,.6);border:1px solid rgba(143,232,255,.2);border-radius:4px 14px 14px 14px;padding:18px;cursor:pointer;transition:all .15s ease;}
+  .of-card{position:relative;background:rgba(13,25,36,.6);border:1px solid rgba(143,232,255,.2);border-radius:4px 14px 14px 14px;padding:0;cursor:pointer;transition:all .15s ease;overflow:hidden;display:flex;flex-direction:column;}
   .of-card:hover{border-color:#8fe8ff;}
-  .of-card.selected{border-color:#ffb020;background:rgba(255,176,32,.06);box-shadow:0 0 14px rgba(255,176,32,.15);}
-  .of-card .of-check{position:absolute;top:14px;right:14px;width:20px;height:20px;border:1.5px solid rgba(143,232,255,.4);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:13px;color:transparent;}
-  .of-card.selected .of-check{background:#ffb020;border-color:#ffb020;color:#05141c;}
-  .of-card .of-edit-btn{position:absolute;top:14px;right:42px;width:20px;height:20px;border:none;background:none;color:#7fc4dc;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
-  .of-card .of-edit-btn:hover{color:#8fe8ff;}
-  .of-card .of-prezzo-conv{font-size:11.5px;color:#ffe6b0;margin-top:6px;padding-top:6px;border-top:1px dashed rgba(255,176,32,.3);}
-  .of-card .of-prezzo-conv-main{font-family:'Orbitron',sans-serif;font-size:1.3rem;color:#ffb020;text-shadow:0 0 8px rgba(255,176,32,.4);}
-  .of-card .of-prezzo-conv-label{font-size:11px;color:#7fc4dc;text-transform:uppercase;letter-spacing:.03em;margin-bottom:2px;}
-  .of-card .of-prezzo-solo{font-size:11.5px;color:#7fc4dc;margin-top:6px;padding-top:6px;border-top:1px dashed rgba(143,232,255,.2);}
+  .of-card-header{position:relative;padding:14px 40px 12px 14px;border-left:4px solid #8fe8ff;background:rgba(143,232,255,.04);}
+  .of-corner-tag{position:absolute;top:10px;right:10px;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:9.5px;letter-spacing:.05em;padding:2px 7px;border-radius:3px;background:rgba(255,176,32,.15);color:#ffe6b0;border:1px solid rgba(255,176,32,.4);}
   .of-card .of-badge{display:inline-block;font-size:10.5px;font-family:'Rajdhani',sans-serif;font-weight:700;text-transform:uppercase;color:#ffe6b0;background:rgba(255,176,32,.15);border:1px solid rgba(255,176,32,.4);border-radius:3px;padding:2px 7px;margin-bottom:8px;}
-  .of-card .of-nome{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:15.5px;color:#eafcff;margin-bottom:10px;padding-right:24px;}
-  .of-card .of-prezzo1{font-family:'Orbitron',sans-serif;font-size:1.3rem;color:#8fe8ff;text-shadow:0 0 8px rgba(143,232,255,.4);}
-  .of-card .of-prezzo2{font-size:11.5px;color:#7fc4dc;margin-top:2px;}
-  .of-card .of-dettagli{margin-top:12px;font-size:12.5px;color:#b8dae8;line-height:1.7;}
-  .of-card .of-dettagli div{padding-left:14px;position:relative;}
-  .of-card .of-dettagli div::before{content:'\2713';position:absolute;left:0;color:#8fe8ff;font-size:11px;}
-  .of-card .of-tag{position:absolute;bottom:14px;right:14px;font-size:10px;color:#557b8c;text-transform:uppercase;letter-spacing:.04em;}
+  .of-card .of-nome{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:16px;color:#eafcff;line-height:1.3;}
+  .of-card-body{padding:14px;flex:1;}
   .of-card .of-extra-field{margin-top:8px; font-size:12px; color:#b8dae8;}
   .of-card .of-extra-field b{color:#7fc4dc; font-weight:600;}
-  .of-card .of-prominent-label{font-size:11px; color:#7fc4dc; text-transform:uppercase; letter-spacing:.05em; margin-top:8px;}
-  .of-card .of-prominent{font-family:'Orbitron',sans-serif;font-size:1.35rem;color:#8fe8ff;text-shadow:0 0 8px rgba(143,232,255,.4);margin:2px 0 4px;}
+  .of-card .of-prominent-label{font-size:10.5px; color:#7fc4dc; text-transform:uppercase; letter-spacing:.05em; margin-bottom:5px;}
+  .of-card .of-prominent{display:inline-block; font-family:'Orbitron',sans-serif;font-size:1.2rem;color:#ffb020;background:rgba(255,176,32,.08);border:1px solid rgba(255,176,32,.35);border-radius:20px;padding:6px 16px;margin-bottom:6px;}
   .of-card .of-link-badge{margin-top:10px; padding-top:8px; border-top:1px dashed rgba(255,176,32,.3); font-size:11px; color:#ffe6b0;}
+  .of-card .of-tag{padding:8px 14px;background:rgba(0,0,0,.18);font-size:9.5px;color:#557b8c;text-transform:uppercase;letter-spacing:.04em;}
   .of-card.linked-highlight{border-color:#ffb020; box-shadow:0 0 16px rgba(255,176,32,.35);}
+  .of-reorder-controls{position:absolute; top:8px; left:8px; z-index:2; display:flex; flex-direction:column; gap:2px;}
+  .of-reorder-controls button{width:24px; height:24px; background:#0d1924; border:1px solid #ffb020; color:#ffe6b0; border-radius:3px; font-size:11px; cursor:pointer; line-height:1;}
+  .of-reorder-controls button:disabled{opacity:.25; cursor:default;}
+  .of-card.reorder-mode{cursor:default;}
+  .of-card.reorder-mode .of-card-header{padding-left:38px;}
 
   .of-selling-bar{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:60;background:#0d1924;border:1px solid #ffb020;border-radius:10px;padding:14px 20px;display:flex;align-items:center;gap:20px;box-shadow:0 8px 30px rgba(0,0,0,.5),0 0 20px rgba(255,176,32,.2);font-family:'Rajdhani',sans-serif;font-weight:700;color:#ffe6b0;}
   .of-btn{background:rgba(42,184,217,.1);border:1px solid #2ab8d9;color:#c8f2ff;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13.5px;text-transform:uppercase;padding:9px 18px;border-radius:3px;cursor:pointer;letter-spacing:.02em;}
@@ -267,6 +261,10 @@
 
   .of-modal-backdrop{position:fixed;inset:0;background:rgba(1,5,8,.7);z-index:70;display:flex;align-items:center;justify-content:center;padding:20px;}
   .of-modal{background:#0d1924;border:1px solid rgba(143,232,255,.3);border-radius:4px 16px 16px 16px;max-width:640px;width:100%;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.6);position:relative;overflow:hidden;}
+  .of-modal.of-modal-wide{max-width:900px;}
+  .of-cardconfig-layout{display:grid; grid-template-columns:1fr 260px; gap:20px; align-items:start;}
+  @media (max-width:640px){ .of-cardconfig-layout{grid-template-columns:1fr;} }
+  .of-cardconfig-layout .of-config-preview-label{margin-top:0;}
   .of-modal::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#2ab8d9,#8fe8ff,#ffb020);}
   .of-modal-head{display:flex;justify-content:space-between;align-items:center;padding:18px 22px;border-bottom:1px solid rgba(143,232,255,.15);}
   .of-modal-head .title{font-family:'Rajdhani',sans-serif;font-weight:700;color:#4fc8e8;text-transform:uppercase;font-size:16px;}
@@ -352,7 +350,7 @@
   .of-detail-field .dv.dv-empty{color:#557b8c; font-style:italic;}
   .of-linked-title{font-size:11px; color:#ffe6b0; text-transform:uppercase; letter-spacing:.05em; margin:4px 0 10px; padding-top:12px; border-top:1px dashed rgba(255,176,32,.3);}
   #ofLinkedList{display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:10px;}
-  .of-linked-card{padding:14px; border-color:rgba(255,176,32,.3);}
+  .of-linked-card{border-color:rgba(255,176,32,.3);}
   .of-linked-card:hover{border-color:#ffb020; box-shadow:0 0 12px rgba(255,176,32,.25);}
   .of-linked-card .of-nome{font-size:13px;}
   .of-linked-card .of-prominent{font-size:1.05rem;}
@@ -1546,6 +1544,7 @@
         <button type="button" class="of-chip" data-filter-tipo="opzione">Opzione</button>
       </div>
       <div class="of-filter-group" style="margin-left:auto;">
+        <button type="button" class="of-chip of-manage-btn" id="ofReorderBtn">&#8597; Riordina</button>
         <button type="button" class="of-chip of-manage-btn" id="ofAddNewCard">+ Nuova tariffa</button>
       </div>
       <div class="of-filter-group hidden" id="ofBadgeFilterGroup">
@@ -1565,7 +1564,7 @@
 
   <!-- Modale dettaglio / modifica tariffa -->
   <div class="of-modal-backdrop hidden" id="ofDetailBackdrop">
-    <div class="of-modal">
+    <div class="of-modal of-modal-wide">
       <div class="of-modal-head">
         <div class="title" id="ofDetailTitle">Dettaglio tariffa</div>
         <button type="button" class="of-modal-close" id="ofDetailClose">&times;</button>
@@ -1595,9 +1594,13 @@
           <fieldset class="of-admin-form" id="ofCardConfigBox" style="margin-top:0;">
             <legend>&#127912; Aspetto di questa card</legend>
             <p class="sub" style="margin:0 0 12px">Scegli quali campi mostrare sulla card, quale mettere in evidenza e in che ordine.</p>
-            <div class="of-config-fields" id="ofCardConfigList"></div>
-            <div class="of-config-preview-label" style="margin-top:14px;">Anteprima card</div>
-            <div class="of-grid" id="ofCardConfigPreview" style="grid-template-columns:1fr; max-width:260px;"></div>
+            <div class="of-cardconfig-layout">
+              <div class="of-config-fields" id="ofCardConfigList"></div>
+              <div>
+                <div class="of-config-preview-label">Anteprima card</div>
+                <div class="of-grid" id="ofCardConfigPreview" style="grid-template-columns:1fr;"></div>
+              </div>
+            </div>
           </fieldset>
           <div class="row">
             <div class="field">
@@ -1614,8 +1617,9 @@
           </div>
           <div class="row">
             <div class="field wide">
-              <label>Tariffe figlie (opzionale)</label>
-              <p class="sub" style="margin:0 0 8px; font-size:11.5px;">Seleziona quali altre tariffe dipendono da questa (es. opzioni mobile legate a questa fibra). Scegliendole qui, questa tariffa diventa la loro "principale" e compariranno collegate nel dettaglio di entrambe.</p>
+              <label>Tariffe collegate (opzionale)</label>
+              <p class="sub" style="margin:0 0 8px; font-size:11.5px;">Seleziona quali altre tariffe convergono con questa (es. una SIM pu&ograve; convergere con pi&ugrave; offerte fisso contemporaneamente). Il collegamento vale in entrambe le direzioni e non toglie i collegamenti che quelle tariffe hanno gi&agrave; con altre.</p>
+              <input type="text" id="ofFormLinkSearch" class="of-search-input" style="max-width:none; margin-bottom:8px;" placeholder="Cerca tariffa da collegare&hellip;">
               <div id="ofFormLinkedList" class="of-config-fields" style="max-height:220px; overflow-y:auto;"></div>
             </div>
           </div>

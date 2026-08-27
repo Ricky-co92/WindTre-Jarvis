@@ -8,6 +8,9 @@
   var gdSortField = null;     // 'categoria' | 'tipo' | 'nome' | field.key
   var gdSortDir = 1;          // 1 asc, -1 desc
   var currentDetailId = null;
+  var pendingLinkedIds = [];
+  var linkSelectableList = [];
+  var linkSearchTerm = '';
   var _activeBadgeFilters = [];
 
   var CAT_LABEL = { consumer: 'Consumer', business: 'Business' };
@@ -168,59 +171,43 @@
   }
 
   // ================= GRIGLIA CARD =================
-  async function syncChildren(parentId, checkedChildIds) {
-    var previousChildren = offerte.filter(function (x) { return x.parent_id === parentId; }).map(function (x) { return x.id; });
-    var added = checkedChildIds.filter(function (id) { return previousChildren.indexOf(id) === -1; });
-    var removed = previousChildren.filter(function (id) { return checkedChildIds.indexOf(id) === -1; });
+
+
+  async function syncReciprocalLinks(selfId, oldIds, newIds) {
+    var added = newIds.filter(function (id) { return oldIds.indexOf(id) === -1; });
+    var removed = oldIds.filter(function (id) { return newIds.indexOf(id) === -1; });
     var ops = [];
-    added.forEach(function (childId) {
-      ops.push(sb.from('wt_offerte').update({ parent_id: parentId }).eq('id', childId));
+    added.forEach(function (otherId) {
+      var other = offerte.filter(function (x) { return x.id === otherId; })[0];
+      var otherLinks = (other && other.linked_ids) || [];
+      if (otherLinks.indexOf(selfId) === -1) {
+        ops.push(sb.from('wt_offerte').update({ linked_ids: otherLinks.concat([selfId]) }).eq('id', otherId));
+      }
     });
-    removed.forEach(function (childId) {
-      ops.push(sb.from('wt_offerte').update({ parent_id: null }).eq('id', childId));
+    removed.forEach(function (otherId) {
+      var other = offerte.filter(function (x) { return x.id === otherId; })[0];
+      var otherLinks = ((other && other.linked_ids) || []).filter(function (x) { return x !== selfId; });
+      ops.push(sb.from('wt_offerte').update({ linked_ids: otherLinks }).eq('id', otherId));
     });
     if (ops.length) await Promise.all(ops);
   }
 
-  function ancestorsOf(o) {
-    var result = [];
+  function familyOf(o) {
+    // esplora l'intera rete di collegamenti raggiungibile da o (catene, hub con più collegamenti, ecc.)
     var visited = {};
-    var cur = o;
-    while (cur.parent_id && !visited[cur.parent_id]) {
-      visited[cur.parent_id] = true;
-      var p = offerte.filter(function (x) { return x.id === cur.parent_id; })[0];
-      if (!p) break;
-      result.push(p);
-      cur = p;
+    visited[o.id] = true;
+    var queue = (o.linked_ids || []).slice();
+    var result = [];
+    while (queue.length) {
+      var id = queue.shift();
+      if (visited[id]) continue;
+      visited[id] = true;
+      var node = offerte.filter(function (x) { return x.id === id; })[0];
+      if (!node) continue;
+      result.push(node);
+      (node.linked_ids || []).forEach(function (nid) { if (!visited[nid]) queue.push(nid); });
     }
     return result;
-  }
-
-  function familyOf(o) {
-    // risale fino alla radice dell'intera catena (genitore del genitore, ecc.)
-    var root = o;
-    var seen = {};
-    while (root.parent_id && !seen[root.parent_id]) {
-      seen[root.parent_id] = true;
-      var p = offerte.filter(function (x) { return x.id === root.parent_id; })[0];
-      if (!p) break;
-      root = p;
-    }
-    // poi raccoglie tutta la discendenza della radice, a qualsiasi livello
-    var result = [];
-    var visitedIds = {};
-    function collect(id) {
-      offerte.forEach(function (x) {
-        if (x.parent_id === id && !visitedIds[x.id]) {
-          visitedIds[x.id] = true;
-          result.push(x);
-          collect(x.id);
-        }
-      });
-    }
-    if (root.id !== o.id) result.push(root);
-    collect(root.id);
-    return result.filter(function (x) { return x.id !== o.id; });
   }
 
   function buildCardInnerHtml(o) {
@@ -248,15 +235,46 @@
     }).join('');
     var family = familyOf(o);
     var linkHtml = family.length ? '<div class="of-link-badge">\uD83D\uDD17 Bundle con ' + family.length + ' altra' + (family.length > 1 ? '/e' : '') + ' tariffa/e</div>' : '';
-    return badgeHtml +
-      '<div class="of-nome">' + escapeHtml(o.nome) + '</div>' +
-      prominentHtml +
-      fieldsHtml +
-      linkHtml +
+    var catTag = o.categoria === 'business' ? 'BIZ' : 'CONS';
+    var borderColor = o.tipo === 'fisso' ? '#ffb020' : (o.tipo === 'opzione' ? '#7fe8a0' : '#8fe8ff');
+    return '<div class="of-card-header" style="border-left-color:' + borderColor + '">' +
+        '<div class="of-corner-tag">' + catTag + '</div>' +
+        badgeHtml +
+        '<div class="of-nome">' + escapeHtml(o.nome) + '</div>' +
+      '</div>' +
+      '<div class="of-card-body">' +
+        prominentHtml +
+        fieldsHtml +
+        linkHtml +
+      '</div>' +
       '<div class="of-tag">' + CAT_LABEL[o.categoria] + ' &middot; ' + TIPO_LABEL[o.tipo] + '</div>';
   }
 
   // ================= GRIGLIA CARD =================
+  var reorderMode = false;
+
+  document.getElementById('ofReorderBtn').addEventListener('click', function () {
+    reorderMode = !reorderMode;
+    this.classList.toggle('active', reorderMode);
+    renderGrid();
+  });
+
+  async function moveCard(o, direction, list) {
+    var idx = list.indexOf(o);
+    var swapIdx = idx + direction;
+    if (swapIdx < 0 || swapIdx >= list.length) return;
+    var other = list[swapIdx];
+    try {
+      await Promise.all([
+        sb.from('wt_offerte').update({ ordine: other.ordine }).eq('id', o.id),
+        sb.from('wt_offerte').update({ ordine: o.ordine }).eq('id', other.id)
+      ]);
+      await loadOfferte();
+    } catch (err) {
+      alert('Errore: ' + err.message);
+    }
+  }
+
   function renderGrid() {
     var grid = document.getElementById('ofGrid');
     var list = filteredOfferte();
@@ -265,26 +283,42 @@
       return;
     }
     grid.innerHTML = '';
-    list.forEach(function (o) {
+    list.forEach(function (o, idx) {
       var card = document.createElement('div');
-      card.className = 'of-card';
+      card.className = 'of-card' + (reorderMode ? ' reorder-mode' : '');
       card.dataset.id = o.id;
       card.innerHTML = buildCardInnerHtml(o);
-      card.addEventListener('click', function () { openDetail(o.id); });
-      var family = familyOf(o);
-      if (family.length) {
-        var familyIds = family.map(function (x) { return x.id; }).concat([o.id]);
-        card.addEventListener('mouseenter', function () {
-          familyIds.forEach(function (fid) {
-            var el = grid.querySelector('.of-card[data-id="' + fid + '"]');
-            if (el) el.classList.add('linked-highlight');
+      if (reorderMode) {
+        var controls = document.createElement('div');
+        controls.className = 'of-reorder-controls';
+        var upBtn = document.createElement('button');
+        upBtn.type = 'button'; upBtn.textContent = '\u25b2'; upBtn.title = 'Sposta prima';
+        upBtn.disabled = idx === 0;
+        upBtn.addEventListener('click', function (ev) { ev.stopPropagation(); moveCard(o, -1, list); });
+        var downBtn = document.createElement('button');
+        downBtn.type = 'button'; downBtn.textContent = '\u25bc'; downBtn.title = 'Sposta dopo';
+        downBtn.disabled = idx === list.length - 1;
+        downBtn.addEventListener('click', function (ev) { ev.stopPropagation(); moveCard(o, 1, list); });
+        controls.appendChild(upBtn);
+        controls.appendChild(downBtn);
+        card.appendChild(controls);
+      } else {
+        card.addEventListener('click', function () { openDetail(o.id); });
+        var family = familyOf(o);
+        if (family.length) {
+          var familyIds = family.map(function (x) { return x.id; }).concat([o.id]);
+          card.addEventListener('mouseenter', function () {
+            familyIds.forEach(function (fid) {
+              var el = grid.querySelector('.of-card[data-id="' + fid + '"]');
+              if (el) el.classList.add('linked-highlight');
+            });
           });
-        });
-        card.addEventListener('mouseleave', function () {
-          document.querySelectorAll('.of-card.linked-highlight').forEach(function (c) {
-            c.classList.remove('linked-highlight');
+          card.addEventListener('mouseleave', function () {
+            document.querySelectorAll('.of-card.linked-highlight').forEach(function (c) {
+              c.classList.remove('linked-highlight');
+            });
           });
-        });
+        }
       }
       grid.appendChild(card);
     });
@@ -465,6 +499,37 @@
     }
   });
 
+  function renderLinkChecklist(list, term) {
+    var wrap = document.getElementById('ofFormLinkedList');
+    var filtered = term ? list.filter(function (x) { return x.nome.toLowerCase().indexOf(term) > -1; }) : list;
+    if (!filtered.length) {
+      wrap.innerHTML = '<p class="sub">Nessuna tariffa trovata.</p>';
+      return;
+    }
+    wrap.innerHTML = '';
+    filtered.forEach(function (x) {
+      var row = document.createElement('label');
+      row.className = 'of-link-check-row';
+      var isChecked = pendingLinkedIds.indexOf(x.id) > -1;
+      row.innerHTML = '<input type="checkbox" value="' + x.id + '"' + (isChecked ? ' checked' : '') + '>' +
+        '<span class="oflc-name">' + escapeHtml(x.nome) + '</span>' +
+        '<span class="oflc-tag">' + CAT_LABEL[x.categoria] + ' \u00b7 ' + TIPO_LABEL[x.tipo] + '</span>';
+      row.querySelector('input').addEventListener('change', function (ev) {
+        if (ev.target.checked) {
+          if (pendingLinkedIds.indexOf(x.id) === -1) pendingLinkedIds.push(x.id);
+        } else {
+          pendingLinkedIds = pendingLinkedIds.filter(function (id) { return id !== x.id; });
+        }
+      });
+      wrap.appendChild(row);
+    });
+  }
+
+  document.getElementById('ofFormLinkSearch').addEventListener('input', function () {
+    linkSearchTerm = this.value.trim().toLowerCase();
+    renderLinkChecklist(linkSelectableList, linkSearchTerm);
+  });
+
   function showEditForm(o) {
     document.getElementById('ofDetailTitle').textContent = o ? 'Modifica tariffa' : 'Nuova tariffa';
     document.getElementById('ofEditFormLegend').textContent = o ? 'Dati Tariffa' : 'Nuova Tariffa';
@@ -483,26 +548,19 @@
       document.getElementById('ofCardConfigBox').classList.add('hidden');
     }
 
-    var linkedList = document.getElementById('ofFormLinkedList');
-    linkedList.innerHTML = '';
+    var linkedListWrap = document.getElementById('ofFormLinkedList');
+    var linkSearchInput = document.getElementById('ofFormLinkSearch');
+    linkedListWrap.innerHTML = '';
+    linkSearchInput.value = '';
+    linkSearchTerm = '';
     if (!o) {
-      linkedList.innerHTML = '<p class="sub">Salva prima la tariffa per poter scegliere le tariffe figlie.</p>';
+      linkedListWrap.innerHTML = '<p class="sub">Salva prima la tariffa per poter scegliere i collegamenti.</p>';
+      linkSearchInput.disabled = true;
     } else {
-      var excludeIds = [o.id].concat(ancestorsOf(o).map(function (x) { return x.id; }));
-      var selectable = offerte.filter(function (x) { return excludeIds.indexOf(x.id) === -1; });
-      if (!selectable.length) {
-        linkedList.innerHTML = '<p class="sub">Nessun\'altra tariffa disponibile.</p>';
-      } else {
-        selectable.forEach(function (x) {
-          var row = document.createElement('label');
-          row.className = 'of-link-check-row';
-          var isChild = x.parent_id === o.id;
-          row.innerHTML = '<input type="checkbox" value="' + x.id + '"' + (isChild ? ' checked' : '') + '>' +
-            '<span class="oflc-name">' + escapeHtml(x.nome) + '</span>' +
-            '<span class="oflc-tag">' + CAT_LABEL[x.categoria] + ' \u00b7 ' + TIPO_LABEL[x.tipo] + '</span>';
-          linkedList.appendChild(row);
-        });
-      }
+      linkSearchInput.disabled = false;
+      pendingLinkedIds = (o.linked_ids || []).slice();
+      linkSelectableList = offerte.filter(function (x) { return x.id !== o.id; });
+      renderLinkChecklist(linkSelectableList, '');
     }
 
     var extraWrap = document.getElementById('ofFormExtraFields');
@@ -540,11 +598,13 @@
     document.querySelectorAll('#ofFormExtraFields [data-extra-key]').forEach(function (input) {
       extra[input.dataset.extraKey] = input.dataset.type === 'checkbox' ? input.checked : input.value;
     });
-    var checkedChildIds = Array.prototype.slice.call(document.querySelectorAll('#ofFormLinkedList input[type=checkbox]:checked')).map(function (cb) { return cb.value; });
+    var newLinkedIds = pendingLinkedIds.slice();
+    var oldLinkedIds = id ? ((offerte.filter(function (x) { return x.id === id; })[0] || {}).linked_ids || []) : [];
     var record = {
       categoria: document.getElementById('ofFormCategoria').value,
       tipo: document.getElementById('ofFormTipo').value,
       nome: nome,
+      linked_ids: newLinkedIds,
       extra: extra
     };
     if (id) record.id = id;
@@ -554,7 +614,7 @@
       var { data, error } = await sb.from('wt_offerte').upsert(record).select();
       if (error) throw error;
       var savedId = id || (data && data[0] && data[0].id);
-      await syncChildren(savedId, checkedChildIds);
+      await syncReciprocalLinks(savedId, oldLinkedIds, newLinkedIds);
       await loadOfferte();
       currentDetailId = savedId;
       var saved = offerte.filter(function (x) { return x.id === savedId; })[0];
