@@ -129,6 +129,23 @@
     }
   }
 
+  async function setLinkGroupField(field) {
+    var newVal = !field.is_link_group;
+    try {
+      // solo un campo alla volta può fare da "gruppo convergenza": spengo gli altri
+      var updates = customFields.map(function (f) {
+        var val = (f.id === field.id) ? newVal : false;
+        return sb.from('wt_custom_columns').update({ is_link_group: val }).eq('id', f.id);
+      });
+      await Promise.all(updates);
+      await loadCustomFields();
+      renderGestioneHeader();
+      renderGrid();
+    } catch (err) {
+      alert('Errore: ' + err.message);
+    }
+  }
+
   async function removeField(field) {
     if (!confirm('Eliminare il campo "' + field.label + '"? I dati salvati per ogni tariffa in questo campo andranno persi dalla visualizzazione.')) return;
     try {
@@ -215,10 +232,14 @@
       if (!v) return '';
       return '<div class="of-extra-field"><b>' + escapeHtml(f.label) + ':</b> ' + escapeHtml(v) + '</div>';
     }).join('');
+    var linkField = customFields.filter(function (f) { return f.is_link_group; })[0];
+    var linkVal = linkField ? fieldVal(o, linkField.key) : '';
+    var linkHtml = (linkField && linkVal) ? '<div class="of-link-badge">\uD83D\uDD17 ' + escapeHtml(linkVal) + '</div>' : '';
     return badgeHtml +
       '<div class="of-nome">' + escapeHtml(o.nome) + '</div>' +
       prominentHtml +
       fieldsHtml +
+      linkHtml +
       '<div class="of-tag">' + CAT_LABEL[o.categoria] + ' &middot; ' + TIPO_LABEL[o.tipo] + '</div>';
   }
 
@@ -231,12 +252,27 @@
       return;
     }
     grid.innerHTML = '';
+    var linkField = customFields.filter(function (f) { return f.is_link_group; })[0];
     list.forEach(function (o) {
       var card = document.createElement('div');
       card.className = 'of-card';
       card.dataset.id = o.id;
+      var groupVal = linkField ? fieldVal(o, linkField.key) : '';
+      if (groupVal) card.dataset.group = groupVal;
       card.innerHTML = buildCardInnerHtml(o);
       card.addEventListener('click', function () { openDetail(o.id); });
+      if (groupVal) {
+        card.addEventListener('mouseenter', function () {
+          document.querySelectorAll('.of-card[data-group="' + CSS.escape(groupVal) + '"]').forEach(function (c) {
+            c.classList.add('linked-highlight');
+          });
+        });
+        card.addEventListener('mouseleave', function () {
+          document.querySelectorAll('.of-card.linked-highlight').forEach(function (c) {
+            c.classList.remove('linked-highlight');
+          });
+        });
+      }
       grid.appendChild(card);
     });
   }
@@ -308,12 +344,18 @@
       starBtn.title = f.card_prominent ? 'In evidenza: clicca per togliere' : 'Metti in evidenza (es. il canone)';
       starBtn.textContent = f.card_prominent ? '\u2B50' : '\u2606';
       starBtn.addEventListener('click', async function () { await setProminentField(f); renderConfigFieldsList(); renderConfigPreview(); });
+      var linkBtn = document.createElement('button');
+      linkBtn.type = 'button';
+      linkBtn.title = f.is_link_group ? 'Campo gruppo convergenza: clicca per togliere' : 'Usa come gruppo convergenza (collega le card)';
+      linkBtn.textContent = f.is_link_group ? '\uD83D\uDD17' : '\u26D3\uFE0F';
+      linkBtn.addEventListener('click', async function () { await setLinkGroupField(f); renderConfigFieldsList(); renderConfigPreview(); });
       var label = document.createElement('span');
       label.className = 'ofc-label';
       label.textContent = f.label;
       row.appendChild(upBtn);
       row.appendChild(downBtn);
       row.appendChild(label);
+      row.appendChild(linkBtn);
       row.appendChild(starBtn);
       row.appendChild(eyeBtn);
       list.appendChild(row);
@@ -374,6 +416,26 @@
       var emptyClass = (!v && f.field_type !== 'checkbox') ? ' dv-empty' : '';
       return '<div class="of-detail-field"><div class="dl">' + escapeHtml(f.label) + '</div><div class="dv' + emptyClass + '">' + (displayVal || 'Non impostato') + '</div></div>';
     }).join('');
+
+    var linkField = customFields.filter(function (f) { return f.is_link_group; })[0];
+    var groupVal = linkField ? fieldVal(o, linkField.key) : '';
+    var linkedWrap = document.getElementById('ofLinkedWrap');
+    if (groupVal) {
+      var others = offerte.filter(function (x) { return x.id !== o.id && fieldVal(x, linkField.key) === groupVal; });
+      if (others.length) {
+        linkedWrap.classList.remove('hidden');
+        document.getElementById('ofLinkedList').innerHTML = others.map(function (x) {
+          return '<div class="of-linked-item" data-linked-id="' + x.id + '">' + escapeHtml(x.nome) + ' <span style="color:#7fc4dc; font-size:11px;">(' + CAT_LABEL[x.categoria] + ' \u00b7 ' + TIPO_LABEL[x.tipo] + ')</span></div>';
+        }).join('');
+        document.querySelectorAll('#ofLinkedList .of-linked-item').forEach(function (el) {
+          el.addEventListener('click', function () { openDetail(el.dataset.linkedId); });
+        });
+      } else {
+        linkedWrap.classList.add('hidden');
+      }
+    } else {
+      linkedWrap.classList.add('hidden');
+    }
   }
 
   document.getElementById('ofDetailEditBtn').addEventListener('click', function () {
@@ -504,10 +566,14 @@
       starBtn.type = 'button'; starBtn.className = 'gd-col-star'; starBtn.title = f.card_prominent ? 'In evidenza sulla card: clicca per togliere' : 'Metti in evidenza sulla card (es. il canone)';
       starBtn.textContent = f.card_prominent ? '\u2B50' : '\u2606';
       starBtn.addEventListener('click', function (ev) { ev.stopPropagation(); setProminentField(f); });
+      var linkBtn = document.createElement('button');
+      linkBtn.type = 'button'; linkBtn.className = 'gd-col-link'; linkBtn.title = f.is_link_group ? 'Campo gruppo convergenza: clicca per togliere' : 'Usa come gruppo convergenza (collega le card)';
+      linkBtn.textContent = f.is_link_group ? '\uD83D\uDD17' : '\u26D3\uFE0F';
+      linkBtn.addEventListener('click', function (ev) { ev.stopPropagation(); setLinkGroupField(f); });
       var rmBtn = document.createElement('button');
       rmBtn.type = 'button'; rmBtn.className = 'gd-col-remove'; rmBtn.title = 'Elimina campo'; rmBtn.innerHTML = '&times;';
       rmBtn.addEventListener('click', function (ev) { ev.stopPropagation(); removeField(f); });
-      addSortTh(f.label, f.key, [starBtn, eyeBtn, rmBtn], 'gd-custom-col');
+      addSortTh(f.label, f.key, [linkBtn, starBtn, eyeBtn, rmBtn], 'gd-custom-col');
     });
 
     var endTh = document.createElement('th');

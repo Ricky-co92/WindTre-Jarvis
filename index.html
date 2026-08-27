@@ -253,6 +253,8 @@
   .of-card .of-extra-field b{color:#7fc4dc; font-weight:600;}
   .of-card .of-prominent-label{font-size:11px; color:#7fc4dc; text-transform:uppercase; letter-spacing:.05em; margin-top:8px;}
   .of-card .of-prominent{font-family:'Orbitron',sans-serif;font-size:1.35rem;color:#8fe8ff;text-shadow:0 0 8px rgba(143,232,255,.4);margin:2px 0 4px;}
+  .of-card .of-link-badge{margin-top:10px; padding-top:8px; border-top:1px dashed rgba(255,176,32,.3); font-size:11px; color:#ffe6b0;}
+  .of-card.linked-highlight{border-color:#ffb020; box-shadow:0 0 16px rgba(255,176,32,.35);}
 
   .of-selling-bar{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:60;background:#0d1924;border:1px solid #ffb020;border-radius:10px;padding:14px 20px;display:flex;align-items:center;gap:20px;box-shadow:0 8px 30px rgba(0,0,0,.5),0 0 20px rgba(255,176,32,.2);font-family:'Rajdhani',sans-serif;font-weight:700;color:#ffe6b0;}
   .of-btn{background:rgba(42,184,217,.1);border:1px solid #2ab8d9;color:#c8f2ff;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13.5px;text-transform:uppercase;padding:9px 18px;border-radius:3px;cursor:pointer;letter-spacing:.02em;}
@@ -321,11 +323,12 @@
   .gd-table .gd-nome-input{min-width:140px;}
   .gd-del-btn{background:none;border:none;color:#c0392b;font-size:15px;cursor:pointer;padding:6px;}
   .gd-del-btn:hover{color:#ff6767;}
-  .gd-table thead th.gd-custom-col{position:relative; padding-right:58px;}
+  .gd-table thead th.gd-custom-col{position:relative; padding-right:76px;}
   .gd-col-remove{position:absolute; top:6px; right:2px; background:none; border:none; color:#7fc4dc; font-size:13px; cursor:pointer; line-height:1;}
   .gd-col-remove:hover{color:#ff6767;}
   .gd-col-eye{position:absolute; top:6px; right:20px; background:none; border:none; font-size:12px; cursor:pointer; line-height:1;}
   .gd-col-star{position:absolute; top:6px; right:38px; background:none; border:none; font-size:12px; cursor:pointer; line-height:1;}
+  .gd-col-link{position:absolute; top:6px; right:56px; background:none; border:none; font-size:12px; cursor:pointer; line-height:1;}
   .gd-table th:first-child, .gd-table td:first-child{position:sticky; left:0; z-index:2; background:#0d1924;}
   .gd-table th:nth-child(2), .gd-table td:nth-child(2){position:sticky; left:38px; z-index:2; background:#0d1924;}
   .gd-table th:last-child, .gd-table td:last-child{position:sticky; right:0; z-index:2; background:#0d1924; text-align:center;}
@@ -342,6 +345,9 @@
   .of-detail-field .dl{font-size:11px; color:#7fc4dc; text-transform:uppercase; letter-spacing:.04em; margin-bottom:2px;}
   .of-detail-field .dv{font-size:14px; color:#eafcff; white-space:pre-line;}
   .of-detail-field .dv.dv-empty{color:#557b8c; font-style:italic;}
+  .of-linked-title{font-size:11px; color:#ffe6b0; text-transform:uppercase; letter-spacing:.05em; margin:4px 0 8px; padding-top:12px; border-top:1px dashed rgba(255,176,32,.3);}
+  .of-linked-item{padding:9px 12px; border:1px solid rgba(255,176,32,.25); border-radius:4px; margin-bottom:6px; cursor:pointer; font-size:13px; color:#eafcff; transition:all .15s ease;}
+  .of-linked-item:hover{border-color:#ffb020; background:rgba(255,176,32,.08);}
 
   /* ===== Configuratore Card ===== */
   .of-config-layout{display:grid; grid-template-columns:1fr 260px; gap:24px;}
@@ -1582,6 +1588,10 @@
           <div class="of-detail-name" id="ofDetailName"></div>
           <div class="of-detail-tag" id="ofDetailTag"></div>
           <div class="of-detail-fields" id="ofDetailFields"></div>
+          <div id="ofLinkedWrap" class="hidden">
+            <div class="of-linked-title">&#128279; Tariffe collegate</div>
+            <div id="ofLinkedList"></div>
+          </div>
           <div class="actions">
             <button type="button" class="of-btn accent" id="ofDetailEditBtn">Modifica</button>
             <button type="button" class="of-btn danger" id="ofDetailDeleteBtn">Elimina</button>
