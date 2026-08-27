@@ -1,6 +1,6 @@
 (function () {
   var offerte = [];
-  var customFields = [];      // [{id,key,label,ordine,show_on_card,field_type}]
+  var customFields = [];      // [{id,key,label,ordine,field_type}]
   var activeCatFilters = [];
   var activeTipoFilters = [];
   var ofSearchTerm = '';
@@ -89,7 +89,7 @@
     }
     var ordine = customFields.length;
     try {
-      var { error } = await sb.from('wt_custom_columns').insert({ key: key, label: label.trim(), ordine: ordine, field_type: field_type, show_on_card: true });
+      var { error } = await sb.from('wt_custom_columns').insert({ key: key, label: label.trim(), ordine: ordine, field_type: field_type });
       if (error) throw error;
       await loadCustomFields();
       renderGestioneHeader();
@@ -99,35 +99,6 @@
       alert('Errore nella creazione del campo: ' + err.message);
     }
   });
-
-  async function toggleFieldShowOnCard(field) {
-    var newVal = !field.show_on_card;
-    try {
-      await sb.from('wt_custom_columns').update({ show_on_card: newVal }).eq('id', field.id);
-      await loadCustomFields();
-      renderGestioneHeader();
-      renderGrid();
-    } catch (err) {
-      alert('Errore: ' + err.message);
-    }
-  }
-
-  async function setProminentField(field) {
-    var newVal = !field.card_prominent;
-    try {
-      // solo un campo alla volta può essere "in evidenza": spengo gli altri
-      var updates = customFields.map(function (f) {
-        var val = (f.id === field.id) ? newVal : false;
-        return sb.from('wt_custom_columns').update({ card_prominent: val }).eq('id', f.id);
-      });
-      await Promise.all(updates);
-      await loadCustomFields();
-      renderGestioneHeader();
-      renderGrid();
-    } catch (err) {
-      alert('Errore: ' + err.message);
-    }
-  }
 
 
 
@@ -205,8 +176,11 @@
   }
 
   function buildCardInnerHtml(o) {
-    var cardFields = customFields.filter(function (f) { return f.show_on_card && !f.card_prominent; });
-    var prominentField = customFields.filter(function (f) { return f.card_prominent; })[0];
+    var cfg = getCardConfig(o);
+    var hidden = cfg.hiddenFields || [];
+    var prominentKey = cfg.prominentField || null;
+    var cardFields = customFields.filter(function (f) { return hidden.indexOf(f.key) === -1 && f.key !== prominentKey; });
+    var prominentField = prominentKey ? customFields.filter(function (f) { return f.key === prominentKey; })[0] : null;
     var badge = fieldVal(o, 'badge');
     var badgeHtml = badge ? '<div class="of-badge">' + escapeHtml(badge) + '</div>' : '';
     var prominentHtml = '';
@@ -272,104 +246,75 @@
     openDetail(null, true);
   });
 
-  // ================= CONFIGURATORE CARD =================
+  // ================= CONFIGURATORE CARD (per singola tariffa) =================
+  function getCardConfig(o) {
+    return o.card_config || {};
+  }
 
-  document.getElementById('ofConfigCardBtn').addEventListener('click', function () {
-    document.getElementById('ofConfigBackdrop').classList.remove('hidden');
-    renderConfigFieldsList();
-    renderConfigPreview();
-  });
-  document.getElementById('ofConfigClose').addEventListener('click', function () {
-    document.getElementById('ofConfigBackdrop').classList.add('hidden');
-  });
-  document.getElementById('ofConfigBackdrop').addEventListener('click', function (ev) {
-    if (ev.target.id === 'ofConfigBackdrop') document.getElementById('ofConfigBackdrop').classList.add('hidden');
-  });
-
-  async function moveField(field, direction) {
-    var idx = customFields.indexOf(field);
-    var swapIdx = idx + direction;
-    if (swapIdx < 0 || swapIdx >= customFields.length) return;
-    var other = customFields[swapIdx];
+  async function updateCardConfig(o, patch) {
+    var cfg = Object.assign({}, getCardConfig(o), patch);
     try {
-      await Promise.all([
-        sb.from('wt_custom_columns').update({ ordine: other.ordine }).eq('id', field.id),
-        sb.from('wt_custom_columns').update({ ordine: field.ordine }).eq('id', other.id)
-      ]);
-      await loadCustomFields();
-      renderGestioneHeader();
-      renderGestioneTable();
-      renderGrid();
-      renderConfigFieldsList();
-      renderConfigPreview();
+      await sb.from('wt_offerte').update({ card_config: cfg }).eq('id', o.id);
+      o.card_config = cfg;
     } catch (err) {
       alert('Errore: ' + err.message);
     }
   }
 
-  function renderConfigFieldsList() {
-    var list = document.getElementById('ofConfigFieldsList');
+  function renderCardConfigBox(o) {
+    var list = document.getElementById('ofCardConfigList');
     list.innerHTML = '';
-    customFields.forEach(function (f, idx) {
+    var cfg = getCardConfig(o);
+    var hidden = cfg.hiddenFields || [];
+    var prominentKey = cfg.prominentField || null;
+    customFields.forEach(function (f) {
       var row = document.createElement('div');
       row.className = 'of-config-row';
-      var upBtn = document.createElement('button');
-      upBtn.type = 'button'; upBtn.title = 'Sposta su';
-      upBtn.textContent = '\u25b2';
-      upBtn.disabled = idx === 0;
-      upBtn.style.opacity = idx === 0 ? '.3' : '1';
-      upBtn.addEventListener('click', function () { moveField(f, -1); });
-      var downBtn = document.createElement('button');
-      downBtn.type = 'button'; downBtn.title = 'Sposta gi\u00f9';
-      downBtn.textContent = '\u25bc';
-      downBtn.disabled = idx === customFields.length - 1;
-      downBtn.style.opacity = idx === customFields.length - 1 ? '.3' : '1';
-      downBtn.addEventListener('click', function () { moveField(f, 1); });
+      var isHidden = hidden.indexOf(f.key) > -1;
+      var isProminent = prominentKey === f.key;
       var eyeBtn = document.createElement('button');
       eyeBtn.type = 'button';
-      eyeBtn.title = f.show_on_card ? 'Visibile sulla card: clicca per nascondere' : 'Nascosto: clicca per mostrare';
-      eyeBtn.textContent = f.show_on_card ? '\uD83D\uDC41\uFE0F' : '\uD83D\uDEAB';
-      eyeBtn.addEventListener('click', async function () { await toggleFieldShowOnCard(f); renderConfigFieldsList(); renderConfigPreview(); });
+      eyeBtn.title = isHidden ? 'Nascosto su questa card: clicca per mostrare' : 'Visibile su questa card: clicca per nascondere';
+      eyeBtn.textContent = isHidden ? '\uD83D\uDEAB' : '\uD83D\uDC41\uFE0F';
+      eyeBtn.addEventListener('click', async function () {
+        var newHidden = isHidden ? hidden.filter(function (k) { return k !== f.key; }) : hidden.concat([f.key]);
+        var patch = { hiddenFields: newHidden };
+        if (!isHidden && prominentKey === f.key) patch.prominentField = null;
+        await updateCardConfig(o, patch);
+        renderCardConfigBox(o);
+        renderGrid();
+      });
       var starBtn = document.createElement('button');
       starBtn.type = 'button';
-      starBtn.title = f.card_prominent ? 'In evidenza: clicca per togliere' : 'Metti in evidenza (es. il canone)';
-      starBtn.textContent = f.card_prominent ? '\u2B50' : '\u2606';
-      starBtn.addEventListener('click', async function () { await setProminentField(f); renderConfigFieldsList(); renderConfigPreview(); });
+      starBtn.title = isProminent ? 'In evidenza su questa card: clicca per togliere' : 'Metti in evidenza su questa card (es. il canone)';
+      starBtn.textContent = isProminent ? '\u2B50' : '\u2606';
+      starBtn.addEventListener('click', async function () {
+        var newProminent = isProminent ? null : f.key;
+        await updateCardConfig(o, { prominentField: newProminent });
+        renderCardConfigBox(o);
+        renderGrid();
+      });
       var label = document.createElement('span');
       label.className = 'ofc-label';
       label.textContent = f.label;
-      row.appendChild(upBtn);
-      row.appendChild(downBtn);
       row.appendChild(label);
       row.appendChild(starBtn);
       row.appendChild(eyeBtn);
       list.appendChild(row);
     });
     if (!customFields.length) {
-      list.innerHTML = '<p class="sub">Nessun campo ancora creato. Aggiungine uno da "Gestione Dati".</p>';
+      list.innerHTML = '<p class="sub">Nessun campo ancora creato. Aggiungine uno da "Database Offerte".</p>';
     }
-  }
 
-  function buildFullSampleOfferta() {
-    var extra = {};
-    customFields.forEach(function (f) {
-      if (f.field_type === 'checkbox') extra[f.key] = true;
-      else if (f.field_type === 'textarea') extra[f.key] = 'Prima riga di esempio\nSeconda riga di esempio\nTerza riga di esempio';
-      else extra[f.key] = 'Esempio ' + f.label.toLowerCase();
-    });
-    return { categoria: 'consumer', tipo: 'mobile', nome: 'Nome Tariffa di Esempio', extra: extra };
-  }
-
-  function renderConfigPreview() {
-    var wrap = document.getElementById('ofConfigPreviewGrid');
-    var sample = buildFullSampleOfferta();
+    var previewWrap = document.getElementById('ofCardConfigPreview');
     var card = document.createElement('div');
     card.className = 'of-card';
     card.style.cursor = 'default';
-    card.innerHTML = buildCardInnerHtml(sample);
-    wrap.innerHTML = '';
-    wrap.appendChild(card);
+    card.innerHTML = buildCardInnerHtml(o);
+    previewWrap.innerHTML = '';
+    previewWrap.appendChild(card);
   }
+
 
   // ================= MODALE DETTAGLIO / MODIFICA =================
   function openDetail(id, startInEdit) {
@@ -402,6 +347,8 @@
       var stackedClass = f.field_type === 'textarea' ? ' of-detail-field-stacked' : '';
       return '<div class="of-detail-field' + stackedClass + '"><div class="dl">' + escapeHtml(f.label) + '</div><div class="dv' + emptyClass + '">' + (displayVal || 'Non impostato') + '</div></div>';
     }).join('');
+
+    renderCardConfigBox(o);
 
     var others = familyOf(o);
     var linkedWrap = document.getElementById('ofLinkedWrap');

@@ -1541,7 +1541,6 @@
         <button type="button" class="of-chip" data-filter-tipo="opzione">Opzione</button>
       </div>
       <div class="of-filter-group" style="margin-left:auto;">
-        <button type="button" class="of-chip of-manage-btn" id="ofConfigCardBtn">&#127912; Configura Card</button>
         <button type="button" class="of-chip of-manage-btn" id="ofAddNewCard">+ Nuova tariffa</button>
       </div>
       <div class="of-filter-group hidden" id="ofBadgeFilterGroup">
@@ -1560,29 +1559,6 @@
   </div>
 
   <!-- Modale dettaglio / modifica tariffa -->
-  <!-- Modale Configura Card -->
-  <div class="of-modal-backdrop hidden" id="ofConfigBackdrop">
-    <div class="of-modal" style="max-width:840px;">
-      <div class="of-modal-head">
-        <div class="title">Configura Card</div>
-        <button type="button" class="of-modal-close" id="ofConfigClose">&times;</button>
-      </div>
-      <div class="of-modal-body">
-        <p class="sub" style="margin:0 0 14px">Scegli quali campi mostrare sulle card e quale mettere in evidenza (es. il canone). L'anteprima a destra si aggiorna subito.</p>
-        <div class="of-config-layout">
-          <fieldset class="of-admin-form" style="margin-top:0;">
-            <legend>Campi</legend>
-            <div class="of-config-fields" id="ofConfigFieldsList"></div>
-          </fieldset>
-          <div class="of-config-preview">
-            <div class="of-config-preview-label">Anteprima</div>
-            <div class="of-grid" id="ofConfigPreviewGrid" style="grid-template-columns:1fr;"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <div class="of-modal-backdrop hidden" id="ofDetailBackdrop">
     <div class="of-modal">
       <div class="of-modal-head">
@@ -1596,6 +1572,15 @@
           <div class="of-detail-name" id="ofDetailName"></div>
           <div class="of-detail-tag" id="ofDetailTag"></div>
           <div class="of-detail-fields" id="ofDetailFields"></div>
+
+          <fieldset class="of-admin-form" id="ofCardConfigBox">
+            <legend>&#127912; Aspetto di questa card</legend>
+            <p class="sub" style="margin:0 0 12px">Scegli quali campi mostrare sulla card e quale mettere in evidenza. Vale solo per questa tariffa.</p>
+            <div class="of-config-fields" id="ofCardConfigList"></div>
+            <div class="of-config-preview-label" style="margin-top:14px;">Anteprima card</div>
+            <div class="of-grid" id="ofCardConfigPreview" style="grid-template-columns:1fr; max-width:260px;"></div>
+          </fieldset>
+
           <div id="ofLinkedWrap" class="hidden">
             <div class="of-linked-title">&#128279; Tariffe collegate</div>
             <div id="ofLinkedList"></div>
