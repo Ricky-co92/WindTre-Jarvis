@@ -173,40 +173,32 @@
   // ================= GRIGLIA CARD =================
 
 
-  async function syncReciprocalLinks(selfId, oldIds, newIds) {
-    var added = newIds.filter(function (id) { return oldIds.indexOf(id) === -1; });
-    var removed = oldIds.filter(function (id) { return newIds.indexOf(id) === -1; });
-    var ops = [];
-    added.forEach(function (otherId) {
-      var other = offerte.filter(function (x) { return x.id === otherId; })[0];
-      var otherLinks = (other && other.linked_ids) || [];
-      if (otherLinks.indexOf(selfId) === -1) {
-        ops.push(sb.from('wt_offerte').update({ linked_ids: otherLinks.concat([selfId]) }).eq('id', otherId));
-      }
-    });
-    removed.forEach(function (otherId) {
-      var other = offerte.filter(function (x) { return x.id === otherId; })[0];
-      var otherLinks = ((other && other.linked_ids) || []).filter(function (x) { return x !== selfId; });
-      ops.push(sb.from('wt_offerte').update({ linked_ids: otherLinks }).eq('id', otherId));
-    });
-    if (ops.length) await Promise.all(ops);
-  }
+
 
   function familyOf(o) {
-    // esplora l'intera rete di collegamenti raggiungibile da o (catene, hub con più collegamenti, ecc.)
-    var visited = {};
-    visited[o.id] = true;
+    // "a valle": tutto ciò a cui questa tariffa converge, a catena (X -> Y -> Z ...)
+    var downstream = [];
+    var seenDown = {};
+    seenDown[o.id] = true;
     var queue = (o.linked_ids || []).slice();
-    var result = [];
     while (queue.length) {
       var id = queue.shift();
-      if (visited[id]) continue;
-      visited[id] = true;
+      if (seenDown[id]) continue;
+      seenDown[id] = true;
       var node = offerte.filter(function (x) { return x.id === id; })[0];
       if (!node) continue;
-      result.push(node);
-      (node.linked_ids || []).forEach(function (nid) { if (!visited[nid]) queue.push(nid); });
+      downstream.push(node);
+      (node.linked_ids || []).forEach(function (nid) { if (!seenDown[nid]) queue.push(nid); });
     }
+    // "a monte": solo chi punta DIRETTAMENTE a questa tariffa (senza propagare ai "fratelli" che puntano allo stesso bersaglio)
+    var upstream = offerte.filter(function (x) {
+      return x.id !== o.id && (x.linked_ids || []).indexOf(o.id) > -1;
+    });
+    var seen = {};
+    var result = [];
+    downstream.concat(upstream).forEach(function (x) {
+      if (!seen[x.id]) { seen[x.id] = true; result.push(x); }
+    });
     return result;
   }
 
@@ -252,6 +244,7 @@
 
   // ================= GRIGLIA CARD =================
   var reorderMode = false;
+  var dragCard = null;
 
   document.getElementById('ofReorderBtn').addEventListener('click', function () {
     reorderMode = !reorderMode;
@@ -259,20 +252,64 @@
     renderGrid();
   });
 
-  async function moveCard(o, direction, list) {
-    var idx = list.indexOf(o);
-    var swapIdx = idx + direction;
-    if (swapIdx < 0 || swapIdx >= list.length) return;
-    var other = list[swapIdx];
-    try {
-      await Promise.all([
-        sb.from('wt_offerte').update({ ordine: other.ordine }).eq('id', o.id),
-        sb.from('wt_offerte').update({ ordine: o.ordine }).eq('id', other.id)
-      ]);
-      await loadOfferte();
-    } catch (err) {
-      alert('Errore: ' + err.message);
+  function getDragAfterElement(grid, x, y) {
+    var cards = Array.prototype.slice.call(grid.querySelectorAll('.of-card:not(.dragging)'));
+    var closest = null, closestDist = Infinity, insertAfter = false;
+    cards.forEach(function (child) {
+      var box = child.getBoundingClientRect();
+      var cx = box.left + box.width / 2;
+      var cy = box.top + box.height / 2;
+      var dist = Math.hypot(x - cx, y - cy);
+      if (dist < closestDist) {
+        closestDist = dist;
+        closest = child;
+        insertAfter = (y > cy) || (Math.abs(y - cy) < box.height / 3 && x > cx);
+      }
+    });
+    if (!closest) return null;
+    return insertAfter ? closest.nextSibling : closest;
+  }
+
+  async function persistGridOrder() {
+    var grid = document.getElementById('ofGrid');
+    var cards = Array.prototype.slice.call(grid.querySelectorAll('.of-card'));
+    var ops = [];
+    cards.forEach(function (card, i) {
+      var o = offerte.filter(function (x) { return x.id === card.dataset.id; })[0];
+      var newOrdine = (i + 1) * 10;
+      if (o && o.ordine !== newOrdine) {
+        ops.push(sb.from('wt_offerte').update({ ordine: newOrdine }).eq('id', o.id));
+      }
+    });
+    if (ops.length) {
+      try { await Promise.all(ops); await loadOfferte(); }
+      catch (err) { alert('Errore: ' + err.message); }
     }
+  }
+
+  function makeDraggable(card) {
+    card.addEventListener('pointerdown', function (ev) {
+      if (!reorderMode) return;
+      dragCard = card;
+      card.classList.add('dragging');
+      card.setPointerCapture(ev.pointerId);
+    });
+    card.addEventListener('pointermove', function (ev) {
+      if (dragCard !== card) return;
+      var grid = document.getElementById('ofGrid');
+      var afterEl = getDragAfterElement(grid, ev.clientX, ev.clientY);
+      if (afterEl == null) grid.appendChild(card);
+      else if (afterEl !== card) grid.insertBefore(card, afterEl);
+    });
+    card.addEventListener('pointerup', function () {
+      if (dragCard !== card) return;
+      dragCard = null;
+      card.classList.remove('dragging');
+      persistGridOrder();
+    });
+    card.addEventListener('pointercancel', function () {
+      if (dragCard === card) { dragCard = null; card.classList.remove('dragging'); }
+    });
   }
 
   function renderGrid() {
@@ -289,19 +326,7 @@
       card.dataset.id = o.id;
       card.innerHTML = buildCardInnerHtml(o);
       if (reorderMode) {
-        var controls = document.createElement('div');
-        controls.className = 'of-reorder-controls';
-        var upBtn = document.createElement('button');
-        upBtn.type = 'button'; upBtn.textContent = '\u25b2'; upBtn.title = 'Sposta prima';
-        upBtn.disabled = idx === 0;
-        upBtn.addEventListener('click', function (ev) { ev.stopPropagation(); moveCard(o, -1, list); });
-        var downBtn = document.createElement('button');
-        downBtn.type = 'button'; downBtn.textContent = '\u25bc'; downBtn.title = 'Sposta dopo';
-        downBtn.disabled = idx === list.length - 1;
-        downBtn.addEventListener('click', function (ev) { ev.stopPropagation(); moveCard(o, 1, list); });
-        controls.appendChild(upBtn);
-        controls.appendChild(downBtn);
-        card.appendChild(controls);
+        makeDraggable(card);
       } else {
         card.addEventListener('click', function () { openDetail(o.id); });
         var family = familyOf(o);
@@ -598,13 +623,11 @@
     document.querySelectorAll('#ofFormExtraFields [data-extra-key]').forEach(function (input) {
       extra[input.dataset.extraKey] = input.dataset.type === 'checkbox' ? input.checked : input.value;
     });
-    var newLinkedIds = pendingLinkedIds.slice();
-    var oldLinkedIds = id ? ((offerte.filter(function (x) { return x.id === id; })[0] || {}).linked_ids || []) : [];
     var record = {
       categoria: document.getElementById('ofFormCategoria').value,
       tipo: document.getElementById('ofFormTipo').value,
       nome: nome,
-      linked_ids: newLinkedIds,
+      linked_ids: pendingLinkedIds.slice(),
       extra: extra
     };
     if (id) record.id = id;
@@ -614,7 +637,6 @@
       var { data, error } = await sb.from('wt_offerte').upsert(record).select();
       if (error) throw error;
       var savedId = id || (data && data[0] && data[0].id);
-      await syncReciprocalLinks(savedId, oldLinkedIds, newLinkedIds);
       await loadOfferte();
       currentDetailId = savedId;
       var saved = offerte.filter(function (x) { return x.id === savedId; })[0];

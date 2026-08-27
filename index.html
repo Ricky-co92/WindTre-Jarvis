@@ -244,11 +244,8 @@
   .of-card .of-link-badge{margin-top:10px; padding-top:8px; border-top:1px dashed rgba(255,176,32,.3); font-size:11px; color:#ffe6b0;}
   .of-card .of-tag{padding:8px 14px;background:rgba(0,0,0,.18);font-size:9.5px;color:#557b8c;text-transform:uppercase;letter-spacing:.04em;}
   .of-card.linked-highlight{border-color:#ffb020; box-shadow:0 0 16px rgba(255,176,32,.35);}
-  .of-reorder-controls{position:absolute; top:8px; left:8px; z-index:2; display:flex; flex-direction:column; gap:2px;}
-  .of-reorder-controls button{width:24px; height:24px; background:#0d1924; border:1px solid #ffb020; color:#ffe6b0; border-radius:3px; font-size:11px; cursor:pointer; line-height:1;}
-  .of-reorder-controls button:disabled{opacity:.25; cursor:default;}
-  .of-card.reorder-mode{cursor:default;}
-  .of-card.reorder-mode .of-card-header{padding-left:38px;}
+  .of-card.reorder-mode{cursor:grab; touch-action:none; user-select:none; border-style:dashed; border-color:rgba(255,176,32,.4);}
+  .of-card.reorder-mode.dragging{cursor:grabbing; opacity:.55; box-shadow:0 0 20px rgba(255,176,32,.5); border-color:#ffb020;}
 
   .of-selling-bar{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:60;background:#0d1924;border:1px solid #ffb020;border-radius:10px;padding:14px 20px;display:flex;align-items:center;gap:20px;box-shadow:0 8px 30px rgba(0,0,0,.5),0 0 20px rgba(255,176,32,.2);font-family:'Rajdhani',sans-serif;font-weight:700;color:#ffe6b0;}
   .of-btn{background:rgba(42,184,217,.1);border:1px solid #2ab8d9;color:#c8f2ff;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13.5px;text-transform:uppercase;padding:9px 18px;border-radius:3px;cursor:pointer;letter-spacing:.02em;}
@@ -1617,8 +1614,8 @@
           </div>
           <div class="row">
             <div class="field wide">
-              <label>Tariffe collegate (opzionale)</label>
-              <p class="sub" style="margin:0 0 8px; font-size:11.5px;">Seleziona quali altre tariffe convergono con questa (es. una SIM pu&ograve; convergere con pi&ugrave; offerte fisso contemporaneamente). Il collegamento vale in entrambe le direzioni e non toglie i collegamenti che quelle tariffe hanno gi&agrave; con altre.</p>
+              <label>Converge con (opzionale)</label>
+              <p class="sub" style="margin:0 0 8px; font-size:11.5px;">Seleziona a quali altre tariffe questa offerta permette di convergere (es. una Fibra che abilita una SIM). Il collegamento &egrave; a senso unico: se pi&ugrave; tariffe convergono verso la stessa SIM, non risulteranno collegate tra loro.</p>
               <input type="text" id="ofFormLinkSearch" class="of-search-input" style="max-width:none; margin-bottom:8px;" placeholder="Cerca tariffa da collegare&hellip;">
               <div id="ofFormLinkedList" class="of-config-fields" style="max-height:220px; overflow-y:auto;"></div>
             </div>
