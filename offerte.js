@@ -129,22 +129,7 @@
     }
   }
 
-  async function setLinkGroupField(field) {
-    var newVal = !field.is_link_group;
-    try {
-      // solo un campo alla volta può fare da "gruppo convergenza": spengo gli altri
-      var updates = customFields.map(function (f) {
-        var val = (f.id === field.id) ? newVal : false;
-        return sb.from('wt_custom_columns').update({ is_link_group: val }).eq('id', f.id);
-      });
-      await Promise.all(updates);
-      await loadCustomFields();
-      renderGestioneHeader();
-      renderGrid();
-    } catch (err) {
-      alert('Errore: ' + err.message);
-    }
-  }
+
 
   async function removeField(field) {
     if (!confirm('Eliminare il campo "' + field.label + '"? I dati salvati per ogni tariffa in questo campo andranno persi dalla visualizzazione.')) return;
@@ -212,6 +197,13 @@
   }
 
   // ================= GRIGLIA CARD =================
+  function familyOf(o) {
+    var rootId = o.parent_id || o.id;
+    return offerte.filter(function (x) {
+      return x.id !== o.id && (x.id === rootId || x.parent_id === rootId);
+    });
+  }
+
   function buildCardInnerHtml(o) {
     var cardFields = customFields.filter(function (f) { return f.show_on_card && !f.card_prominent; });
     var prominentField = customFields.filter(function (f) { return f.card_prominent; })[0];
@@ -232,9 +224,8 @@
       if (!v) return '';
       return '<div class="of-extra-field"><b>' + escapeHtml(f.label) + ':</b> ' + escapeHtml(v) + '</div>';
     }).join('');
-    var linkField = customFields.filter(function (f) { return f.is_link_group; })[0];
-    var linkVal = linkField ? fieldVal(o, linkField.key) : '';
-    var linkHtml = (linkField && linkVal) ? '<div class="of-link-badge">\uD83D\uDD17 ' + escapeHtml(linkVal) + '</div>' : '';
+    var family = familyOf(o);
+    var linkHtml = family.length ? '<div class="of-link-badge">\uD83D\uDD17 Bundle con ' + family.length + ' altra' + (family.length > 1 ? '/e' : '') + ' tariffa/e</div>' : '';
     return badgeHtml +
       '<div class="of-nome">' + escapeHtml(o.nome) + '</div>' +
       prominentHtml +
@@ -252,19 +243,19 @@
       return;
     }
     grid.innerHTML = '';
-    var linkField = customFields.filter(function (f) { return f.is_link_group; })[0];
     list.forEach(function (o) {
       var card = document.createElement('div');
       card.className = 'of-card';
       card.dataset.id = o.id;
-      var groupVal = linkField ? fieldVal(o, linkField.key) : '';
-      if (groupVal) card.dataset.group = groupVal;
       card.innerHTML = buildCardInnerHtml(o);
       card.addEventListener('click', function () { openDetail(o.id); });
-      if (groupVal) {
+      var family = familyOf(o);
+      if (family.length) {
+        var familyIds = family.map(function (x) { return x.id; }).concat([o.id]);
         card.addEventListener('mouseenter', function () {
-          document.querySelectorAll('.of-card[data-group="' + CSS.escape(groupVal) + '"]').forEach(function (c) {
-            c.classList.add('linked-highlight');
+          familyIds.forEach(function (fid) {
+            var el = grid.querySelector('.of-card[data-id="' + fid + '"]');
+            if (el) el.classList.add('linked-highlight');
           });
         });
         card.addEventListener('mouseleave', function () {
@@ -344,18 +335,12 @@
       starBtn.title = f.card_prominent ? 'In evidenza: clicca per togliere' : 'Metti in evidenza (es. il canone)';
       starBtn.textContent = f.card_prominent ? '\u2B50' : '\u2606';
       starBtn.addEventListener('click', async function () { await setProminentField(f); renderConfigFieldsList(); renderConfigPreview(); });
-      var linkBtn = document.createElement('button');
-      linkBtn.type = 'button';
-      linkBtn.title = f.is_link_group ? 'Campo gruppo convergenza: clicca per togliere' : 'Usa come gruppo convergenza (collega le card)';
-      linkBtn.textContent = f.is_link_group ? '\uD83D\uDD17' : '\u26D3\uFE0F';
-      linkBtn.addEventListener('click', async function () { await setLinkGroupField(f); renderConfigFieldsList(); renderConfigPreview(); });
       var label = document.createElement('span');
       label.className = 'ofc-label';
       label.textContent = f.label;
       row.appendChild(upBtn);
       row.appendChild(downBtn);
       row.appendChild(label);
-      row.appendChild(linkBtn);
       row.appendChild(starBtn);
       row.appendChild(eyeBtn);
       list.appendChild(row);
@@ -418,26 +403,20 @@
       return '<div class="of-detail-field' + stackedClass + '"><div class="dl">' + escapeHtml(f.label) + '</div><div class="dv' + emptyClass + '">' + (displayVal || 'Non impostato') + '</div></div>';
     }).join('');
 
-    var linkField = customFields.filter(function (f) { return f.is_link_group; })[0];
-    var groupVal = linkField ? fieldVal(o, linkField.key) : '';
+    var others = familyOf(o);
     var linkedWrap = document.getElementById('ofLinkedWrap');
-    if (groupVal) {
-      var others = offerte.filter(function (x) { return x.id !== o.id && fieldVal(x, linkField.key) === groupVal; });
-      if (others.length) {
-        linkedWrap.classList.remove('hidden');
-        var listEl = document.getElementById('ofLinkedList');
-        listEl.innerHTML = '';
-        others.forEach(function (x) {
-          var mini = document.createElement('div');
-          mini.className = 'of-card of-linked-card';
-          mini.dataset.linkedId = x.id;
-          mini.innerHTML = buildCardInnerHtml(x);
-          mini.addEventListener('click', function () { openDetail(x.id); });
-          listEl.appendChild(mini);
-        });
-      } else {
-        linkedWrap.classList.add('hidden');
-      }
+    if (others.length) {
+      linkedWrap.classList.remove('hidden');
+      var listEl = document.getElementById('ofLinkedList');
+      listEl.innerHTML = '';
+      others.forEach(function (x) {
+        var mini = document.createElement('div');
+        mini.className = 'of-card of-linked-card';
+        mini.dataset.linkedId = x.id;
+        mini.innerHTML = buildCardInnerHtml(x);
+        mini.addEventListener('click', function () { openDetail(x.id); });
+        listEl.appendChild(mini);
+      });
     } else {
       linkedWrap.classList.add('hidden');
     }
@@ -469,6 +448,18 @@
     document.getElementById('ofFormTipo').value = o ? o.tipo : 'mobile';
     document.getElementById('ofFormNome').value = o ? o.nome : '';
     document.getElementById('ofFormStatus').textContent = '';
+
+    var parentSel = document.getElementById('ofFormParent');
+    parentSel.innerHTML = '<option value="">Nessuna &mdash; questa \u00e8 una tariffa a s\u00e9 stante</option>';
+    // esclude se stessa e le proprie eventuali "figlie" (per non creare cicli)
+    var excludeIds = o ? [o.id].concat(offerte.filter(function (x) { return x.parent_id === o.id; }).map(function (x) { return x.id; })) : [];
+    offerte.filter(function (x) { return excludeIds.indexOf(x.id) === -1; }).forEach(function (x) {
+      var opt = document.createElement('option');
+      opt.value = x.id;
+      opt.textContent = x.nome + ' (' + CAT_LABEL[x.categoria] + ' \u00b7 ' + TIPO_LABEL[x.tipo] + ')';
+      parentSel.appendChild(opt);
+    });
+    parentSel.value = (o && o.parent_id) ? o.parent_id : '';
 
     var extraWrap = document.getElementById('ofFormExtraFields');
     extraWrap.innerHTML = '';
@@ -509,6 +500,7 @@
       categoria: document.getElementById('ofFormCategoria').value,
       tipo: document.getElementById('ofFormTipo').value,
       nome: nome,
+      parent_id: document.getElementById('ofFormParent').value || null,
       extra: extra
     };
     if (id) record.id = id;
