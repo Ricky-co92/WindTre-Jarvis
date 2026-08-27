@@ -414,7 +414,8 @@
       if (f.field_type === 'checkbox') displayVal = v === true ? 'S\u00ec' : 'No';
       else displayVal = v ? escapeHtml(v) : '';
       var emptyClass = (!v && f.field_type !== 'checkbox') ? ' dv-empty' : '';
-      return '<div class="of-detail-field"><div class="dl">' + escapeHtml(f.label) + '</div><div class="dv' + emptyClass + '">' + (displayVal || 'Non impostato') + '</div></div>';
+      var stackedClass = f.field_type === 'textarea' ? ' of-detail-field-stacked' : '';
+      return '<div class="of-detail-field' + stackedClass + '"><div class="dl">' + escapeHtml(f.label) + '</div><div class="dv' + emptyClass + '">' + (displayVal || 'Non impostato') + '</div></div>';
     }).join('');
 
     var linkField = customFields.filter(function (f) { return f.is_link_group; })[0];
@@ -424,11 +425,15 @@
       var others = offerte.filter(function (x) { return x.id !== o.id && fieldVal(x, linkField.key) === groupVal; });
       if (others.length) {
         linkedWrap.classList.remove('hidden');
-        document.getElementById('ofLinkedList').innerHTML = others.map(function (x) {
-          return '<div class="of-linked-item" data-linked-id="' + x.id + '">' + escapeHtml(x.nome) + ' <span style="color:#7fc4dc; font-size:11px;">(' + CAT_LABEL[x.categoria] + ' \u00b7 ' + TIPO_LABEL[x.tipo] + ')</span></div>';
-        }).join('');
-        document.querySelectorAll('#ofLinkedList .of-linked-item').forEach(function (el) {
-          el.addEventListener('click', function () { openDetail(el.dataset.linkedId); });
+        var listEl = document.getElementById('ofLinkedList');
+        listEl.innerHTML = '';
+        others.forEach(function (x) {
+          var mini = document.createElement('div');
+          mini.className = 'of-card of-linked-card';
+          mini.dataset.linkedId = x.id;
+          mini.innerHTML = buildCardInnerHtml(x);
+          mini.addEventListener('click', function () { openDetail(x.id); });
+          listEl.appendChild(mini);
         });
       } else {
         linkedWrap.classList.add('hidden');

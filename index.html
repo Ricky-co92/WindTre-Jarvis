@@ -266,7 +266,8 @@
   .of-btn.danger:hover{background:rgba(192,57,43,.15);}
 
   .of-modal-backdrop{position:fixed;inset:0;background:rgba(1,5,8,.7);z-index:70;display:flex;align-items:center;justify-content:center;padding:20px;}
-  .of-modal{background:#0d1924;border:1px solid rgba(143,232,255,.3);border-radius:4px 16px 16px 16px;max-width:640px;width:100%;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.6);}
+  .of-modal{background:#0d1924;border:1px solid rgba(143,232,255,.3);border-radius:4px 16px 16px 16px;max-width:640px;width:100%;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.6);position:relative;overflow:hidden;}
+  .of-modal::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#2ab8d9,#8fe8ff,#ffb020);}
   .of-modal-head{display:flex;justify-content:space-between;align-items:center;padding:18px 22px;border-bottom:1px solid rgba(143,232,255,.15);}
   .of-modal-head .title{font-family:'Rajdhani',sans-serif;font-weight:700;color:#4fc8e8;text-transform:uppercase;font-size:16px;}
   .of-modal-close{background:none;border:none;color:#8fb8cc;font-size:22px;cursor:pointer;line-height:1;}
@@ -338,16 +339,23 @@
   .gd-sort-arrow{margin-left:4px; opacity:.7;}
 
   /* ===== Modale dettaglio tariffa ===== */
-  .of-detail-name{font-family:'Rajdhani',sans-serif; font-weight:700; font-size:1.3rem; color:#eafcff; margin-bottom:6px;}
-  .of-detail-tag{font-size:11px; color:#7fc4dc; text-transform:uppercase; letter-spacing:.05em; margin-bottom:18px;}
-  .of-detail-fields{display:flex; flex-direction:column; gap:10px; margin-bottom:20px;}
-  .of-detail-field{border-bottom:1px solid rgba(143,232,255,.1); padding-bottom:8px;}
-  .of-detail-field .dl{font-size:11px; color:#7fc4dc; text-transform:uppercase; letter-spacing:.04em; margin-bottom:2px;}
-  .of-detail-field .dv{font-size:14px; color:#eafcff; white-space:pre-line;}
+  .of-detail-name{font-family:'Rajdhani',sans-serif; font-weight:700; font-size:1.5rem; color:#eafcff; margin-bottom:6px;}
+  .of-detail-tag{display:inline-block; font-size:10.5px; color:#4fc8e8; text-transform:uppercase; letter-spacing:.06em; margin-bottom:22px; padding:3px 10px; border:1px solid rgba(79,200,232,.35); border-radius:3px; background:rgba(79,200,232,.08);}
+  .of-detail-fields{display:flex; flex-direction:column; gap:0; margin-bottom:20px; border:1px solid rgba(143,232,255,.12); border-radius:4px 12px 12px 12px; overflow:hidden;}
+  .of-detail-field{display:flex; justify-content:space-between; align-items:baseline; gap:14px; padding:10px 14px; border-bottom:1px solid rgba(143,232,255,.08);}
+  .of-detail-field:last-child{border-bottom:none;}
+  .of-detail-field:nth-child(odd){background:rgba(143,232,255,.03);}
+  .of-detail-field.of-detail-field-stacked{flex-direction:column; align-items:flex-start; gap:4px;}
+  .of-detail-field.of-detail-field-stacked .dv{text-align:left;}
+  .of-detail-field .dl{font-size:11px; color:#7fc4dc; text-transform:uppercase; letter-spacing:.04em; flex-shrink:0;}
+  .of-detail-field .dv{font-size:14px; color:#eafcff; white-space:pre-line; text-align:right;}
   .of-detail-field .dv.dv-empty{color:#557b8c; font-style:italic;}
-  .of-linked-title{font-size:11px; color:#ffe6b0; text-transform:uppercase; letter-spacing:.05em; margin:4px 0 8px; padding-top:12px; border-top:1px dashed rgba(255,176,32,.3);}
-  .of-linked-item{padding:9px 12px; border:1px solid rgba(255,176,32,.25); border-radius:4px; margin-bottom:6px; cursor:pointer; font-size:13px; color:#eafcff; transition:all .15s ease;}
-  .of-linked-item:hover{border-color:#ffb020; background:rgba(255,176,32,.08);}
+  .of-linked-title{font-size:11px; color:#ffe6b0; text-transform:uppercase; letter-spacing:.05em; margin:4px 0 10px; padding-top:12px; border-top:1px dashed rgba(255,176,32,.3);}
+  #ofLinkedList{display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:10px;}
+  .of-linked-card{padding:14px; border-color:rgba(255,176,32,.3);}
+  .of-linked-card:hover{border-color:#ffb020; box-shadow:0 0 12px rgba(255,176,32,.25);}
+  .of-linked-card .of-nome{font-size:13px;}
+  .of-linked-card .of-prominent{font-size:1.05rem;}
 
   /* ===== Configuratore Card ===== */
   .of-config-layout{display:grid; grid-template-columns:1fr 260px; gap:24px;}
