@@ -1578,14 +1578,6 @@
           <div class="of-detail-tag" id="ofDetailTag"></div>
           <div class="of-detail-fields" id="ofDetailFields"></div>
 
-          <fieldset class="of-admin-form" id="ofCardConfigBox">
-            <legend>&#127912; Aspetto di questa card</legend>
-            <p class="sub" style="margin:0 0 12px">Scegli quali campi mostrare sulla card e quale mettere in evidenza. Vale solo per questa tariffa.</p>
-            <div class="of-config-fields" id="ofCardConfigList"></div>
-            <div class="of-config-preview-label" style="margin-top:14px;">Anteprima card</div>
-            <div class="of-grid" id="ofCardConfigPreview" style="grid-template-columns:1fr; max-width:260px;"></div>
-          </fieldset>
-
           <div id="ofLinkedWrap" class="hidden">
             <div class="of-linked-title">&#128279; Tariffe collegate</div>
             <div id="ofLinkedList"></div>
@@ -1600,6 +1592,13 @@
         <fieldset class="of-admin-form hidden" id="ofEditForm">
           <legend id="ofEditFormLegend">Dati Tariffa</legend>
           <input type="hidden" id="ofFormId">
+          <fieldset class="of-admin-form" id="ofCardConfigBox" style="margin-top:0;">
+            <legend>&#127912; Aspetto di questa card</legend>
+            <p class="sub" style="margin:0 0 12px">Scegli quali campi mostrare sulla card, quale mettere in evidenza e in che ordine.</p>
+            <div class="of-config-fields" id="ofCardConfigList"></div>
+            <div class="of-config-preview-label" style="margin-top:14px;">Anteprima card</div>
+            <div class="of-grid" id="ofCardConfigPreview" style="grid-template-columns:1fr; max-width:260px;"></div>
+          </fieldset>
           <div class="row">
             <div class="field">
               <label>Categoria</label>

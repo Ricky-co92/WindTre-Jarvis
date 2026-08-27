@@ -182,11 +182,45 @@
     if (ops.length) await Promise.all(ops);
   }
 
+  function ancestorsOf(o) {
+    var result = [];
+    var visited = {};
+    var cur = o;
+    while (cur.parent_id && !visited[cur.parent_id]) {
+      visited[cur.parent_id] = true;
+      var p = offerte.filter(function (x) { return x.id === cur.parent_id; })[0];
+      if (!p) break;
+      result.push(p);
+      cur = p;
+    }
+    return result;
+  }
+
   function familyOf(o) {
-    var rootId = o.parent_id || o.id;
-    return offerte.filter(function (x) {
-      return x.id !== o.id && (x.id === rootId || x.parent_id === rootId);
-    });
+    // risale fino alla radice dell'intera catena (genitore del genitore, ecc.)
+    var root = o;
+    var seen = {};
+    while (root.parent_id && !seen[root.parent_id]) {
+      seen[root.parent_id] = true;
+      var p = offerte.filter(function (x) { return x.id === root.parent_id; })[0];
+      if (!p) break;
+      root = p;
+    }
+    // poi raccoglie tutta la discendenza della radice, a qualsiasi livello
+    var result = [];
+    var visitedIds = {};
+    function collect(id) {
+      offerte.forEach(function (x) {
+        if (x.parent_id === id && !visitedIds[x.id]) {
+          visitedIds[x.id] = true;
+          result.push(x);
+          collect(x.id);
+        }
+      });
+    }
+    if (root.id !== o.id) result.push(root);
+    collect(root.id);
+    return result.filter(function (x) { return x.id !== o.id; });
   }
 
   function buildCardInnerHtml(o) {
@@ -275,17 +309,49 @@
     }
   }
 
+  async function moveField(field, direction, currentOfferta) {
+    var idx = customFields.indexOf(field);
+    var swapIdx = idx + direction;
+    if (swapIdx < 0 || swapIdx >= customFields.length) return;
+    var other = customFields[swapIdx];
+    try {
+      await Promise.all([
+        sb.from('wt_custom_columns').update({ ordine: other.ordine }).eq('id', field.id),
+        sb.from('wt_custom_columns').update({ ordine: field.ordine }).eq('id', other.id)
+      ]);
+      await loadCustomFields();
+      renderGestioneHeader();
+      renderGestioneTable();
+      renderGrid();
+      if (currentOfferta) renderCardConfigBox(currentOfferta);
+    } catch (err) {
+      alert('Errore: ' + err.message);
+    }
+  }
+
   function renderCardConfigBox(o) {
     var list = document.getElementById('ofCardConfigList');
     list.innerHTML = '';
     var cfg = getCardConfig(o);
     var hidden = cfg.hiddenFields || [];
     var prominentKey = cfg.prominentField || null;
-    customFields.forEach(function (f) {
+    customFields.forEach(function (f, idx) {
       var row = document.createElement('div');
       row.className = 'of-config-row';
       var isHidden = hidden.indexOf(f.key) > -1;
       var isProminent = prominentKey === f.key;
+      var upBtn = document.createElement('button');
+      upBtn.type = 'button'; upBtn.title = 'Sposta su';
+      upBtn.textContent = '\u25b2';
+      upBtn.disabled = idx === 0;
+      upBtn.style.opacity = idx === 0 ? '.3' : '1';
+      upBtn.addEventListener('click', function () { moveField(f, -1, o); });
+      var downBtn = document.createElement('button');
+      downBtn.type = 'button'; downBtn.title = 'Sposta gi\u00f9';
+      downBtn.textContent = '\u25bc';
+      downBtn.disabled = idx === customFields.length - 1;
+      downBtn.style.opacity = idx === customFields.length - 1 ? '.3' : '1';
+      downBtn.addEventListener('click', function () { moveField(f, 1, o); });
       var eyeBtn = document.createElement('button');
       eyeBtn.type = 'button';
       eyeBtn.title = isHidden ? 'Nascosto su questa card: clicca per mostrare' : 'Visibile su questa card: clicca per nascondere';
@@ -311,6 +377,8 @@
       var label = document.createElement('span');
       label.className = 'ofc-label';
       label.textContent = f.label;
+      row.appendChild(upBtn);
+      row.appendChild(downBtn);
       row.appendChild(label);
       row.appendChild(starBtn);
       row.appendChild(eyeBtn);
@@ -362,8 +430,6 @@
       return '<div class="of-detail-field' + stackedClass + '"><div class="dl">' + escapeHtml(f.label) + '</div><div class="dv' + emptyClass + '">' + (displayVal || 'Non impostato') + '</div></div>';
     }).join('');
 
-    renderCardConfigBox(o);
-
     var others = familyOf(o);
     var linkedWrap = document.getElementById('ofLinkedWrap');
     if (others.length) {
@@ -410,13 +476,19 @@
     document.getElementById('ofFormNome').value = o ? o.nome : '';
     document.getElementById('ofFormStatus').textContent = '';
 
+    if (o) {
+      document.getElementById('ofCardConfigBox').classList.remove('hidden');
+      renderCardConfigBox(o);
+    } else {
+      document.getElementById('ofCardConfigBox').classList.add('hidden');
+    }
+
     var linkedList = document.getElementById('ofFormLinkedList');
     linkedList.innerHTML = '';
     if (!o) {
       linkedList.innerHTML = '<p class="sub">Salva prima la tariffa per poter scegliere le tariffe figlie.</p>';
     } else {
-      var excludeIds = [o.id];
-      if (o.parent_id) excludeIds.push(o.parent_id);
+      var excludeIds = [o.id].concat(ancestorsOf(o).map(function (x) { return x.id; }));
       var selectable = offerte.filter(function (x) { return excludeIds.indexOf(x.id) === -1; });
       if (!selectable.length) {
         linkedList.innerHTML = '<p class="sub">Nessun\'altra tariffa disponibile.</p>';
