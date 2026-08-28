@@ -176,29 +176,21 @@
 
 
   function familyOf(o) {
-    // "a valle": tutto ciò a cui questa tariffa converge, a catena (X -> Y -> Z ...)
-    var downstream = [];
-    var seenDown = {};
-    seenDown[o.id] = true;
+    // solo "a valle": tutto ciò a cui questa tariffa converge, a catena (X -> Y -> Z ...)
+    // niente "a monte": chi converge verso o non deve comparire/illuminarsi qui.
+    var result = [];
+    var seen = {};
+    seen[o.id] = true;
     var queue = (o.linked_ids || []).slice();
     while (queue.length) {
       var id = queue.shift();
-      if (seenDown[id]) continue;
-      seenDown[id] = true;
+      if (seen[id]) continue;
+      seen[id] = true;
       var node = offerte.filter(function (x) { return x.id === id; })[0];
       if (!node) continue;
-      downstream.push(node);
-      (node.linked_ids || []).forEach(function (nid) { if (!seenDown[nid]) queue.push(nid); });
+      result.push(node);
+      (node.linked_ids || []).forEach(function (nid) { if (!seen[nid]) queue.push(nid); });
     }
-    // "a monte": solo chi punta DIRETTAMENTE a questa tariffa (senza propagare ai "fratelli" che puntano allo stesso bersaglio)
-    var upstream = offerte.filter(function (x) {
-      return x.id !== o.id && (x.linked_ids || []).indexOf(o.id) > -1;
-    });
-    var seen = {};
-    var result = [];
-    downstream.concat(upstream).forEach(function (x) {
-      if (!seen[x.id]) { seen[x.id] = true; result.push(x); }
-    });
     return result;
   }
 
