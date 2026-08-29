@@ -364,6 +364,14 @@
   .mn-history-list.open{display:block;padding-top:10px;}
   .mn-hist-row{display:flex;align-items:center;gap:10px;font-size:12.5px;color:#a8d8ea;padding:5px 0;}
   .mn-hist-row a{color:#8fe8ff;}
+  .mn-cat-section{margin-bottom:8px;}
+  .mn-cat-head{display:flex;align-items:center;gap:10px;padding:12px 4px;cursor:pointer;border-bottom:1px solid rgba(143,232,255,.15);}
+  .mn-cat-head .arrow{color:#8fe8ff;font-size:12px;transition:transform .15s;}
+  .mn-cat-head.closed .arrow{transform:rotate(-90deg);}
+  .mn-cat-head-title{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:.03em;color:#8fe8ff;flex:1;}
+  .mn-cat-count{font-size:11.5px;color:#557b8c;}
+  .mn-cat-body{padding-top:12px;}
+  .mn-cat-body.closed{display:none;}
   .of-admin-list{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;max-height:240px;overflow-y:auto;}
   .of-admin-row{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border:1px solid rgba(143,232,255,.15);border-radius:4px;font-size:13px;color:#c8e8f2;cursor:pointer;}
   .of-admin-row:hover{border-color:#8fe8ff;}
@@ -1899,7 +1907,11 @@
           </div>
           <div style="flex:1;min-width:140px;">
             <label class="cfg-label" style="margin-top:0;">Categoria</label>
-            <input type="text" id="mnCategoriaInput" class="cfg-input" placeholder="Es. Mobile, Fisso, Business&hellip;">
+            <select id="mnCategoriaInput" class="cfg-input">
+              <option value="Manuali">Manuali</option>
+              <option value="Sintesi Offerte">Sintesi Offerte</option>
+              <option value="Guide">Guide</option>
+            </select>
           </div>
         </div>
         <input type="file" id="mnFileInput" accept="application/pdf" class="hidden">

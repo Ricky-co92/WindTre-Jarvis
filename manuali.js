@@ -62,35 +62,43 @@
     renderList();
   });
 
+  var CATEGORIE = ['Manuali', 'Sintesi Offerte', 'Guide'];
+  var closedCats = {};
+
   function renderList() {
     var wrap = document.getElementById('mnList');
     var list = filteredDocs();
     if (!list.length) { wrap.innerHTML = '<p class="sub">Nessun manuale trovato.</p>'; return; }
     wrap.innerHTML = '';
+
+    var byCat = {};
     list.forEach(function (d) {
-      var history = allRows.filter(function (r) { return r.gruppo_id === d.gruppo_id && !r.is_latest; });
-      var card = document.createElement('div');
-      card.className = 'mn-card';
-      var isOpen = openHistory === d.gruppo_id;
-      card.innerHTML =
-        '<div class="mn-card-head">' +
-        '<div style="flex:1;min-width:0;">' +
-        '<div class="mn-title">' + escapeHtml(d.titolo) + '</div>' +
-        '<div style="margin-top:4px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">' +
-        (d.categoria ? '<span class="mn-cat-tag">' + escapeHtml(d.categoria) + '</span>' : '') +
-        '<span class="mn-ver-tag">v' + d.versione + ' &middot; ' + fmtDate(d.uploaded_at) + ' &middot; ' + fmtSize(d.file_size) + '</span>' +
-        '</div></div>' +
-        '<a class="of-chip of-manage-btn" href="' + publicUrl(d.storage_path) + '" target="_blank" rel="noopener">Apri PDF</a>' +
-        (history.length ? '<span class="mn-history-toggle" data-g="' + d.gruppo_id + '">Storico (' + history.length + ')</span>' : '') +
-        '<button type="button" class="of-chip of-manage-btn mn-del-btn" data-id="' + d.id + '" data-g="' + d.gruppo_id + '" style="color:#ff6767;border-color:#ff6767;">Elimina</button>' +
-        '</div>' +
-        '<div class="mn-history-list' + (isOpen ? ' open' : '') + '" id="mnHist-' + d.gruppo_id + '">' +
-        history.map(function (h) {
-          return '<div class="mn-hist-row"><span>v' + h.versione + '</span><span>' + fmtDate(h.uploaded_at) + '</span><span>' + fmtSize(h.file_size) + '</span><a href="' + publicUrl(h.storage_path) + '" target="_blank" rel="noopener">Apri</a></div>';
-        }).join('') +
-        '</div>';
-      wrap.appendChild(card);
+      var cat = d.categoria || 'Senza categoria';
+      if (!byCat[cat]) byCat[cat] = [];
+      byCat[cat].push(d);
     });
+    var catOrder = CATEGORIE.filter(function (c) { return byCat[c]; })
+      .concat(Object.keys(byCat).filter(function (c) { return CATEGORIE.indexOf(c) === -1; }));
+
+    catOrder.forEach(function (cat) {
+      var isClosed = !!closedCats[cat];
+      var section = document.createElement('div');
+      section.className = 'mn-cat-section';
+      var head = document.createElement('div');
+      head.className = 'mn-cat-head' + (isClosed ? ' closed' : '');
+      head.innerHTML = '<span class="arrow">&#9662;</span><span class="mn-cat-head-title">' + escapeHtml(cat) + '</span><span class="mn-cat-count">' + byCat[cat].length + '</span>';
+      head.addEventListener('click', function () {
+        closedCats[cat] = !closedCats[cat];
+        renderList();
+      });
+      section.appendChild(head);
+      var body = document.createElement('div');
+      body.className = 'mn-cat-body' + (isClosed ? ' closed' : '');
+      byCat[cat].forEach(function (d) { body.appendChild(buildDocCard(d)); });
+      section.appendChild(body);
+      wrap.appendChild(section);
+    });
+
     wrap.querySelectorAll('.mn-history-toggle').forEach(function (t) {
       t.addEventListener('click', function () {
         openHistory = openHistory === t.dataset.g ? null : t.dataset.g;
@@ -101,6 +109,30 @@
       btn.addEventListener('click', function () { deleteDoc(btn.dataset.id, btn.dataset.g); });
     });
     applyManualiPerms();
+  }
+
+  function buildDocCard(d) {
+    var history = allRows.filter(function (r) { return r.gruppo_id === d.gruppo_id && !r.is_latest; });
+    var card = document.createElement('div');
+    card.className = 'mn-card';
+    var isOpen = openHistory === d.gruppo_id;
+    card.innerHTML =
+      '<div class="mn-card-head">' +
+      '<div style="flex:1;min-width:0;">' +
+      '<div class="mn-title">' + escapeHtml(d.titolo) + '</div>' +
+      '<div style="margin-top:4px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">' +
+      '<span class="mn-ver-tag">v' + d.versione + ' &middot; ' + fmtDate(d.uploaded_at) + ' &middot; ' + fmtSize(d.file_size) + '</span>' +
+      '</div></div>' +
+      '<a class="of-chip of-manage-btn" href="' + publicUrl(d.storage_path) + '" target="_blank" rel="noopener">Apri PDF</a>' +
+      (history.length ? '<span class="mn-history-toggle" data-g="' + d.gruppo_id + '">Storico (' + history.length + ')</span>' : '') +
+      '<button type="button" class="of-chip of-manage-btn mn-del-btn" data-id="' + d.id + '" data-g="' + d.gruppo_id + '" style="color:#ff6767;border-color:#ff6767;">Elimina</button>' +
+      '</div>' +
+      '<div class="mn-history-list' + (isOpen ? ' open' : '') + '" id="mnHist-' + d.gruppo_id + '">' +
+      history.map(function (h) {
+        return '<div class="mn-hist-row"><span>v' + h.versione + '</span><span>' + fmtDate(h.uploaded_at) + '</span><span>' + fmtSize(h.file_size) + '</span><a href="' + publicUrl(h.storage_path) + '" target="_blank" rel="noopener">Apri</a></div>';
+      }).join('') +
+      '</div>';
+    return card;
   }
 
   function applyManualiPerms() {
