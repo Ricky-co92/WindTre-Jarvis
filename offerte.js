@@ -214,7 +214,7 @@
     var cardFields = customFields.filter(function (f) { return hidden.indexOf(f.key) === -1 && f.key !== prominentKey; });
     var prominentField = prominentKey ? customFields.filter(function (f) { return f.key === prominentKey; })[0] : null;
     var badge = fieldVal(o, 'badge');
-    var badgeHtml = badge ? '<div class="of-badge">' + escapeHtml(badge) + '</div>' : '';
+    var badgeHtml = '<div class="of-badge-slot">' + (badge ? '<span class="of-badge">' + escapeHtml(badge) + '</span>' : '') + '</div>';
     var prominentHtml = '';
     if (prominentField) {
       var pv = fieldVal(o, prominentField.key);
