@@ -352,6 +352,18 @@
   .stg-action-row label{display:flex;align-items:center;gap:6px;font-size:12.5px;color:#c8e8f2;}
   .stg-action-row input[type=checkbox]{accent-color:#ffb020;}
   .stg-user-actions{display:flex;gap:8px;margin-top:10px;}
+
+  /* ===== MANUALI ===== */
+  .mn-card{border:1px solid rgba(143,232,255,.18);border-radius:4px 12px 12px 12px;background:rgba(13,25,36,.5);margin-bottom:12px;overflow:hidden;}
+  .mn-card-head{display:flex;align-items:center;gap:12px;padding:12px 16px;}
+  .mn-title{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:15px;color:#eafcff;flex:1;}
+  .mn-cat-tag{font-size:10px;font-family:'Rajdhani',sans-serif;font-weight:700;border:1px solid rgba(143,232,255,.3);color:#8fe8ff;background:rgba(143,232,255,.08);border-radius:3px;padding:2px 7px;}
+  .mn-ver-tag{font-size:10.5px;color:#7fc4dc;}
+  .mn-history-toggle{font-size:11.5px;color:#7fc4dc;cursor:pointer;text-decoration:underline;}
+  .mn-history-list{padding:0 16px 14px;border-top:1px solid rgba(143,232,255,.08);display:none;}
+  .mn-history-list.open{display:block;padding-top:10px;}
+  .mn-hist-row{display:flex;align-items:center;gap:10px;font-size:12.5px;color:#a8d8ea;padding:5px 0;}
+  .mn-hist-row a{color:#8fe8ff;}
   .of-admin-list{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;max-height:240px;overflow-y:auto;}
   .of-admin-row{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border:1px solid rgba(143,232,255,.15);border-radius:4px;font-size:13px;color:#c8e8f2;cursor:pointer;}
   .of-admin-row:hover{border-color:#8fe8ff;}
@@ -479,6 +491,7 @@
   <div class="nav-item" data-view="offerte" data-text="Dettaglio Tariffe">Dettaglio Tariffe</div>
   <div class="nav-item" data-view="gestione" data-text="Database Offerte">Database Offerte</div>
   <div class="nav-item" data-view="comuni" data-text="Comuni Aree Bianche">Comuni Aree Bianche</div>
+  <div class="nav-item" data-view="manuali" data-text="Manuali">Manuali</div>
   <div class="nav-item" data-view="impostazioni" data-text="Impostazioni">Impostazioni</div>
 </div>
 
@@ -1865,6 +1878,43 @@
     </div>
   </div>
 
+  <div id="view-manuali" class="hidden">
+    <div class="gd-panel">
+      <div class="panel-head">
+        <div class="title">&#9670; manuali</div>
+      </div>
+      <p class="sub" style="margin:0 0 18px">Raccolta PDF con le spiegazioni WindTre. Caricando un aggiornamento di un manuale esistente, la versione precedente resta archiviata nello storico.</p>
+
+      <div id="mnUploadBox" class="cfg-fascia-row" style="align-items:flex-end;margin-bottom:22px;flex-wrap:wrap;">
+        <div style="flex:2;min-width:180px;">
+          <label class="cfg-label" style="margin-top:0;">Documento</label>
+          <select id="mnTargetSelect" class="cfg-input">
+            <option value="">+ Nuovo documento</option>
+          </select>
+        </div>
+        <div id="mnNewFields" style="display:flex;gap:12px;flex:2;flex-wrap:wrap;">
+          <div style="flex:1;min-width:160px;">
+            <label class="cfg-label" style="margin-top:0;">Titolo</label>
+            <input type="text" id="mnTitoloInput" class="cfg-input" placeholder="Es. Guida attivazione SIM">
+          </div>
+          <div style="flex:1;min-width:140px;">
+            <label class="cfg-label" style="margin-top:0;">Categoria</label>
+            <input type="text" id="mnCategoriaInput" class="cfg-input" placeholder="Es. Mobile, Fisso, Business&hellip;">
+          </div>
+        </div>
+        <input type="file" id="mnFileInput" accept="application/pdf" class="hidden">
+        <button type="button" class="of-chip of-manage-btn" id="mnUploadTriggerBtn">Scegli PDF e carica</button>
+        <span class="status" id="mnUploadStatus"></span>
+      </div>
+
+      <div class="of-search-row" style="margin-bottom:14px">
+        <input type="text" id="mnSearchInput" class="of-search-input" placeholder="Cerca manuale per titolo o categoria&hellip;">
+      </div>
+
+      <div id="mnList"></div>
+    </div>
+  </div>
+
   <div id="view-impostazioni" class="hidden">
     <div class="gd-panel">
       <div class="panel-head">
@@ -1895,7 +1945,8 @@
 <script src="compilatore.js?v=3"></script>
 <script src="offerte.js?v=1"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="comuni.js?v=2"></script>
+<script src="comuni.js?v=3"></script>
+<script src="manuali.js?v=1"></script>
 <script src="settings.js?v=1"></script>
 <div id="login-flash"></div>
 <div id="login-iris"></div>

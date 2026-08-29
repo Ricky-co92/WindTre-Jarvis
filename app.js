@@ -288,7 +288,7 @@ async function onLogin(user){
 }
 
 // ---------- NAV ----------
-const VIEWS = ["home","compilatore","offerte","gestione","comuni","impostazioni"];
+const VIEWS = ["home","compilatore","offerte","gestione","comuni","manuali","impostazioni"];
 function switchView(view){
   if (typeof PERMS !== "undefined" && PERMS.ready) {
     const allowed = view === "impostazioni" ? PERMS.isSuperAdmin : PERMS.canView(view);

@@ -22,6 +22,12 @@ var PAGES_REGISTRY = [
     key: 'comuni', label: 'Comuni Aree Bianche', actions: [
       { key: 'upload', label: 'Caricare file aggiornato' }
     ]
+  },
+  {
+    key: 'manuali', label: 'Manuali', actions: [
+      { key: 'upload', label: 'Caricare/aggiornare manuali' },
+      { key: 'delete', label: 'Eliminare manuali' }
+    ]
   }
 ];
 
