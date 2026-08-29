@@ -236,30 +236,27 @@
 
   // ================= GRIGLIA CARD =================
   var reorderMode = false;
+  var sortableInstance = null;
 
   document.getElementById('ofReorderBtn').addEventListener('click', function () {
     reorderMode = !reorderMode;
     this.classList.toggle('active', reorderMode);
     renderGrid();
+    if (reorderMode) {
+      sortableInstance = new Sortable(document.getElementById('ofGrid'), {
+        animation: 150,
+        delay: 50,
+        delayOnTouchOnly: true,
+        ghostClass: 'of-card-placeholder',
+        chosenClass: 'dragging',
+        forceFallback: true,
+        onEnd: function () { persistGridOrder(); }
+      });
+    } else if (sortableInstance) {
+      sortableInstance.destroy();
+      sortableInstance = null;
+    }
   });
-
-  function getDragAfterElement(grid, x, y) {
-    var cards = Array.prototype.slice.call(grid.querySelectorAll('.of-card:not(.of-card-placeholder)'));
-    var closest = null, closestDist = Infinity, insertAfter = false;
-    cards.forEach(function (child) {
-      var box = child.getBoundingClientRect();
-      var cx = box.left + box.width / 2;
-      var cy = box.top + box.height / 2;
-      var dist = Math.hypot(x - cx, y - cy);
-      if (dist < closestDist) {
-        closestDist = dist;
-        closest = child;
-        insertAfter = (y > cy) || (Math.abs(y - cy) < box.height / 3 && x > cx);
-      }
-    });
-    if (!closest) return null;
-    return insertAfter ? closest.nextSibling : closest;
-  }
 
   async function persistGridOrder() {
     var grid = document.getElementById('ofGrid');
@@ -278,59 +275,6 @@
     }
   }
 
-  function makeDraggable(card) {
-    card.addEventListener('pointerdown', function (ev) {
-      if (!reorderMode) return;
-      ev.preventDefault();
-      var grid = document.getElementById('ofGrid');
-      var rect = card.getBoundingClientRect();
-      var offsetX = ev.clientX - rect.left;
-      var offsetY = ev.clientY - rect.top;
-
-      var placeholder = document.createElement('div');
-      placeholder.className = 'of-card of-card-placeholder';
-      placeholder.style.width = rect.width + 'px';
-      placeholder.style.height = rect.height + 'px';
-      grid.insertBefore(placeholder, card);
-
-      card.classList.add('dragging');
-      card.style.position = 'fixed';
-      card.style.width = rect.width + 'px';
-      card.style.left = rect.left + 'px';
-      card.style.top = rect.top + 'px';
-      card.style.zIndex = '500';
-      card.style.pointerEvents = 'none';
-      document.body.appendChild(card);
-      card.setPointerCapture(ev.pointerId);
-
-      function onMove(ev2) {
-        card.style.left = (ev2.clientX - offsetX) + 'px';
-        card.style.top = (ev2.clientY - offsetY) + 'px';
-        var afterEl = getDragAfterElement(grid, ev2.clientX, ev2.clientY);
-        if (afterEl == null) grid.appendChild(placeholder);
-        else if (afterEl !== placeholder) grid.insertBefore(placeholder, afterEl);
-      }
-      function onEnd() {
-        card.removeEventListener('pointermove', onMove);
-        card.removeEventListener('pointerup', onEnd);
-        card.removeEventListener('pointercancel', onEnd);
-        card.classList.remove('dragging');
-        card.style.position = '';
-        card.style.width = '';
-        card.style.left = '';
-        card.style.top = '';
-        card.style.zIndex = '';
-        card.style.pointerEvents = '';
-        grid.insertBefore(card, placeholder);
-        placeholder.remove();
-        persistGridOrder();
-      }
-      card.addEventListener('pointermove', onMove);
-      card.addEventListener('pointerup', onEnd);
-      card.addEventListener('pointercancel', onEnd);
-    });
-  }
-
   function renderGrid() {
     var grid = document.getElementById('ofGrid');
     var list = filteredOfferte();
@@ -344,9 +288,7 @@
       card.className = 'of-card' + (reorderMode ? ' reorder-mode' : '');
       card.dataset.id = o.id;
       card.innerHTML = buildCardInnerHtml(o);
-      if (reorderMode) {
-        makeDraggable(card);
-      } else {
+      if (!reorderMode) {
         card.addEventListener('click', function () { openDetail(o.id); });
         var family = familyOf(o);
         if (family.length) {
