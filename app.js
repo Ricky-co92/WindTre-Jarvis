@@ -277,12 +277,23 @@ async function onLogin(user){
   document.getElementById("screen-login").classList.add("hidden");
   document.getElementById("app").classList.remove("hidden");
   renderCoreAnim("core-home");
-  switchView("home");
+  await loadPermissions(user);
+  const startView = firstAccessibleView();
+  if (!startView) {
+    document.getElementById("view-home").innerHTML = '<div class="gd-panel"><p class="sub">Il tuo account non ha accesso a nessuna pagina. Contatta il SuperAdmin.</p></div>';
+    switchView("home");
+    return;
+  }
+  switchView(startView);
 }
 
 // ---------- NAV ----------
-const VIEWS = ["home","compilatore","offerte","gestione","comuni"];
+const VIEWS = ["home","compilatore","offerte","gestione","comuni","impostazioni"];
 function switchView(view){
+  if (typeof PERMS !== "undefined" && PERMS.ready) {
+    const allowed = view === "impostazioni" ? PERMS.isSuperAdmin : PERMS.canView(view);
+    if (!allowed) { view = firstAccessibleView() || "home"; }
+  }
   document.querySelectorAll(".nav-item").forEach(el=>{
     el.classList.toggle("active", el.dataset.view === view);
   });

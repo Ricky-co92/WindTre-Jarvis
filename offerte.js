@@ -979,15 +979,16 @@
         return '<div class="cfg-fascia-line"><span>' + escapeHtml(f.durata || '') + '</span><b>' + val.toFixed(2).replace('.', ',') + '&euro;/mese</b></div>';
       }).join('');
       var firstVal = fasce.length ? (fasce[0].auto ? cfgAutoTotal(c.offerta_ids || [], c.prezzo_field_map || {}) : (parseFloat(fasce[0].prezzo) || 0)) : cfgAutoTotal(c.offerta_ids || [], c.prezzo_field_map || {});
-      var pillHtml = '<span class="cfg-price-pill">' + firstVal.toFixed(2).replace('.', ',') + '&euro;/mese</span>';
+      var pillLabel = fasce.length && fasce[0].durata ? escapeHtml(fasce[0].durata) : '';
+      var pillHtml = '<div class="cfg-price-wrap"><div class="cfg-price-label">' + pillLabel + '</div><span class="cfg-price-pill">' + firstVal.toFixed(2).replace('.', ',') + '&euro;/mese</span></div>';
       var card = document.createElement('div');
       card.className = 'cfg-card';
       card.innerHTML =
         '<div class="cfg-card-head"><div class="cfg-nome">' + escapeHtml(c.nome) + '</div>' +
         '<span class="cfg-cat-tag">' + (c.categoria === 'business' ? 'BIZ' : 'CONS') + '</span></div>' +
-        '<div class="cfg-card-body">' + pillHtml + '<br>' + (chips || '<span class="sub">Nessuna offerta inclusa</span>') +
+        '<div class="cfg-card-body">' + pillHtml + (chips || '<span class="sub">Nessuna offerta inclusa</span>') +
         (c.nota ? '<div class="cfg-nota">' + escapeHtml(c.nota) + '</div>' : '') +
-        (fasceHtml ? '<div style="margin-top:10px;">' + fasceHtml + '</div>' : '') +
+        '<div class="cfg-fasce-slot">' + fasceHtml + '</div>' +
         '</div>';
       card.addEventListener('click', function () { openCfgDetail(c.id); });
       grid.appendChild(card);
@@ -1226,6 +1227,30 @@
       statusEl.className = 'status err';
     }
   }
+
+  // ================= PERMESSI =================
+  function applyOffertePerms() {
+    if (typeof PERMS === 'undefined' || !PERMS.ready) return;
+    var canEditT = PERMS.can('offerte', 'edit_tariffa');
+    var canDelT = PERMS.can('offerte', 'delete_tariffa');
+    var canReorderT = PERMS.can('offerte', 'reorder_tariffa');
+    var canEditC = PERMS.can('offerte', 'edit_config');
+    var canReorderC = PERMS.can('offerte', 'reorder_config');
+    var canEditCell = PERMS.can('gestione', 'edit_cell');
+    var canCols = PERMS.can('gestione', 'manage_columns');
+    var canRows = PERMS.can('gestione', 'manage_rows');
+    [
+      ['ofAddNewCard', canEditT], ['ofReorderBtn', canReorderT],
+      ['cfgAddNewCard', canEditC], ['cfgReorderBtn', canReorderC],
+      ['ofDetailEditBtn', canEditT], ['ofDetailDeleteBtn', canDelT],
+      ['cfgDetailEditBtn', canEditC],
+      ['gdAddColumn', canCols], ['gdAddRow', canRows], ['gdSaveAll', canEditCell]
+    ].forEach(function (pair) {
+      var el = document.getElementById(pair[0]);
+      if (el) el.style.display = pair[1] ? '' : 'none';
+    });
+  }
+  document.addEventListener('jarvis:permsReady', applyOffertePerms);
 
   // ================= INIT =================
   document.addEventListener('jarvis:view', function (ev) {

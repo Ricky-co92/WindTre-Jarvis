@@ -183,6 +183,13 @@
     ev.target.value = '';
   });
 
+  // ================= PERMESSI =================
+  document.addEventListener('jarvis:permsReady', function () {
+    if (typeof PERMS === 'undefined' || !PERMS.ready) return;
+    var el = document.getElementById('cabUploadBtn');
+    if (el) el.style.display = PERMS.can('comuni', 'upload') ? '' : 'none';
+  });
+
   // ================= INIT =================
   document.addEventListener('jarvis:view', function (ev) {
     var view = ev.detail && ev.detail.view;
