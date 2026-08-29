@@ -28,7 +28,7 @@
     var grid = document.getElementById('ofGrid');
     grid.innerHTML = '<p class="sub">Caricamento tariffe&hellip;</p>';
     try {
-      var res1 = await sb.from('wt_offerte').select('*').order('categoria').order('tipo').order('ordine');
+      var res1 = await sb.from('wt_offerte').select('*').order('ordine');
       if (res1.error) throw res1.error;
       offerte = res1.data || [];
       await loadCustomFields();
