@@ -310,7 +310,7 @@
   .gd-table thead th{
     background:#12232f; color:#4fc8e8; font-family:'Rajdhani',sans-serif; font-weight:700;
     text-transform:uppercase; letter-spacing:.03em; font-size:11px; padding:10px 8px; text-align:left;
-    position:sticky; top:0; border-bottom:1px solid rgba(143,232,255,.25); white-space:nowrap;
+    position:sticky; top:0; z-index:4; border-bottom:1px solid rgba(143,232,255,.25); white-space:nowrap;
   }
   .gd-table tbody tr{border-bottom:1px solid rgba(143,232,255,.08);}
   .gd-table tbody tr.gd-dirty{background:rgba(255,176,32,.06);}
@@ -338,7 +338,7 @@
   .gd-table th:first-child, .gd-table td:first-child{position:sticky; left:0; z-index:2; background:#0d1924;}
   .gd-table th:nth-child(2), .gd-table td:nth-child(2){position:sticky; left:38px; z-index:2; background:#0d1924;}
   .gd-table th:last-child, .gd-table td:last-child{position:sticky; right:0; z-index:2; background:#0d1924; text-align:center;}
-  .gd-table thead th:first-child, .gd-table thead th:last-child, .gd-table thead th:nth-child(2){z-index:3;}
+  .gd-table thead th:first-child, .gd-table thead th:last-child, .gd-table thead th:nth-child(2){z-index:5;}
   .gd-sort-th{cursor:pointer; user-select:none;}
   .gd-sort-th:hover{color:#8fe8ff;}
   .gd-sort-arrow{margin-left:4px; opacity:.7;}
