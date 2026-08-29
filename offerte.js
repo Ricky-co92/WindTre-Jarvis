@@ -978,12 +978,14 @@
         var val = f.auto ? cfgAutoTotal(c.offerta_ids || [], c.prezzo_field_map || {}) : (parseFloat(f.prezzo) || 0);
         return '<div class="cfg-fascia-line"><span>' + escapeHtml(f.durata || '') + '</span><b>' + val.toFixed(2).replace('.', ',') + '&euro;/mese</b></div>';
       }).join('');
+      var firstVal = fasce.length ? (fasce[0].auto ? cfgAutoTotal(c.offerta_ids || [], c.prezzo_field_map || {}) : (parseFloat(fasce[0].prezzo) || 0)) : cfgAutoTotal(c.offerta_ids || [], c.prezzo_field_map || {});
+      var pillHtml = '<span class="cfg-price-pill">' + firstVal.toFixed(2).replace('.', ',') + '&euro;/mese</span>';
       var card = document.createElement('div');
       card.className = 'cfg-card';
       card.innerHTML =
         '<div class="cfg-card-head"><div class="cfg-nome">' + escapeHtml(c.nome) + '</div>' +
         '<span class="cfg-cat-tag">' + (c.categoria === 'business' ? 'BIZ' : 'CONS') + '</span></div>' +
-        '<div class="cfg-card-body">' + (chips || '<span class="sub">Nessuna offerta inclusa</span>') +
+        '<div class="cfg-card-body">' + pillHtml + '<br>' + (chips || '<span class="sub">Nessuna offerta inclusa</span>') +
         (c.nota ? '<div class="cfg-nota">' + escapeHtml(c.nota) + '</div>' : '') +
         (fasceHtml ? '<div style="margin-top:10px;">' + fasceHtml + '</div>' : '') +
         '</div>';
@@ -997,23 +999,42 @@
     if (!c) return;
     var included = offerte.filter(function (o) { return (c.offerta_ids || []).indexOf(o.id) > -1; });
     var fieldMap = c.prezzo_field_map || {};
-    var offHtml = '<div class="of-grid" style="margin:0;">' + included.map(function (o) {
+    var offGridWrap = document.createElement('div');
+    offGridWrap.className = 'of-grid';
+    offGridWrap.style.margin = '0';
+    included.forEach(function (o) {
       var card = document.createElement('div');
       card.className = 'of-card';
       card.innerHTML = buildCardInnerHtml(o);
-      return card.outerHTML;
-    }).join('') + '</div>';
-    if (!included.length) offHtml = '<p class="sub">Nessuna offerta inclusa</p>';
+      card.addEventListener('click', function () { openDetail(o.id); });
+      offGridWrap.appendChild(card);
+    });
+    var offSection = document.createElement('div');
+    offSection.className = 'cfg-detail-section';
+    var offLabel = document.createElement('div');
+    offLabel.className = 'cfg-label';
+    offLabel.textContent = 'Offerte abbinate';
+    offSection.appendChild(offLabel);
+    if (included.length) {
+      offSection.appendChild(offGridWrap);
+    } else {
+      var noOff = document.createElement('p');
+      noOff.className = 'sub';
+      noOff.textContent = 'Nessuna offerta inclusa';
+      offSection.appendChild(noOff);
+    }
     var fasceHtml = (c.fasce || []).map(function (f) {
       var val = f.auto ? cfgAutoTotal(c.offerta_ids || [], fieldMap) : (parseFloat(f.prezzo) || 0);
       return '<div class="cfg-fascia-line"><span>' + escapeHtml(f.durata || '') + '</span><b>' + val.toFixed(2).replace('.', ',') + '&euro;/mese</b></div>';
     }).join('') || '<p class="sub">Nessuna fascia definita</p>';
+    var body = document.getElementById('cfgDetailBody');
     document.getElementById('cfgDetailTitle').textContent = c.nome;
-    document.getElementById('cfgDetailBody').innerHTML =
+    body.innerHTML =
       '<div class="cfg-detail-section"><span class="cfg-cat-tag">' + (c.categoria === 'business' ? 'BIZ' : 'CONS') + '</span></div>' +
       (c.nota ? '<div class="cfg-detail-section"><div class="cfg-label">Nota</div><div class="cfg-nota">' + escapeHtml(c.nota) + '</div></div>' : '') +
-      '<div class="cfg-detail-section"><div class="cfg-label">Offerte abbinate</div>' + offHtml + '</div>' +
+      '<div class="cfg-detail-section" id="cfgDetailOffSlot"></div>' +
       '<div class="cfg-detail-section"><div class="cfg-label">Fasce prezzo</div>' + fasceHtml + '</div>';
+    body.querySelector('#cfgDetailOffSlot').replaceWith(offSection);
     document.getElementById('cfgDetailEditBtn').onclick = function () {
       document.getElementById('cfgDetailBackdrop').classList.add('hidden');
       openCfgModal(c.id);
