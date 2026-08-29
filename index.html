@@ -298,8 +298,12 @@
   .cfg-fascia-del:hover{color:#ff6767;}
   .cfg-total-preview{margin-top:14px;font-family:'Rajdhani',sans-serif;font-size:13px;color:#7fc4dc;}
   .cfg-card{border:1px solid rgba(143,232,255,.15);border-radius:4px 12px 12px 12px;background:rgba(13,25,36,.5);display:flex;flex-direction:column;}
-  .cfg-card-head{padding:12px 14px;border-bottom:1px solid rgba(143,232,255,.1);border-left:3px solid #ffb020;cursor:pointer;}
+  .cfg-card-head{padding:12px 14px;border-bottom:1px solid rgba(143,232,255,.1);border-left:3px solid #ffb020;cursor:pointer;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
   .cfg-card-head .cfg-nome{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:16px;color:#eafcff;}
+  .cfg-cat-tag{font-size:10px;font-family:'Rajdhani',sans-serif;font-weight:700;border:1px solid rgba(255,176,32,.4);color:#ffe6b0;background:rgba(255,176,32,.12);border-radius:3px;padding:2px 7px;white-space:nowrap;}
+  .cfg-nota{font-size:12px;color:#a8d8ea;font-style:italic;margin-top:6px;}
+  .cfg-detail-section{margin-bottom:16px;}
+  .cfg-detail-section .cfg-label{margin:0 0 6px;}
   .cfg-card-body{padding:12px 14px;flex:1;}
   .cfg-offer-chip{display:inline-block;font-size:11px;background:rgba(143,232,255,.08);border:1px solid rgba(143,232,255,.2);border-radius:3px;padding:3px 7px;margin:0 4px 4px 0;color:#c8f0ff;}
   .cfg-fascia-line{display:flex;justify-content:space-between;font-size:12.5px;padding:4px 0;border-top:1px dashed rgba(143,232,255,.1);}
@@ -1576,6 +1580,11 @@
         <button type="button" class="of-chip" data-filter-cat="consumer">Consumer</button>
         <button type="button" class="of-chip" data-filter-cat="business">Business</button>
       </div>
+      <div class="of-filter-group hidden" id="cfgCatFilterGroup">
+        <span class="of-filter-label">Categoria</span>
+        <button type="button" class="of-chip" data-cfg-filter-cat="consumer">Consumer</button>
+        <button type="button" class="of-chip" data-cfg-filter-cat="business">Business</button>
+      </div>
       <div class="of-filter-group" id="ofTipoFilterGroup">
         <span class="of-filter-label">Tipo</span>
         <button type="button" class="of-chip" data-filter-tipo="mobile">Mobile</button>
@@ -1583,6 +1592,7 @@
       </div>
       <div class="of-filter-group" style="margin-left:auto;">
         <button type="button" class="of-chip of-manage-btn" id="ofReorderBtn">&#8597; Riordina</button>
+        <button type="button" class="of-chip of-manage-btn hidden" id="cfgReorderBtn">&#8597; Riordina</button>
         <button type="button" class="of-chip of-manage-btn" id="ofAddNewCard">+ Nuova tariffa</button>
         <button type="button" class="of-chip of-manage-btn hidden" id="cfgAddNewCard">+ Nuova configurazione</button>
       </div>
@@ -1612,6 +1622,13 @@
       <div class="of-modal-body">
         <label class="cfg-label">Titolo configurazione</label>
         <input type="text" id="cfgNomeInput" class="cfg-input" placeholder="Es. Fibra + Mobile Business">
+        <label class="cfg-label">Categoria</label>
+        <select id="cfgCategoriaInput" class="cfg-input">
+          <option value="business">Business</option>
+          <option value="consumer">Consumer</option>
+        </select>
+        <label class="cfg-label">Nota</label>
+        <textarea id="cfgNotaInput" class="cfg-input" rows="2" placeholder="Nota libera visibile nel dettaglio&hellip;"></textarea>
         <label class="cfg-label">Offerte incluse</label>
         <input type="text" id="cfgOffSearch" class="cfg-input" placeholder="Cerca offerta da aggiungere&hellip;">
         <div class="cfg-off-list" id="cfgOffList"></div>
@@ -1623,6 +1640,20 @@
       <div class="of-modal-foot">
         <button type="button" class="of-chip of-manage-btn hidden" id="cfgDeleteBtn" style="color:#ff6767;border-color:#ff6767;">Elimina</button>
         <button type="button" class="of-chip of-manage-btn" id="cfgSaveBtn" style="margin-left:auto;">Salva</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modale Dettaglio Configurazione (sola lettura) -->
+  <div class="of-modal-backdrop hidden" id="cfgDetailBackdrop">
+    <div class="of-modal of-modal-wide">
+      <div class="of-modal-head">
+        <div class="title" id="cfgDetailTitle">Configurazione</div>
+        <button type="button" class="of-modal-close" id="cfgDetailClose">&times;</button>
+      </div>
+      <div class="of-modal-body" id="cfgDetailBody"></div>
+      <div class="of-modal-foot">
+        <button type="button" class="of-chip of-manage-btn" id="cfgDetailEditBtn" style="margin-left:auto;">Modifica</button>
       </div>
     </div>
   </div>
@@ -1640,6 +1671,22 @@
         <div id="ofReorderList" class="of-reorder-list"></div>
         <div class="actions">
           <span class="status" id="ofReorderStatus"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="of-modal-backdrop hidden" id="cfgReorderBackdrop">
+    <div class="of-modal">
+      <div class="of-modal-head">
+        <div class="title">Riordina Configurazioni</div>
+        <button type="button" class="of-modal-close" id="cfgReorderClose">&times;</button>
+      </div>
+      <div class="of-modal-body">
+        <p class="sub" style="margin:0 0 12px">Trascina dal simbolo &#9776; per cambiare l'ordine. Si salva subito, chiudi quando hai finito.</p>
+        <div id="cfgReorderList" class="of-reorder-list"></div>
+        <div class="actions">
+          <span class="status" id="cfgReorderStatus"></span>
         </div>
       </div>
     </div>

@@ -122,12 +122,21 @@
   document.querySelectorAll('.of-chip[data-filter-cat]').forEach(function (chip) {
     chip.addEventListener('click', function () { toggleFilter(chip, activeCatFilters, chip.dataset.filterCat); });
   });
+  var cfgActiveCatFilters = [];
+  document.querySelectorAll('.of-chip[data-cfg-filter-cat]').forEach(function (chip) {
+    chip.addEventListener('click', function () {
+      var idx = cfgActiveCatFilters.indexOf(chip.dataset.cfgFilterCat);
+      if (idx > -1) { cfgActiveCatFilters.splice(idx, 1); chip.classList.remove('active'); }
+      else { cfgActiveCatFilters.push(chip.dataset.cfgFilterCat); chip.classList.add('active'); }
+      renderCfgGrid();
+    });
+  });
   document.querySelectorAll('.of-chip[data-filter-tipo]').forEach(function (chip) {
     chip.addEventListener('click', function () { toggleFilter(chip, activeTipoFilters, chip.dataset.filterTipo); });
   });
   document.getElementById('ofSearchInput').addEventListener('input', function () {
     ofSearchTerm = this.value.trim().toLowerCase();
-    renderGrid();
+    if (activeTab === 'config') renderCfgGrid(); else renderGrid();
   });
   function toggleFilter(chip, arr, value) {
     var idx = arr.indexOf(value);
@@ -186,6 +195,8 @@
     document.getElementById('ofGrid').classList.toggle('hidden', tab === 'config');
     document.getElementById('cfgGrid').classList.toggle('hidden', tab !== 'config');
     document.getElementById('ofReorderBtn').classList.toggle('hidden', tab === 'config');
+    document.getElementById('cfgReorderBtn').classList.toggle('hidden', tab !== 'config');
+    document.getElementById('cfgCatFilterGroup').classList.toggle('hidden', tab !== 'config');
     document.getElementById('ofAddNewCard').classList.toggle('hidden', tab === 'config');
     document.getElementById('cfgAddNewCard').classList.toggle('hidden', tab !== 'config');
     if (tab === 'config') renderCfgGrid(); else renderGrid();
@@ -926,14 +937,24 @@
       .reduce(function (sum, o) { return sum + offertaPrezzo(o); }, 0);
   }
 
+  function filteredConfigurazioni() {
+    return configurazioni.filter(function (c) {
+      var catOk = cfgActiveCatFilters.length === 0 || cfgActiveCatFilters.indexOf(c.categoria) > -1;
+      var searchOk = !ofSearchTerm || (c.nome || '').toLowerCase().indexOf(ofSearchTerm) > -1 ||
+        (c.nota || '').toLowerCase().indexOf(ofSearchTerm) > -1;
+      return catOk && searchOk;
+    });
+  }
+
   function renderCfgGrid() {
     var grid = document.getElementById('cfgGrid');
-    if (!configurazioni.length) {
-      grid.innerHTML = '<p class="sub">Nessuna configurazione. Usa "+ Nuova configurazione" per crearne una.</p>';
+    var list = filteredConfigurazioni();
+    if (!list.length) {
+      grid.innerHTML = '<p class="sub">Nessuna configurazione trovata.</p>';
       return;
     }
     grid.innerHTML = '';
-    configurazioni.forEach(function (c) {
+    list.forEach(function (c) {
       var included = offerte.filter(function (o) { return (c.offerta_ids || []).indexOf(o.id) > -1; });
       var chips = included.map(function (o) { return '<span class="cfg-offer-chip">' + escapeHtml(o.nome) + '</span>'; }).join('');
       var fasce = c.fasce || [];
@@ -944,14 +965,46 @@
       var card = document.createElement('div');
       card.className = 'cfg-card';
       card.innerHTML =
-        '<div class="cfg-card-head"><div class="cfg-nome">' + escapeHtml(c.nome) + '</div></div>' +
+        '<div class="cfg-card-head"><div class="cfg-nome">' + escapeHtml(c.nome) + '</div>' +
+        '<span class="cfg-cat-tag">' + (c.categoria === 'business' ? 'BIZ' : 'CONS') + '</span></div>' +
         '<div class="cfg-card-body">' + (chips || '<span class="sub">Nessuna offerta inclusa</span>') +
+        (c.nota ? '<div class="cfg-nota">' + escapeHtml(c.nota) + '</div>' : '') +
         (fasceHtml ? '<div style="margin-top:10px;">' + fasceHtml + '</div>' : '') +
         '</div>';
-      card.addEventListener('click', function () { openCfgModal(c.id); });
+      card.addEventListener('click', function () { openCfgDetail(c.id); });
       grid.appendChild(card);
     });
   }
+
+  function openCfgDetail(id) {
+    var c = configurazioni.filter(function (x) { return x.id === id; })[0];
+    if (!c) return;
+    var included = offerte.filter(function (o) { return (c.offerta_ids || []).indexOf(o.id) > -1; });
+    var offHtml = included.map(function (o) {
+      return '<div class="of-extra-field"><b>' + escapeHtml(o.nome) + '</b> &mdash; ' + offertaPrezzo(o).toFixed(2).replace('.', ',') + '&euro;/mese</div>';
+    }).join('') || '<p class="sub">Nessuna offerta inclusa</p>';
+    var fasceHtml = (c.fasce || []).map(function (f) {
+      var val = f.auto ? cfgAutoTotal(c.offerta_ids || []) : (parseFloat(f.prezzo) || 0);
+      return '<div class="cfg-fascia-line"><span>' + escapeHtml(f.durata || '') + '</span><b>' + val.toFixed(2).replace('.', ',') + '&euro;/mese</b></div>';
+    }).join('') || '<p class="sub">Nessuna fascia definita</p>';
+    document.getElementById('cfgDetailTitle').textContent = c.nome;
+    document.getElementById('cfgDetailBody').innerHTML =
+      '<div class="cfg-detail-section"><span class="cfg-cat-tag">' + (c.categoria === 'business' ? 'BIZ' : 'CONS') + '</span></div>' +
+      (c.nota ? '<div class="cfg-detail-section"><div class="cfg-label">Nota</div><div class="cfg-nota">' + escapeHtml(c.nota) + '</div></div>' : '') +
+      '<div class="cfg-detail-section"><div class="cfg-label">Offerte abbinate</div>' + offHtml + '</div>' +
+      '<div class="cfg-detail-section"><div class="cfg-label">Fasce prezzo</div>' + fasceHtml + '</div>';
+    document.getElementById('cfgDetailEditBtn').onclick = function () {
+      document.getElementById('cfgDetailBackdrop').classList.add('hidden');
+      openCfgModal(c.id);
+    };
+    document.getElementById('cfgDetailBackdrop').classList.remove('hidden');
+  }
+  document.getElementById('cfgDetailClose').addEventListener('click', function () {
+    document.getElementById('cfgDetailBackdrop').classList.add('hidden');
+  });
+  document.getElementById('cfgDetailBackdrop').addEventListener('click', function (ev) {
+    if (ev.target.id === 'cfgDetailBackdrop') document.getElementById('cfgDetailClose').click();
+  });
 
   function renderCfgOffList() {
     var list = document.getElementById('cfgOffList');
@@ -1016,6 +1069,8 @@
     cfgOffSearchTerm = '';
     document.getElementById('cfgOffSearch').value = '';
     document.getElementById('cfgNomeInput').value = c ? c.nome : '';
+    document.getElementById('cfgCategoriaInput').value = c ? c.categoria : 'business';
+    document.getElementById('cfgNotaInput').value = c ? (c.nota || '') : '';
     document.getElementById('cfgModalTitle').textContent = c ? 'Modifica configurazione' : 'Nuova configurazione';
     document.getElementById('cfgDeleteBtn').classList.toggle('hidden', !c);
     renderCfgOffList();
@@ -1034,7 +1089,13 @@
   document.getElementById('cfgSaveBtn').addEventListener('click', async function () {
     var nome = document.getElementById('cfgNomeInput').value.trim();
     if (!nome) { alert('Inserisci un titolo per la configurazione.'); return; }
-    var record = { nome: nome, offerta_ids: cfgSelectedOfferte, fasce: cfgFasce };
+    var record = {
+      nome: nome,
+      categoria: document.getElementById('cfgCategoriaInput').value,
+      nota: document.getElementById('cfgNotaInput').value.trim(),
+      offerta_ids: cfgSelectedOfferte,
+      fasce: cfgFasce
+    };
     if (cfgEditingId) record.id = cfgEditingId; else record.ordine = configurazioni.length;
     var res = await sb.from('wt_configurazioni').upsert(record);
     if (res.error) { alert('Errore salvataggio: ' + res.error.message); return; }
@@ -1051,6 +1112,60 @@
     await loadConfigurazioni();
     renderCfgGrid();
   });
+
+  // ================= RIORDINA CONFIGURAZIONI =================
+  var cfgReorderSortable = null;
+  document.getElementById('cfgReorderBtn').addEventListener('click', function () {
+    document.getElementById('cfgReorderBackdrop').classList.remove('hidden');
+    renderCfgReorderList();
+  });
+  document.getElementById('cfgReorderClose').addEventListener('click', function () {
+    document.getElementById('cfgReorderBackdrop').classList.add('hidden');
+    if (cfgReorderSortable) { cfgReorderSortable.destroy(); cfgReorderSortable = null; }
+  });
+  document.getElementById('cfgReorderBackdrop').addEventListener('click', function (ev) {
+    if (ev.target.id === 'cfgReorderBackdrop') document.getElementById('cfgReorderClose').click();
+  });
+  function renderCfgReorderList() {
+    var list = document.getElementById('cfgReorderList');
+    list.innerHTML = '';
+    var sorted = configurazioni.slice().sort(function (a, b) { return (a.ordine || 0) - (b.ordine || 0); });
+    sorted.forEach(function (c) {
+      var row = document.createElement('div');
+      row.className = 'of-reorder-row';
+      row.dataset.id = c.id;
+      row.innerHTML = '<span class="of-reorder-handle">&#9776;</span>' +
+        '<span class="orr-name">' + escapeHtml(c.nome) + '</span>' +
+        '<span class="orr-tag">' + (c.categoria === 'business' ? 'Business' : 'Consumer') + '</span>';
+      list.appendChild(row);
+    });
+    if (cfgReorderSortable) cfgReorderSortable.destroy();
+    cfgReorderSortable = new Sortable(list, {
+      animation: 150, handle: '.of-reorder-handle', ghostClass: 'sortable-ghost', chosenClass: 'sortable-chosen',
+      onEnd: function () { persistCfgReorderList(); }
+    });
+  }
+  async function persistCfgReorderList() {
+    var statusEl = document.getElementById('cfgReorderStatus');
+    var rows = Array.prototype.slice.call(document.querySelectorAll('#cfgReorderList .of-reorder-row'));
+    statusEl.textContent = 'Salvataggio...';
+    statusEl.className = 'status';
+    var ops = [];
+    rows.forEach(function (row, i) {
+      var c = configurazioni.filter(function (x) { return x.id === row.dataset.id; })[0];
+      var newOrdine = (i + 1) * 10;
+      if (c && c.ordine !== newOrdine) ops.push(sb.from('wt_configurazioni').update({ ordine: newOrdine }).eq('id', c.id));
+    });
+    try {
+      if (ops.length) await Promise.all(ops);
+      await loadConfigurazioni();
+      statusEl.textContent = 'Ordine salvato.';
+      statusEl.className = 'status ok';
+    } catch (err) {
+      statusEl.textContent = 'Errore: ' + err.message;
+      statusEl.className = 'status err';
+    }
+  }
 
   // ================= INIT =================
   document.addEventListener('jarvis:view', function (ev) {
