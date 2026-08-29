@@ -912,6 +912,7 @@
   var configurazioni = [];
   var cfgEditingId = null;
   var cfgSelectedOfferte = [];   // array id offerte incluse
+  var cfgPriceFieldMap = {};     // {offertaId: fieldKey} campo prezzo scelto per ogni offerta
   var cfgFasce = [];             // [{durata, prezzo, auto}]
   var cfgOffSearchTerm = '';
 
@@ -926,15 +927,30 @@
     }
   }
 
-  function offertaPrezzo(o) {
-    var v = fieldVal(o, 'prezzo');
+  // Campi che contengono un valore numerico (potenziale prezzo) per una data offerta
+  function priceFieldsOf(o) {
+    var out = [];
+    customFields.forEach(function (f) {
+      if (f.field_type === 'checkbox' || f.field_type === 'textarea') return;
+      var v = fieldVal(o, f.key);
+      if (v && /\d/.test(String(v))) out.push({ key: f.key, label: f.label, value: v });
+    });
+    return out;
+  }
+  function parsePrezzo(v) {
     var n = parseFloat(String(v || '').replace(',', '.').replace(/[^\d.]/g, ''));
     return isNaN(n) ? 0 : n;
   }
+  function offertaPrezzo(o, fieldMap) {
+    var key = fieldMap && fieldMap[o.id];
+    var pf = priceFieldsOf(o);
+    if (!key || !pf.some(function (f) { return f.key === key; })) key = pf[0] ? pf[0].key : 'prezzo';
+    return parsePrezzo(fieldVal(o, key));
+  }
 
-  function cfgAutoTotal(offertaIds) {
+  function cfgAutoTotal(offertaIds, fieldMap) {
     return offerte.filter(function (o) { return offertaIds.indexOf(o.id) > -1; })
-      .reduce(function (sum, o) { return sum + offertaPrezzo(o); }, 0);
+      .reduce(function (sum, o) { return sum + offertaPrezzo(o, fieldMap); }, 0);
   }
 
   function filteredConfigurazioni() {
@@ -959,7 +975,7 @@
       var chips = included.map(function (o) { return '<span class="cfg-offer-chip">' + escapeHtml(o.nome) + '</span>'; }).join('');
       var fasce = c.fasce || [];
       var fasceHtml = fasce.map(function (f) {
-        var val = f.auto ? cfgAutoTotal(c.offerta_ids || []) : (parseFloat(f.prezzo) || 0);
+        var val = f.auto ? cfgAutoTotal(c.offerta_ids || [], c.prezzo_field_map || {}) : (parseFloat(f.prezzo) || 0);
         return '<div class="cfg-fascia-line"><span>' + escapeHtml(f.durata || '') + '</span><b>' + val.toFixed(2).replace('.', ',') + '&euro;/mese</b></div>';
       }).join('');
       var card = document.createElement('div');
@@ -980,11 +996,16 @@
     var c = configurazioni.filter(function (x) { return x.id === id; })[0];
     if (!c) return;
     var included = offerte.filter(function (o) { return (c.offerta_ids || []).indexOf(o.id) > -1; });
-    var offHtml = included.map(function (o) {
-      return '<div class="of-extra-field"><b>' + escapeHtml(o.nome) + '</b> &mdash; ' + offertaPrezzo(o).toFixed(2).replace('.', ',') + '&euro;/mese</div>';
-    }).join('') || '<p class="sub">Nessuna offerta inclusa</p>';
+    var fieldMap = c.prezzo_field_map || {};
+    var offHtml = '<div class="of-grid" style="margin:0;">' + included.map(function (o) {
+      var card = document.createElement('div');
+      card.className = 'of-card';
+      card.innerHTML = buildCardInnerHtml(o);
+      return card.outerHTML;
+    }).join('') + '</div>';
+    if (!included.length) offHtml = '<p class="sub">Nessuna offerta inclusa</p>';
     var fasceHtml = (c.fasce || []).map(function (f) {
-      var val = f.auto ? cfgAutoTotal(c.offerta_ids || []) : (parseFloat(f.prezzo) || 0);
+      var val = f.auto ? cfgAutoTotal(c.offerta_ids || [], fieldMap) : (parseFloat(f.prezzo) || 0);
       return '<div class="cfg-fascia-line"><span>' + escapeHtml(f.durata || '') + '</span><b>' + val.toFixed(2).replace('.', ',') + '&euro;/mese</b></div>';
     }).join('') || '<p class="sub">Nessuna fascia definita</p>';
     document.getElementById('cfgDetailTitle').textContent = c.nome;
@@ -1014,17 +1035,33 @@
     });
     list.innerHTML = '';
     items.forEach(function (o) {
-      var row = document.createElement('label');
-      row.className = 'cfg-off-row';
+      var pf = priceFieldsOf(o);
       var checked = cfgSelectedOfferte.indexOf(o.id) > -1;
-      row.innerHTML = '<input type="checkbox" ' + (checked ? 'checked' : '') + '> ' + escapeHtml(o.nome) +
-        '<span class="cfg-off-price">' + offertaPrezzo(o).toFixed(2).replace('.', ',') + '&euro;</span>';
-      row.querySelector('input').addEventListener('change', function (ev) {
+      var row = document.createElement('div');
+      row.className = 'cfg-off-row';
+      var selectHtml = '';
+      if (pf.length) {
+        selectHtml = '<select class="cfg-off-pricesel" ' + (checked ? '' : 'disabled') + '>' +
+          pf.map(function (f) { return '<option value="' + attrEsc(f.key) + '"' + (cfgPriceFieldMap[o.id] === f.key ? ' selected' : '') + '>' + escapeHtml(f.label) + ': ' + escapeHtml(f.value) + '</option>'; }).join('') +
+          '</select>';
+      } else {
+        selectHtml = '<span class="cfg-off-price">nessun prezzo</span>';
+      }
+      row.innerHTML = '<label style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;"><input type="checkbox" ' + (checked ? 'checked' : '') + '> ' + escapeHtml(o.nome) + '</label>' + selectHtml;
+      var chk = row.querySelector('input[type=checkbox]');
+      var sel = row.querySelector('.cfg-off-pricesel');
+      chk.addEventListener('change', function (ev) {
         var idx = cfgSelectedOfferte.indexOf(o.id);
-        if (ev.target.checked && idx === -1) cfgSelectedOfferte.push(o.id);
-        else if (!ev.target.checked && idx > -1) cfgSelectedOfferte.splice(idx, 1);
+        if (ev.target.checked && idx === -1) {
+          cfgSelectedOfferte.push(o.id);
+          if (pf.length && !cfgPriceFieldMap[o.id]) cfgPriceFieldMap[o.id] = pf[0].key;
+        } else if (!ev.target.checked && idx > -1) {
+          cfgSelectedOfferte.splice(idx, 1);
+        }
+        if (sel) sel.disabled = !ev.target.checked;
         renderCfgTotalPreview();
       });
+      if (sel) sel.addEventListener('change', function (ev) { cfgPriceFieldMap[o.id] = ev.target.value; renderCfgTotalPreview(); });
       list.appendChild(row);
     });
   }
@@ -1052,12 +1089,12 @@
 
   function renderCfgTotalPreview() {
     var el = document.getElementById('cfgTotalPreview');
-    var auto = cfgAutoTotal(cfgSelectedOfferte);
+    var auto = cfgAutoTotal(cfgSelectedOfferte, cfgPriceFieldMap);
     var lines = cfgFasce.map(function (f) {
       var val = f.auto ? auto : (parseFloat(f.prezzo) || 0);
       return (f.durata || 'Fascia') + ': <b>' + val.toFixed(2).replace('.', ',') + '&euro;/mese</b>';
     });
-    el.innerHTML = 'Somma automatica offerte incluse: <b>' + auto.toFixed(2).replace('.', ',') + '&euro;/mese</b>' +
+    el.innerHTML = 'Somma automatica (campi prezzo scelti): <b>' + auto.toFixed(2).replace('.', ',') + '&euro;/mese</b>' +
       (lines.length ? '<br>' + lines.join('<br>') : '');
   }
 
@@ -1065,6 +1102,7 @@
     cfgEditingId = id || null;
     var c = id ? configurazioni.filter(function (x) { return x.id === id; })[0] : null;
     cfgSelectedOfferte = c ? (c.offerta_ids || []).slice() : [];
+    cfgPriceFieldMap = c ? JSON.parse(JSON.stringify(c.prezzo_field_map || {})) : {};
     cfgFasce = c ? JSON.parse(JSON.stringify(c.fasce || [])) : [{ durata: '', prezzo: null, auto: true }];
     cfgOffSearchTerm = '';
     document.getElementById('cfgOffSearch').value = '';
@@ -1094,6 +1132,7 @@
       categoria: document.getElementById('cfgCategoriaInput').value,
       nota: document.getElementById('cfgNotaInput').value.trim(),
       offerta_ids: cfgSelectedOfferte,
+      prezzo_field_map: cfgPriceFieldMap,
       fasce: cfgFasce
     };
     if (cfgEditingId) record.id = cfgEditingId; else record.ordine = configurazioni.length;
