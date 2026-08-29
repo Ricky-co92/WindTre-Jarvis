@@ -236,7 +236,6 @@
 
   // ================= GRIGLIA CARD =================
   var reorderMode = false;
-  var dragCard = null;
 
   document.getElementById('ofReorderBtn').addEventListener('click', function () {
     reorderMode = !reorderMode;
@@ -245,7 +244,7 @@
   });
 
   function getDragAfterElement(grid, x, y) {
-    var cards = Array.prototype.slice.call(grid.querySelectorAll('.of-card:not(.dragging)'));
+    var cards = Array.prototype.slice.call(grid.querySelectorAll('.of-card:not(.of-card-placeholder)'));
     var closest = null, closestDist = Infinity, insertAfter = false;
     cards.forEach(function (child) {
       var box = child.getBoundingClientRect();
@@ -282,25 +281,53 @@
   function makeDraggable(card) {
     card.addEventListener('pointerdown', function (ev) {
       if (!reorderMode) return;
-      dragCard = card;
-      card.classList.add('dragging');
-      card.setPointerCapture(ev.pointerId);
-    });
-    card.addEventListener('pointermove', function (ev) {
-      if (dragCard !== card) return;
+      ev.preventDefault();
       var grid = document.getElementById('ofGrid');
-      var afterEl = getDragAfterElement(grid, ev.clientX, ev.clientY);
-      if (afterEl == null) grid.appendChild(card);
-      else if (afterEl !== card) grid.insertBefore(card, afterEl);
-    });
-    card.addEventListener('pointerup', function () {
-      if (dragCard !== card) return;
-      dragCard = null;
-      card.classList.remove('dragging');
-      persistGridOrder();
-    });
-    card.addEventListener('pointercancel', function () {
-      if (dragCard === card) { dragCard = null; card.classList.remove('dragging'); }
+      var rect = card.getBoundingClientRect();
+      var offsetX = ev.clientX - rect.left;
+      var offsetY = ev.clientY - rect.top;
+
+      var placeholder = document.createElement('div');
+      placeholder.className = 'of-card of-card-placeholder';
+      placeholder.style.width = rect.width + 'px';
+      placeholder.style.height = rect.height + 'px';
+      grid.insertBefore(placeholder, card);
+
+      card.classList.add('dragging');
+      card.style.position = 'fixed';
+      card.style.width = rect.width + 'px';
+      card.style.left = rect.left + 'px';
+      card.style.top = rect.top + 'px';
+      card.style.zIndex = '500';
+      card.style.pointerEvents = 'none';
+      document.body.appendChild(card);
+      card.setPointerCapture(ev.pointerId);
+
+      function onMove(ev2) {
+        card.style.left = (ev2.clientX - offsetX) + 'px';
+        card.style.top = (ev2.clientY - offsetY) + 'px';
+        var afterEl = getDragAfterElement(grid, ev2.clientX, ev2.clientY);
+        if (afterEl == null) grid.appendChild(placeholder);
+        else if (afterEl !== placeholder) grid.insertBefore(placeholder, afterEl);
+      }
+      function onEnd() {
+        card.removeEventListener('pointermove', onMove);
+        card.removeEventListener('pointerup', onEnd);
+        card.removeEventListener('pointercancel', onEnd);
+        card.classList.remove('dragging');
+        card.style.position = '';
+        card.style.width = '';
+        card.style.left = '';
+        card.style.top = '';
+        card.style.zIndex = '';
+        card.style.pointerEvents = '';
+        grid.insertBefore(card, placeholder);
+        placeholder.remove();
+        persistGridOrder();
+      }
+      card.addEventListener('pointermove', onMove);
+      card.addEventListener('pointerup', onEnd);
+      card.addEventListener('pointercancel', onEnd);
     });
   }
 
