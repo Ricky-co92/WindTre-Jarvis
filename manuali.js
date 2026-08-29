@@ -3,7 +3,7 @@
   var docs = [];
   var allRows = [];
   var searchTerm = '';
-  var CATEGORIE = ['Manuali', 'Sintesi Offerte', 'Guide'];
+  var CATEGORIE = [];
   var closedCats = { 'Manuali': true, 'Sintesi Offerte': true, 'Guide': true };
   var histTargetGruppo = null;
 
@@ -46,6 +46,32 @@
     }
   }
   if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+  async function loadCategorie() {
+    try {
+      var res = await sb.from('wt_manuali_categorie').select('*').order('ordine');
+      if (res.error) throw res.error;
+      CATEGORIE = (res.data || []).map(function (r) { return r.nome; });
+    } catch (err) {
+      console.error('Errore caricamento categorie:', err);
+      CATEGORIE = [];
+    }
+    populateCategorySelects();
+  }
+
+  function populateCategorySelects() {
+    var mainSel = document.getElementById('mnCategoriaInput');
+    if (mainSel) {
+      var cur = mainSel.value;
+      mainSel.innerHTML = CATEGORIE.map(function (c) { return '<option value="' + escapeHtml(c) + '">' + escapeHtml(c) + '</option>'; }).join('');
+      if (CATEGORIE.indexOf(cur) > -1) mainSel.value = cur;
+    }
+  }
+
+  function bulkCatOptionsHtml(selected) {
+    return '<option value=""' + (!selected ? ' selected' : '') + '>(scegli categoria)</option>' +
+      CATEGORIE.map(function (c) { return '<option value="' + escapeHtml(c) + '"' + (selected === c ? ' selected' : '') + '>' + escapeHtml(c) + '</option>'; }).join('');
+  }
 
   async function loadManuali() {
     try {
@@ -331,7 +357,62 @@
   document.addEventListener('jarvis:view', function (ev) {
     var view = ev.detail && ev.detail.view;
     if (view !== 'manuali') return;
+    loadCategorie();
     loadManuali();
+  });
+
+  // ================= GESTIONE CATEGORIE (SuperAdmin) =================
+  async function renderCatManager() {
+    if (typeof PERMS === 'undefined' || !PERMS.isSuperAdmin) {
+      var btn = document.getElementById('mnCatManageBtn');
+      if (btn) btn.classList.add('hidden');
+      return;
+    }
+    document.getElementById('mnCatManageBtn').classList.remove('hidden');
+  }
+  document.addEventListener('jarvis:permsReady', renderCatManager);
+
+  document.getElementById('mnCatManageBtn').addEventListener('click', function () {
+    renderCatList();
+    document.getElementById('mnCatBackdrop').classList.remove('hidden');
+  });
+  document.getElementById('mnCatClose').addEventListener('click', function () {
+    document.getElementById('mnCatBackdrop').classList.add('hidden');
+  });
+  document.getElementById('mnCatBackdrop').addEventListener('click', function (ev) {
+    if (ev.target.id === 'mnCatBackdrop') document.getElementById('mnCatClose').click();
+  });
+
+  async function renderCatList() {
+    var res = await sb.from('wt_manuali_categorie').select('*').order('ordine');
+    var list = res.data || [];
+    var wrap = document.getElementById('mnCatList');
+    wrap.innerHTML = list.map(function (c) {
+      return '<div class="mn-bulk-ver-row" data-id="' + c.id + '"><span style="flex:1;color:#eafcff;">' + escapeHtml(c.nome) + '</span>' +
+        '<button type="button" class="mn-icon-btn mn-cat-del" data-id="' + c.id + '" title="Elimina">&#128465;</button></div>';
+    }).join('') || '<p class="sub">Nessuna categoria.</p>';
+    wrap.querySelectorAll('.mn-cat-del').forEach(function (b) {
+      b.addEventListener('click', async function () {
+        if (!confirm('Eliminare questa categoria? I manuali gi\u00e0 assegnati la manterranno come testo, ma non sar\u00e0 pi\u00f9 selezionabile.')) return;
+        await sb.from('wt_manuali_categorie').delete().eq('id', b.dataset.id);
+        await loadCategorie();
+        renderCatList();
+        renderList();
+      });
+    });
+  }
+
+  document.getElementById('mnCatAddBtn').addEventListener('click', async function () {
+    var input = document.getElementById('mnCatNewInput');
+    var nome = input.value.trim();
+    if (!nome) return;
+    var res = await sb.from('wt_manuali_categorie').select('ordine').order('ordine', { ascending: false }).limit(1);
+    var nextOrdine = (res.data && res.data[0] ? res.data[0].ordine : 0) + 10;
+    var ins = await sb.from('wt_manuali_categorie').insert({ nome: nome, ordine: nextOrdine });
+    if (ins.error) { alert('Errore: ' + ins.error.message); return; }
+    input.value = '';
+    await loadCategorie();
+    renderCatList();
   });
 
   // ================= IMPORT MASSIVO DA ZIP =================
@@ -391,6 +472,7 @@
     var n = nameNoExt.toLowerCase();
     if (n.indexOf('manuale') > -1) return 'Manuali';
     if (n.indexOf('sintesi') > -1) return 'Sintesi Offerte';
+    if (n.indexOf('canvass') > -1) return 'Canvass';
     if (n.indexOf('guid') > -1 || n.indexOf('selling') > -1) return 'Guide';
     return '';
   }
@@ -493,9 +575,7 @@
       card.innerHTML =
         '<div class="mn-bulk-fam-head">' +
         '<input type="text" class="cfg-input mn-bulk-titolo" value="' + escapeHtml(fam.titolo) + '">' +
-        '<select class="cfg-input mn-bulk-cat">' +
-        ['', 'Manuali', 'Sintesi Offerte', 'Guide'].map(function (c) { return '<option value="' + c + '"' + (fam.categoria === c ? ' selected' : '') + '>' + (c || '(scegli categoria)') + '</option>'; }).join('') +
-        '</select>' +
+        '<select class="cfg-input mn-bulk-cat">' + bulkCatOptionsHtml(fam.categoria) + '</select>' +
         '<label style="font-size:12px;color:#7fc4dc;display:flex;align-items:center;gap:5px;"><input type="checkbox" class="mn-bulk-include" checked> Includi</label>' +
         '<span class="mn-bulk-toggle-versions">' + fam.versions.length + ' versioni' + (lowConfCount ? ' &mdash; <span class="mn-bulk-flag">' + lowConfCount + ' con data incerta</span>' : '') + '</span>' +
         '</div>' +
