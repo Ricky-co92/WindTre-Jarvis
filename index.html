@@ -304,14 +304,40 @@
   .cfg-card-head{padding:12px 14px;border-bottom:1px solid rgba(255,176,32,.18);cursor:pointer;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
   .cfg-card-head .cfg-nome{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:16px;color:#eafcff;}
   .cfg-cat-tag{font-size:10px;font-family:'Rajdhani',sans-serif;font-weight:700;border:1px solid rgba(255,176,32,.4);color:#ffe6b0;background:rgba(255,176,32,.12);border-radius:3px;padding:2px 7px;white-space:nowrap;}
-  .cfg-price-pill{display:inline-block;font-family:'Orbitron',sans-serif;font-size:1.15rem;font-weight:700;color:#ffb020;background:rgba(255,176,32,.1);border:1px solid rgba(255,176,32,.4);border-radius:20px;padding:5px 16px;margin-bottom:8px;}
+  .cfg-price-pill{display:inline-block;font-family:'Orbitron',sans-serif;font-size:1.15rem;font-weight:700;color:#ffb020;background:rgba(255,176,32,.1);border:1px solid rgba(255,176,32,.4);border-radius:20px;padding:5px 16px;}
+  .cfg-price-label{font-size:10.5px;font-family:'Rajdhani',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:#ffb020;margin-bottom:4px;min-height:13px;}
+  .cfg-price-wrap{margin-bottom:8px;}
+  .cfg-fasce-slot{margin-top:auto;padding-top:10px;}
+  .cfg-fasce-slot:empty{padding-top:0;}
   .cfg-nota{font-size:12px;color:#a8d8ea;font-style:italic;margin-top:6px;}
   .cfg-detail-section{margin-bottom:16px;}
   .cfg-detail-section .cfg-label{margin:0 0 6px;}
-  .cfg-card-body{padding:12px 14px;flex:1;}
+  .cfg-card-body{padding:12px 14px;flex:1;display:flex;flex-direction:column;}
   .cfg-offer-chip{display:inline-block;font-size:11px;background:rgba(143,232,255,.08);border:1px solid rgba(143,232,255,.2);border-radius:3px;padding:3px 7px;margin:0 4px 4px 0;color:#c8f0ff;}
   .cfg-fascia-line{display:flex;justify-content:space-between;font-size:12.5px;padding:4px 0;border-top:1px dashed rgba(143,232,255,.1);}
   .cfg-fascia-line b{color:#ffb020;}
+  .cfg-fasce-slot{margin-top:auto;padding-top:10px;}
+
+  /* ===== COMUNI AREE BIANCHE ===== */
+  .cab-search-box{max-width:520px;position:relative;}
+  #cabSearchResult{margin-top:12px;}
+  .cab-result-card{border-radius:4px 12px 12px 12px;padding:14px 16px;font-family:'Inter',sans-serif;}
+  .cab-result-card.found{background:rgba(127,232,160,.08);border:1px solid rgba(127,232,160,.4);}
+  .cab-result-card.notfound{background:rgba(224,80,80,.07);border:1px solid rgba(224,80,80,.4);}
+  .cab-result-title{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:16px;margin-bottom:6px;}
+  .cab-result-card.found .cab-result-title{color:#8ff0b0;}
+  .cab-result-card.notfound .cab-result-title{color:#ff8f8f;}
+  .cab-result-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-top:8px;font-size:12.5px;color:#c8f0ff;}
+  .cab-result-grid b{color:#eafcff;display:block;font-size:13px;}
+  .cab-suggest-list{border:1px solid rgba(143,232,255,.2);border-radius:4px;margin-top:6px;max-height:220px;overflow-y:auto;position:absolute;background:#0d1924;width:100%;z-index:5;}
+  .cab-suggest-item{padding:8px 12px;font-size:13px;color:#c8f0ff;cursor:pointer;}
+  .cab-suggest-item:hover{background:rgba(143,232,255,.08);}
+  .cab-nearby-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-top:8px;}
+  .cab-nearby-chip{border:1px solid rgba(143,232,255,.18);border-radius:4px;padding:10px 12px;font-size:13px;display:flex;justify-content:space-between;align-items:center;background:rgba(13,25,36,.5);}
+  .cab-nearby-chip .name{color:#eafcff;font-family:'Rajdhani',sans-serif;font-weight:600;}
+  .cab-nearby-chip .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-left:8px;}
+  .cab-nearby-chip .dot.yes{background:#7fe8a0;box-shadow:0 0 6px rgba(127,232,160,.6);}
+  .cab-nearby-chip .dot.no{background:#e05050;box-shadow:0 0 6px rgba(224,80,80,.5);}
   .of-admin-list{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;max-height:240px;overflow-y:auto;}
   .of-admin-row{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border:1px solid rgba(143,232,255,.15);border-radius:4px;font-size:13px;color:#c8e8f2;cursor:pointer;}
   .of-admin-row:hover{border-color:#8fe8ff;}
@@ -438,6 +464,7 @@
   <div class="nav-item" data-view="compilatore" data-text="Compilatore Moduli">Compilatore Moduli</div>
   <div class="nav-item" data-view="offerte" data-text="Dettaglio Tariffe">Dettaglio Tariffe</div>
   <div class="nav-item" data-view="gestione" data-text="Database Offerte">Database Offerte</div>
+  <div class="nav-item" data-view="comuni" data-text="Comuni Aree Bianche">Comuni Aree Bianche</div>
 </div>
 
 <!-- ===== APP ===== -->
@@ -1798,6 +1825,30 @@
       </div>
     </div>
   </div>
+
+  <div id="view-comuni" class="hidden">
+    <div class="gd-panel">
+      <div class="panel-head">
+        <div class="title">&#9670; comuni aree bianche</div>
+        <div class="panel-actions">
+          <input type="file" id="cabFileInput" accept=".xlsx" class="hidden">
+          <button type="button" class="of-btn" id="cabUploadBtn">Carica file aggiornato</button>
+          <span class="status" id="cabUploadStatus"></span>
+        </div>
+      </div>
+      <p class="sub" id="cabMeta" style="margin:0 0 18px"></p>
+
+      <div class="cab-search-box">
+        <input type="text" id="cabSearchInput" class="cfg-input" placeholder="Scrivi il nome di un comune&hellip;" autocomplete="off">
+        <div id="cabSearchResult"></div>
+      </div>
+
+      <div class="cab-nearby-section">
+        <div class="cfg-label" style="margin-top:26px;">Comuni vicino a Casale Monferrato</div>
+        <div class="cab-nearby-grid" id="cabNearbyGrid"></div>
+      </div>
+    </div>
+  </div>
 </div>
 
   
@@ -1805,6 +1856,8 @@
 <script src="app.js"></script>
 <script src="compilatore.js?v=3"></script>
 <script src="offerte.js?v=1"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="comuni.js?v=1"></script>
 <div id="login-flash"></div>
 <div id="login-iris"></div>
 <div id="transition-label">Accesso consentito</div>
