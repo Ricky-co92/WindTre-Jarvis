@@ -277,6 +277,33 @@
   .of-modal-head .title{font-family:'Rajdhani',sans-serif;font-weight:700;color:#4fc8e8;text-transform:uppercase;font-size:16px;}
   .of-modal-close{background:none;border:none;color:#8fb8cc;font-size:22px;cursor:pointer;line-height:1;}
   .of-modal-body{padding:20px 22px;overflow-y:auto;}
+  .of-modal-foot{display:flex;padding:14px 22px;border-top:1px solid rgba(143,232,255,.15);gap:8px;}
+
+  /* ===== CONFIGURAZIONI ===== */
+  .cfg-label{display:block;font-family:'Rajdhani',sans-serif;font-weight:700;text-transform:uppercase;font-size:12px;letter-spacing:.03em;color:#7fc4dc;margin:16px 0 6px;}
+  .cfg-label:first-child{margin-top:0;}
+  .cfg-input{width:100%;background:rgba(42,184,217,.05);border:1px solid rgba(143,232,255,.18);border-radius:3px;color:#eafcff;padding:8px 10px;font-family:'Inter',sans-serif;font-size:13.5px;}
+  .cfg-input:focus{outline:none;border-color:#8fe8ff;}
+  .cfg-off-list{max-height:180px;overflow-y:auto;border:1px solid rgba(143,232,255,.12);border-radius:4px;margin-top:8px;}
+  .cfg-off-row{display:flex;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid rgba(143,232,255,.06);font-size:13px;}
+  .cfg-off-row:last-child{border-bottom:none;}
+  .cfg-off-row input[type=checkbox]{accent-color:#ffb020;cursor:pointer;}
+  .cfg-off-row .cfg-off-price{margin-left:auto;color:#7fc4dc;font-size:12px;}
+  .cfg-fasce-list{margin-top:8px;display:flex;flex-direction:column;gap:8px;}
+  .cfg-fascia-row{display:flex;gap:8px;align-items:center;background:rgba(42,184,217,.04);border:1px solid rgba(143,232,255,.12);border-radius:4px;padding:8px;flex-wrap:wrap;}
+  .cfg-fascia-row input[type=text]{flex:1;min-width:120px;}
+  .cfg-fascia-row input[type=number]{width:100px;}
+  .cfg-fascia-row label{font-size:11px;color:#7fc4dc;display:flex;align-items:center;gap:4px;white-space:nowrap;}
+  .cfg-fascia-del{background:none;border:none;color:#c0392b;font-size:16px;cursor:pointer;}
+  .cfg-fascia-del:hover{color:#ff6767;}
+  .cfg-total-preview{margin-top:14px;font-family:'Rajdhani',sans-serif;font-size:13px;color:#7fc4dc;}
+  .cfg-card{border:1px solid rgba(143,232,255,.15);border-radius:4px 12px 12px 12px;background:rgba(13,25,36,.5);display:flex;flex-direction:column;}
+  .cfg-card-head{padding:12px 14px;border-bottom:1px solid rgba(143,232,255,.1);border-left:3px solid #ffb020;cursor:pointer;}
+  .cfg-card-head .cfg-nome{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:16px;color:#eafcff;}
+  .cfg-card-body{padding:12px 14px;flex:1;}
+  .cfg-offer-chip{display:inline-block;font-size:11px;background:rgba(143,232,255,.08);border:1px solid rgba(143,232,255,.2);border-radius:3px;padding:3px 7px;margin:0 4px 4px 0;color:#c8f0ff;}
+  .cfg-fascia-line{display:flex;justify-content:space-between;font-size:12.5px;padding:4px 0;border-top:1px dashed rgba(143,232,255,.1);}
+  .cfg-fascia-line b{color:#ffb020;}
   .of-admin-list{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;max-height:240px;overflow-y:auto;}
   .of-admin-row{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border:1px solid rgba(143,232,255,.15);border-radius:4px;font-size:13px;color:#c8e8f2;cursor:pointer;}
   .of-admin-row:hover{border-color:#8fe8ff;}
@@ -1541,9 +1568,10 @@
     <div class="of-tabs-bar">
       <button type="button" class="of-tab-btn active" id="ofTabTariffe">Tariffe</button>
       <button type="button" class="of-tab-btn" id="ofTabOpzioni">Opzioni</button>
+      <button type="button" class="of-tab-btn" id="ofTabConfig">Configurazioni</button>
     </div>
     <div class="of-toolbar">
-      <div class="of-filter-group">
+      <div class="of-filter-group" id="ofCatFilterGroup">
         <span class="of-filter-label">Categoria</span>
         <button type="button" class="of-chip" data-filter-cat="consumer">Consumer</button>
         <button type="button" class="of-chip" data-filter-cat="business">Business</button>
@@ -1556,6 +1584,7 @@
       <div class="of-filter-group" style="margin-left:auto;">
         <button type="button" class="of-chip of-manage-btn" id="ofReorderBtn">&#8597; Riordina</button>
         <button type="button" class="of-chip of-manage-btn" id="ofAddNewCard">+ Nuova tariffa</button>
+        <button type="button" class="of-chip of-manage-btn hidden" id="cfgAddNewCard">+ Nuova configurazione</button>
       </div>
       <div class="of-filter-group hidden" id="ofBadgeFilterGroup">
         <span class="of-filter-label">Badge</span>
@@ -1568,6 +1597,32 @@
       </div>
       <div class="of-grid" id="ofGrid">
         <p class="sub" id="ofEmptyMsg">Nessuna tariffa trovata. Usa "+ Nuova tariffa" per aggiungerne.</p>
+      </div>
+      <div class="of-grid hidden" id="cfgGrid"></div>
+    </div>
+  </div>
+
+  <!-- Modale Configurazione -->
+  <div class="of-modal-backdrop hidden" id="cfgModalBackdrop">
+    <div class="of-modal of-modal-wide">
+      <div class="of-modal-head">
+        <div class="title" id="cfgModalTitle">Nuova configurazione</div>
+        <button type="button" class="of-modal-close" id="cfgModalClose">&times;</button>
+      </div>
+      <div class="of-modal-body">
+        <label class="cfg-label">Titolo configurazione</label>
+        <input type="text" id="cfgNomeInput" class="cfg-input" placeholder="Es. Fibra + Mobile Business">
+        <label class="cfg-label">Offerte incluse</label>
+        <input type="text" id="cfgOffSearch" class="cfg-input" placeholder="Cerca offerta da aggiungere&hellip;">
+        <div class="cfg-off-list" id="cfgOffList"></div>
+        <label class="cfg-label">Fasce prezzo</label>
+        <div class="cfg-fasce-list" id="cfgFasceList"></div>
+        <button type="button" class="of-chip of-manage-btn" id="cfgAddFascia">+ Aggiungi fascia</button>
+        <div class="cfg-total-preview" id="cfgTotalPreview"></div>
+      </div>
+      <div class="of-modal-foot">
+        <button type="button" class="of-chip of-manage-btn hidden" id="cfgDeleteBtn" style="color:#ff6767;border-color:#ff6767;">Elimina</button>
+        <button type="button" class="of-chip of-manage-btn" id="cfgSaveBtn" style="margin-left:auto;">Salva</button>
       </div>
     </div>
   </div>

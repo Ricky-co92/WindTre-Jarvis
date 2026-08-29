@@ -175,12 +175,20 @@
 
   document.getElementById('ofTabTariffe').addEventListener('click', function () { switchOfferteTab('tariffe'); });
   document.getElementById('ofTabOpzioni').addEventListener('click', function () { switchOfferteTab('opzioni'); });
+  document.getElementById('ofTabConfig').addEventListener('click', function () { switchOfferteTab('config'); });
   function switchOfferteTab(tab) {
     activeTab = tab;
     document.getElementById('ofTabTariffe').classList.toggle('active', tab === 'tariffe');
     document.getElementById('ofTabOpzioni').classList.toggle('active', tab === 'opzioni');
-    document.getElementById('ofTipoFilterGroup').classList.toggle('hidden', tab === 'opzioni');
-    renderGrid();
+    document.getElementById('ofTabConfig').classList.toggle('active', tab === 'config');
+    document.getElementById('ofTipoFilterGroup').classList.toggle('hidden', tab !== 'tariffe');
+    document.getElementById('ofCatFilterGroup').classList.toggle('hidden', tab === 'config');
+    document.getElementById('ofGrid').classList.toggle('hidden', tab === 'config');
+    document.getElementById('cfgGrid').classList.toggle('hidden', tab !== 'config');
+    document.getElementById('ofReorderBtn').classList.toggle('hidden', tab === 'config');
+    document.getElementById('ofAddNewCard').classList.toggle('hidden', tab === 'config');
+    document.getElementById('cfgAddNewCard').classList.toggle('hidden', tab !== 'config');
+    if (tab === 'config') renderCfgGrid(); else renderGrid();
   }
 
   // ================= GRIGLIA CARD =================
@@ -889,6 +897,161 @@
     renderGestioneTable();
   });
 
+  // ================= CONFIGURAZIONI =================
+  var configurazioni = [];
+  var cfgEditingId = null;
+  var cfgSelectedOfferte = [];   // array id offerte incluse
+  var cfgFasce = [];             // [{durata, prezzo, auto}]
+  var cfgOffSearchTerm = '';
+
+  async function loadConfigurazioni() {
+    try {
+      var res = await sb.from('wt_configurazioni').select('*').order('ordine');
+      if (res.error) throw res.error;
+      configurazioni = res.data || [];
+    } catch (err) {
+      console.error('Errore caricamento configurazioni:', err);
+      configurazioni = [];
+    }
+  }
+
+  function offertaPrezzo(o) {
+    var v = fieldVal(o, 'prezzo');
+    var n = parseFloat(String(v || '').replace(',', '.').replace(/[^\d.]/g, ''));
+    return isNaN(n) ? 0 : n;
+  }
+
+  function cfgAutoTotal(offertaIds) {
+    return offerte.filter(function (o) { return offertaIds.indexOf(o.id) > -1; })
+      .reduce(function (sum, o) { return sum + offertaPrezzo(o); }, 0);
+  }
+
+  function renderCfgGrid() {
+    var grid = document.getElementById('cfgGrid');
+    if (!configurazioni.length) {
+      grid.innerHTML = '<p class="sub">Nessuna configurazione. Usa "+ Nuova configurazione" per crearne una.</p>';
+      return;
+    }
+    grid.innerHTML = '';
+    configurazioni.forEach(function (c) {
+      var included = offerte.filter(function (o) { return (c.offerta_ids || []).indexOf(o.id) > -1; });
+      var chips = included.map(function (o) { return '<span class="cfg-offer-chip">' + escapeHtml(o.nome) + '</span>'; }).join('');
+      var fasce = c.fasce || [];
+      var fasceHtml = fasce.map(function (f) {
+        var val = f.auto ? cfgAutoTotal(c.offerta_ids || []) : (parseFloat(f.prezzo) || 0);
+        return '<div class="cfg-fascia-line"><span>' + escapeHtml(f.durata || '') + '</span><b>' + val.toFixed(2).replace('.', ',') + '&euro;/mese</b></div>';
+      }).join('');
+      var card = document.createElement('div');
+      card.className = 'cfg-card';
+      card.innerHTML =
+        '<div class="cfg-card-head"><div class="cfg-nome">' + escapeHtml(c.nome) + '</div></div>' +
+        '<div class="cfg-card-body">' + (chips || '<span class="sub">Nessuna offerta inclusa</span>') +
+        (fasceHtml ? '<div style="margin-top:10px;">' + fasceHtml + '</div>' : '') +
+        '</div>';
+      card.addEventListener('click', function () { openCfgModal(c.id); });
+      grid.appendChild(card);
+    });
+  }
+
+  function renderCfgOffList() {
+    var list = document.getElementById('cfgOffList');
+    var items = offerte.filter(function (o) {
+      if (!cfgOffSearchTerm) return true;
+      return (o.nome || '').toLowerCase().indexOf(cfgOffSearchTerm) > -1;
+    });
+    list.innerHTML = '';
+    items.forEach(function (o) {
+      var row = document.createElement('label');
+      row.className = 'cfg-off-row';
+      var checked = cfgSelectedOfferte.indexOf(o.id) > -1;
+      row.innerHTML = '<input type="checkbox" ' + (checked ? 'checked' : '') + '> ' + escapeHtml(o.nome) +
+        '<span class="cfg-off-price">' + offertaPrezzo(o).toFixed(2).replace('.', ',') + '&euro;</span>';
+      row.querySelector('input').addEventListener('change', function (ev) {
+        var idx = cfgSelectedOfferte.indexOf(o.id);
+        if (ev.target.checked && idx === -1) cfgSelectedOfferte.push(o.id);
+        else if (!ev.target.checked && idx > -1) cfgSelectedOfferte.splice(idx, 1);
+        renderCfgTotalPreview();
+      });
+      list.appendChild(row);
+    });
+  }
+
+  function renderCfgFasceList() {
+    var wrap = document.getElementById('cfgFasceList');
+    wrap.innerHTML = '';
+    cfgFasce.forEach(function (f, i) {
+      var row = document.createElement('div');
+      row.className = 'cfg-fascia-row';
+      row.innerHTML =
+        '<input type="text" placeholder="Es. Primi 24 mesi" value="' + attrEsc(f.durata || '') + '" data-f="durata">' +
+        '<label><input type="checkbox" data-f="auto" ' + (f.auto ? 'checked' : '') + '> Auto (somma offerte)</label>' +
+        '<input type="number" step="0.01" placeholder="Prezzo manuale" value="' + (f.prezzo != null ? f.prezzo : '') + '" data-f="prezzo" ' + (f.auto ? 'disabled' : '') + '>' +
+        '<button type="button" class="cfg-fascia-del" title="Elimina fascia">&times;</button>';
+      row.querySelector('[data-f="durata"]').addEventListener('input', function (ev) { f.durata = ev.target.value; });
+      var autoChk = row.querySelector('[data-f="auto"]');
+      var prezzoInp = row.querySelector('[data-f="prezzo"]');
+      autoChk.addEventListener('change', function (ev) { f.auto = ev.target.checked; prezzoInp.disabled = f.auto; renderCfgTotalPreview(); });
+      prezzoInp.addEventListener('input', function (ev) { f.prezzo = ev.target.value === '' ? null : parseFloat(ev.target.value); renderCfgTotalPreview(); });
+      row.querySelector('.cfg-fascia-del').addEventListener('click', function () { cfgFasce.splice(i, 1); renderCfgFasceList(); renderCfgTotalPreview(); });
+      wrap.appendChild(row);
+    });
+  }
+
+  function renderCfgTotalPreview() {
+    var el = document.getElementById('cfgTotalPreview');
+    var auto = cfgAutoTotal(cfgSelectedOfferte);
+    var lines = cfgFasce.map(function (f) {
+      var val = f.auto ? auto : (parseFloat(f.prezzo) || 0);
+      return (f.durata || 'Fascia') + ': <b>' + val.toFixed(2).replace('.', ',') + '&euro;/mese</b>';
+    });
+    el.innerHTML = 'Somma automatica offerte incluse: <b>' + auto.toFixed(2).replace('.', ',') + '&euro;/mese</b>' +
+      (lines.length ? '<br>' + lines.join('<br>') : '');
+  }
+
+  function openCfgModal(id) {
+    cfgEditingId = id || null;
+    var c = id ? configurazioni.filter(function (x) { return x.id === id; })[0] : null;
+    cfgSelectedOfferte = c ? (c.offerta_ids || []).slice() : [];
+    cfgFasce = c ? JSON.parse(JSON.stringify(c.fasce || [])) : [{ durata: '', prezzo: null, auto: true }];
+    cfgOffSearchTerm = '';
+    document.getElementById('cfgOffSearch').value = '';
+    document.getElementById('cfgNomeInput').value = c ? c.nome : '';
+    document.getElementById('cfgModalTitle').textContent = c ? 'Modifica configurazione' : 'Nuova configurazione';
+    document.getElementById('cfgDeleteBtn').classList.toggle('hidden', !c);
+    renderCfgOffList();
+    renderCfgFasceList();
+    renderCfgTotalPreview();
+    document.getElementById('cfgModalBackdrop').classList.remove('hidden');
+  }
+  function closeCfgModal() { document.getElementById('cfgModalBackdrop').classList.add('hidden'); }
+
+  document.getElementById('cfgAddNewCard').addEventListener('click', function () { openCfgModal(null); });
+  document.getElementById('cfgModalClose').addEventListener('click', closeCfgModal);
+  document.getElementById('cfgModalBackdrop').addEventListener('click', function (ev) { if (ev.target.id === 'cfgModalBackdrop') closeCfgModal(); });
+  document.getElementById('cfgOffSearch').addEventListener('input', function () { cfgOffSearchTerm = this.value.trim().toLowerCase(); renderCfgOffList(); });
+  document.getElementById('cfgAddFascia').addEventListener('click', function () { cfgFasce.push({ durata: '', prezzo: null, auto: true }); renderCfgFasceList(); renderCfgTotalPreview(); });
+
+  document.getElementById('cfgSaveBtn').addEventListener('click', async function () {
+    var nome = document.getElementById('cfgNomeInput').value.trim();
+    if (!nome) { alert('Inserisci un titolo per la configurazione.'); return; }
+    var record = { nome: nome, offerta_ids: cfgSelectedOfferte, fasce: cfgFasce };
+    if (cfgEditingId) record.id = cfgEditingId; else record.ordine = configurazioni.length;
+    var res = await sb.from('wt_configurazioni').upsert(record);
+    if (res.error) { alert('Errore salvataggio: ' + res.error.message); return; }
+    closeCfgModal();
+    await loadConfigurazioni();
+    renderCfgGrid();
+  });
+
+  document.getElementById('cfgDeleteBtn').addEventListener('click', async function () {
+    if (!cfgEditingId || !confirm('Eliminare questa configurazione?')) return;
+    var res = await sb.from('wt_configurazioni').delete().eq('id', cfgEditingId);
+    if (res.error) { alert('Errore eliminazione: ' + res.error.message); return; }
+    closeCfgModal();
+    await loadConfigurazioni();
+    renderCfgGrid();
+  });
+
   // ================= INIT =================
   document.addEventListener('jarvis:view', function (ev) {
     var view = ev.detail && ev.detail.view;
@@ -897,5 +1060,5 @@
     if (view === 'gestione') renderGestioneTable();
     else renderGrid();
   });
-  if (document.getElementById('ofGrid')) loadOfferte();
+  if (document.getElementById('ofGrid')) { loadOfferte(); loadConfigurazioni(); }
 })();
