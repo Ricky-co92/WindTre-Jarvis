@@ -24,9 +24,18 @@
 
   async function loadComuni() {
     try {
-      var res = await sb.from('wt_comuni_aree_bianche').select('*').order('comune');
-      if (res.error) throw res.error;
-      comuni = res.data || [];
+      var all = [];
+      var pageSize = 1000;
+      var from = 0;
+      while (true) {
+        var res = await sb.from('wt_comuni_aree_bianche').select('*').order('comune').range(from, from + pageSize - 1);
+        if (res.error) throw res.error;
+        var batch = res.data || [];
+        all = all.concat(batch);
+        if (batch.length < pageSize) break;
+        from += pageSize;
+      }
+      comuni = all;
       loaded = true;
       renderMeta();
       renderNearby();
