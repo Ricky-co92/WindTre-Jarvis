@@ -159,15 +159,28 @@
     group.classList.toggle('hidden', badges.length === 0);
   }
 
+  var activeTab = 'tariffe'; // 'tariffe' | 'opzioni'
+
   function filteredOfferte() {
     return offerte.filter(function (o) {
+      var tabOk = activeTab === 'opzioni' ? o.tipo === 'opzione' : o.tipo !== 'opzione';
       var catOk = activeCatFilters.length === 0 || activeCatFilters.indexOf(o.categoria) > -1;
-      var tipoOk = activeTipoFilters.length === 0 || activeTipoFilters.indexOf(o.tipo) > -1;
+      var tipoOk = activeTab === 'opzioni' || activeTipoFilters.length === 0 || activeTipoFilters.indexOf(o.tipo) > -1;
       var badge = fieldVal(o, 'badge');
       var badgeOk = _activeBadgeFilters.length === 0 || _activeBadgeFilters.indexOf(badge) > -1;
       var searchOk = matchesSearch(o, ofSearchTerm);
-      return catOk && tipoOk && badgeOk && searchOk;
+      return tabOk && catOk && tipoOk && badgeOk && searchOk;
     });
+  }
+
+  document.getElementById('ofTabTariffe').addEventListener('click', function () { switchOfferteTab('tariffe'); });
+  document.getElementById('ofTabOpzioni').addEventListener('click', function () { switchOfferteTab('opzioni'); });
+  function switchOfferteTab(tab) {
+    activeTab = tab;
+    document.getElementById('ofTabTariffe').classList.toggle('active', tab === 'tariffe');
+    document.getElementById('ofTabOpzioni').classList.toggle('active', tab === 'opzioni');
+    document.getElementById('ofTipoFilterGroup').classList.toggle('hidden', tab === 'opzioni');
+    renderGrid();
   }
 
   // ================= GRIGLIA CARD =================
