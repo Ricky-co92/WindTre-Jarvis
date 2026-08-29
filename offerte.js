@@ -235,46 +235,6 @@
   }
 
   // ================= GRIGLIA CARD =================
-  var reorderMode = false;
-  var sortableInstance = null;
-
-  document.getElementById('ofReorderBtn').addEventListener('click', function () {
-    reorderMode = !reorderMode;
-    this.classList.toggle('active', reorderMode);
-    renderGrid();
-    if (reorderMode) {
-      sortableInstance = new Sortable(document.getElementById('ofGrid'), {
-        animation: 150,
-        delay: 50,
-        delayOnTouchOnly: true,
-        ghostClass: 'of-card-placeholder',
-        chosenClass: 'dragging',
-        forceFallback: true,
-        onEnd: function () { persistGridOrder(); }
-      });
-    } else if (sortableInstance) {
-      sortableInstance.destroy();
-      sortableInstance = null;
-    }
-  });
-
-  async function persistGridOrder() {
-    var grid = document.getElementById('ofGrid');
-    var cards = Array.prototype.slice.call(grid.querySelectorAll('.of-card'));
-    var ops = [];
-    cards.forEach(function (card, i) {
-      var o = offerte.filter(function (x) { return x.id === card.dataset.id; })[0];
-      var newOrdine = (i + 1) * 10;
-      if (o && o.ordine !== newOrdine) {
-        ops.push(sb.from('wt_offerte').update({ ordine: newOrdine }).eq('id', o.id));
-      }
-    });
-    if (ops.length) {
-      try { await Promise.all(ops); await loadOfferte(); }
-      catch (err) { alert('Errore: ' + err.message); }
-    }
-  }
-
   function renderGrid() {
     var grid = document.getElementById('ofGrid');
     var list = filteredOfferte();
@@ -283,28 +243,26 @@
       return;
     }
     grid.innerHTML = '';
-    list.forEach(function (o, idx) {
+    list.forEach(function (o) {
       var card = document.createElement('div');
-      card.className = 'of-card' + (reorderMode ? ' reorder-mode' : '');
+      card.className = 'of-card';
       card.dataset.id = o.id;
       card.innerHTML = buildCardInnerHtml(o);
-      if (!reorderMode) {
-        card.addEventListener('click', function () { openDetail(o.id); });
-        var family = familyOf(o);
-        if (family.length) {
-          var familyIds = family.map(function (x) { return x.id; }).concat([o.id]);
-          card.addEventListener('mouseenter', function () {
-            familyIds.forEach(function (fid) {
-              var el = grid.querySelector('.of-card[data-id="' + fid + '"]');
-              if (el) el.classList.add('linked-highlight');
-            });
+      card.addEventListener('click', function () { openDetail(o.id); });
+      var family = familyOf(o);
+      if (family.length) {
+        var familyIds = family.map(function (x) { return x.id; }).concat([o.id]);
+        card.addEventListener('mouseenter', function () {
+          familyIds.forEach(function (fid) {
+            var el = grid.querySelector('.of-card[data-id="' + fid + '"]');
+            if (el) el.classList.add('linked-highlight');
           });
-          card.addEventListener('mouseleave', function () {
-            document.querySelectorAll('.of-card.linked-highlight').forEach(function (c) {
-              c.classList.remove('linked-highlight');
-            });
+        });
+        card.addEventListener('mouseleave', function () {
+          document.querySelectorAll('.of-card.linked-highlight').forEach(function (c) {
+            c.classList.remove('linked-highlight');
           });
-        }
+        });
       }
       grid.appendChild(card);
     });
@@ -313,6 +271,68 @@
   document.getElementById('ofAddNewCard').addEventListener('click', function () {
     openDetail(null, true);
   });
+
+  // ================= RIORDINA TARIFFE (modale, lista semplice) =================
+  var reorderSortable = null;
+
+  document.getElementById('ofReorderBtn').addEventListener('click', function () {
+    document.getElementById('ofReorderBackdrop').classList.remove('hidden');
+    renderReorderList();
+  });
+  document.getElementById('ofReorderClose').addEventListener('click', function () {
+    document.getElementById('ofReorderBackdrop').classList.add('hidden');
+    if (reorderSortable) { reorderSortable.destroy(); reorderSortable = null; }
+  });
+  document.getElementById('ofReorderBackdrop').addEventListener('click', function (ev) {
+    if (ev.target.id === 'ofReorderBackdrop') document.getElementById('ofReorderClose').click();
+  });
+
+  function renderReorderList() {
+    var list = document.getElementById('ofReorderList');
+    list.innerHTML = '';
+    var sorted = offerte.slice().sort(function (a, b) { return (a.ordine || 0) - (b.ordine || 0); });
+    sorted.forEach(function (o) {
+      var row = document.createElement('div');
+      row.className = 'of-reorder-row';
+      row.dataset.id = o.id;
+      row.innerHTML = '<span class="of-reorder-handle">&#9776;</span>' +
+        '<span class="orr-name">' + escapeHtml(o.nome) + '</span>' +
+        '<span class="orr-tag">' + CAT_LABEL[o.categoria] + ' \u00b7 ' + TIPO_LABEL[o.tipo] + '</span>';
+      list.appendChild(row);
+    });
+    if (reorderSortable) reorderSortable.destroy();
+    reorderSortable = new Sortable(list, {
+      animation: 150,
+      handle: '.of-reorder-handle',
+      ghostClass: 'sortable-ghost',
+      chosenClass: 'sortable-chosen',
+      onEnd: function () { persistReorderList(); }
+    });
+  }
+
+  async function persistReorderList() {
+    var statusEl = document.getElementById('ofReorderStatus');
+    var rows = Array.prototype.slice.call(document.querySelectorAll('#ofReorderList .of-reorder-row'));
+    statusEl.textContent = 'Salvataggio...';
+    statusEl.className = 'status';
+    var ops = [];
+    rows.forEach(function (row, i) {
+      var o = offerte.filter(function (x) { return x.id === row.dataset.id; })[0];
+      var newOrdine = (i + 1) * 10;
+      if (o && o.ordine !== newOrdine) {
+        ops.push(sb.from('wt_offerte').update({ ordine: newOrdine }).eq('id', o.id));
+      }
+    });
+    try {
+      if (ops.length) await Promise.all(ops);
+      await loadOfferte();
+      statusEl.textContent = 'Ordine salvato.';
+      statusEl.className = 'status ok';
+    } catch (err) {
+      statusEl.textContent = 'Errore: ' + err.message;
+      statusEl.className = 'status err';
+    }
+  }
 
   // ================= CONFIGURATORE CARD (per singola tariffa) =================
   function getCardConfig(o) {
