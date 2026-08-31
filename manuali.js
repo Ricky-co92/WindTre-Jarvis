@@ -249,38 +249,70 @@
     if (ev.target.id === 'mnEditBackdrop') document.getElementById('mnEditClose').click();
   });
 
+  function normalizeTitolo(t) {
+    return t.toLowerCase().replace(/[^a-z0-9()]/g, '');
+  }
+
+  // Numero di versione e "ultima" non sono mai scritti dall'utente: si ricalcolano
+  // sempre dall'ordine cronologico reale delle date, dopo ogni modifica o unione.
+  async function recomputeVersionsForGroup(gruppoId) {
+    var refreshed = await sb.from('wt_manuali').select('id, uploaded_at').eq('gruppo_id', gruppoId);
+    if (refreshed.error) throw refreshed.error;
+    var ordered = refreshed.data.sort(function (a, b) { return new Date(a.uploaded_at) - new Date(b.uploaded_at); });
+    for (var vi = 0; vi < ordered.length; vi++) {
+      var isLatest = vi === ordered.length - 1;
+      var vUpd = await sb.from('wt_manuali').update({ versione: vi + 1, is_latest: isLatest }).eq('id', ordered[vi].id);
+      if (vUpd.error) throw vUpd.error;
+    }
+    return ordered.length;
+  }
+
   document.getElementById('mnEditSaveBtn').addEventListener('click', async function () {
     if (!editTargetGruppo) return;
     var statusEl = document.getElementById('mnEditStatus');
     var newTitolo = document.getElementById('mnEditTitoloInput').value.trim();
     if (!newTitolo) { statusEl.textContent = 'Il titolo non può essere vuoto.'; statusEl.className = 'status err'; return; }
 
+    // Se il nuovo titolo (normalizzato: senza spazi/maiuscole/punteggiatura) coincide
+    // con quello di un'ALTRA famiglia già esistente, i due documenti sono quasi certamente
+    // lo stesso file con una convenzione di nome diversa: propongo di unirli in un unico
+    // storico invece di lasciare due card duplicate con lo stesso nome.
+    var normNew = normalizeTitolo(newTitolo);
+    var mergeTarget = docs.find(function (d) {
+      return d.gruppo_id !== editTargetGruppo && normalizeTitolo(d.titolo) === normNew;
+    });
+    var doMerge = false;
+    if (mergeTarget) {
+      var mergeTargetVersions = allRows.filter(function (r) { return r.gruppo_id === mergeTarget.gruppo_id; }).length;
+      doMerge = confirm('Esiste già un documento chiamato "' + mergeTarget.titolo + '" (' + mergeTargetVersions + ' version' + (mergeTargetVersions === 1 ? 'e' : 'i') + ').\n\nVuoi unire questo documento a quello, mettendo tutte le versioni in un unico storico?\n\n(Annulla per rinominare comunque senza unire.)');
+    }
+
     statusEl.textContent = 'Salvataggio...';
     statusEl.className = 'status';
     try {
-      var titUpd = await sb.from('wt_manuali').update({ titolo: newTitolo }).eq('gruppo_id', editTargetGruppo);
-      if (titUpd.error) throw titUpd.error;
+      if (doMerge) {
+        var moveUpd = await sb.from('wt_manuali').update({ gruppo_id: mergeTarget.gruppo_id }).eq('gruppo_id', editTargetGruppo);
+        if (moveUpd.error) throw moveUpd.error;
+        var mergedTitUpd = await sb.from('wt_manuali').update({ titolo: newTitolo }).eq('gruppo_id', mergeTarget.gruppo_id);
+        if (mergedTitUpd.error) throw mergedTitUpd.error;
+        var mergedCount = await recomputeVersionsForGroup(mergeTarget.gruppo_id);
+        statusEl.textContent = 'Unito — ' + mergedCount + ' versioni totali.';
+      } else {
+        var titUpd = await sb.from('wt_manuali').update({ titolo: newTitolo }).eq('gruppo_id', editTargetGruppo);
+        if (titUpd.error) throw titUpd.error;
 
-      var dateInputs = document.querySelectorAll('#mnEditVersionsList .mn-edit-ver-date');
-      for (var i = 0; i < dateInputs.length; i++) {
-        var inp = dateInputs[i];
-        if (inp.value === inp.dataset.original || !inp.value) continue;
-        var dUpd = await sb.from('wt_manuali').update({ uploaded_at: new Date(inp.value + 'T12:00:00').toISOString() }).eq('id', inp.dataset.id);
-        if (dUpd.error) throw dUpd.error;
+        var dateInputs = document.querySelectorAll('#mnEditVersionsList .mn-edit-ver-date');
+        for (var i = 0; i < dateInputs.length; i++) {
+          var inp = dateInputs[i];
+          if (inp.value === inp.dataset.original || !inp.value) continue;
+          var dUpd = await sb.from('wt_manuali').update({ uploaded_at: new Date(inp.value + 'T12:00:00').toISOString() }).eq('id', inp.dataset.id);
+          if (dUpd.error) throw dUpd.error;
+        }
+
+        await recomputeVersionsForGroup(editTargetGruppo);
+        statusEl.textContent = 'Salvato.';
       }
 
-      // Numero di versione e "ultima" non sono mai scritti dall'utente: si ricalcolano
-      // sempre dall'ordine cronologico reale delle date dopo ogni modifica.
-      var refreshed = await sb.from('wt_manuali').select('id, uploaded_at').eq('gruppo_id', editTargetGruppo);
-      if (refreshed.error) throw refreshed.error;
-      var ordered = refreshed.data.sort(function (a, b) { return new Date(a.uploaded_at) - new Date(b.uploaded_at); });
-      for (var vi = 0; vi < ordered.length; vi++) {
-        var isLatest = vi === ordered.length - 1;
-        var vUpd = await sb.from('wt_manuali').update({ versione: vi + 1, is_latest: isLatest }).eq('id', ordered[vi].id);
-        if (vUpd.error) throw vUpd.error;
-      }
-
-      statusEl.textContent = 'Salvato.';
       statusEl.className = 'status ok';
       await loadManuali();
       document.getElementById('mnEditBackdrop').classList.add('hidden');
@@ -640,10 +672,18 @@
         var confident = !!dateFromName;
         var finalDate = dateFromPath || null;
 
-        if (!families[key]) {
-          families[key] = { titolo: titolo, categoria: guessCategoria(nameNoExt), versions: [] };
+        // WindTre alterna, a seconda del mese, tra nomi "Con Spazi" e "SenzaSpazi" per
+        // lo stesso identico documento (es. "Manuale Professionisti 5 ottobre 22.pdf" e
+        // "ManualeProfessionisti15maggio23.pdf"): la sola normalizzazione spazi/maiuscole
+        // di familyKeyFromFilename non basta a farli combaciare. Il bucket di raggruppamento
+        // usa quindi la chiave senza spazi; titolo/isGenericKey restano sulla chiave "piena"
+        // per non perdere i confini di parola.
+        var matchKey = key.replace(/\s+/g, '');
+
+        if (!families[matchKey]) {
+          families[matchKey] = { titolo: titolo, categoria: guessCategoria(nameNoExt), versions: [] };
         }
-        families[key].versions.push({ fileName: fileName, buf: buf, date: finalDate, confident: confident, noDate: !finalDate, sourcePath: path });
+        families[matchKey].versions.push({ fileName: fileName, buf: buf, date: finalDate, confident: confident, noDate: !finalDate, sourcePath: path });
       }
     }
 

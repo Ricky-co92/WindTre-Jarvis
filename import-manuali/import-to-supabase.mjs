@@ -153,8 +153,13 @@ function scanZips() {
       const confident = !!dateFromName;
       const finalDate = dateFromPath || null;
 
-      if (!families[key]) families[key] = { titolo, categoria: guessCategoria(nameNoExt), versions: [] };
-      families[key].versions.push({
+      // WindTre alterna, a seconda del mese, tra nomi "Con Spazi" e "SenzaSpazi" per lo
+      // stesso identico documento — la sola normalizzazione di familyKeyFromFilename non
+      // basta a farli combaciare. Il bucket di raggruppamento usa la chiave senza spazi;
+      // titolo/isGenericKey restano sulla chiave "piena" per non perdere i confini di parola.
+      const matchKey = key.replace(/\s+/g, '');
+      if (!families[matchKey]) families[matchKey] = { titolo, categoria: guessCategoria(nameNoExt), versions: [] };
+      families[matchKey].versions.push({
         fileName, buf, date: finalDate, confident, noDate: !finalDate,
         sourceZip: zf, sourcePath: entry.entryName, sha256: hash
       });
