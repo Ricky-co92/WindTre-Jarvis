@@ -1,0 +1,16 @@
+{
+  "name": "import-manuali",
+  "private": true,
+  "version": "1.0.0",
+  "description": "One-off migration script: bulk-import archived WindTre manuali PDFs into Supabase (wt_manuali + storage bucket 'manuali').",
+  "type": "commonjs",
+  "dependencies": {
+    "@supabase/supabase-js": "2.112.4",
+    "adm-zip": "0.6.0",
+    "pdf-lib": "1.17.1",
+    "puppeteer": "25.9.0"
+  },
+  "allowScripts": {
+    "puppeteer@25.9.0": true
+  }
+}
