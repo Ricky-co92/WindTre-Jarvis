@@ -181,14 +181,63 @@
     return card;
   }
 
-  function openPreview(d) {
-    document.getElementById('mnPreviewTitle').textContent = d.titolo;
-    document.getElementById('mnPreviewFrame').src = publicUrl(d.storage_path) + '#toolbar=1';
-    document.getElementById('mnPreviewBackdrop').classList.remove('hidden');
+  // Anteprima PDF renderizzata con pdf.js su <canvas>, non un <iframe> puntato
+  // all'URL del file: molti browser/WebView mobili non sanno mostrare un PDF
+  // incorporato in un iframe e mostrano solo un fallback nativo "apri/scarica"
+  // senza anteprima. pdf.js funziona identico su tutti i dispositivi.
+  var previewPdf = null;
+  var previewPageNum = 1;
+  var previewTotalPages = 1;
+
+  async function renderPreviewPage(num) {
+    var canvas = document.getElementById('mnPreviewCanvas');
+    var page = await previewPdf.getPage(num);
+    var body = document.getElementById('mnPreviewBody');
+    var maxWidth = body.clientWidth - 24;
+    var baseViewport = page.getViewport({ scale: 1 });
+    var scale = Math.min(2, maxWidth / baseViewport.width) || 1;
+    var viewport = page.getViewport({ scale: scale });
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    var ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+    document.getElementById('mnPreviewPageInfo').textContent = num + ' / ' + previewTotalPages;
   }
+
+  async function openPreviewUrl(url, title) {
+    document.getElementById('mnPreviewTitle').textContent = title;
+    document.getElementById('mnPreviewFoot').classList.add('hidden');
+    document.getElementById('mnPreviewPageInfo').textContent = 'Caricamento...';
+    document.getElementById('mnPreviewBackdrop').classList.remove('hidden');
+    try {
+      previewPdf = await pdfjsLib.getDocument(url).promise;
+      previewTotalPages = previewPdf.numPages;
+      previewPageNum = 1;
+      await renderPreviewPage(previewPageNum);
+      if (previewTotalPages > 1) document.getElementById('mnPreviewFoot').classList.remove('hidden');
+    } catch (err) {
+      document.getElementById('mnPreviewPageInfo').textContent = '';
+      console.error('Errore apertura PDF:', err);
+      alert('Impossibile aprire l\'anteprima di questo PDF.');
+    }
+  }
+
+  function openPreview(d) {
+    openPreviewUrl(publicUrl(d.storage_path), d.titolo);
+  }
+  document.getElementById('mnPreviewPrev').addEventListener('click', function () {
+    if (previewPageNum > 1) { previewPageNum--; renderPreviewPage(previewPageNum); }
+  });
+  document.getElementById('mnPreviewNext').addEventListener('click', function () {
+    if (previewPageNum < previewTotalPages) { previewPageNum++; renderPreviewPage(previewPageNum); }
+  });
   document.getElementById('mnPreviewClose').addEventListener('click', function () {
     document.getElementById('mnPreviewBackdrop').classList.add('hidden');
-    document.getElementById('mnPreviewFrame').src = '';
+    if (previewPdf) { previewPdf.destroy(); previewPdf = null; }
+    var canvas = document.getElementById('mnPreviewCanvas');
+    canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
   });
   document.getElementById('mnPreviewBackdrop').addEventListener('click', function (ev) {
     if (ev.target.id === 'mnPreviewBackdrop') document.getElementById('mnPreviewClose').click();
@@ -205,9 +254,7 @@
       a.addEventListener('click', function (ev) {
         ev.preventDefault();
         document.getElementById('mnHistBackdrop').classList.add('hidden');
-        document.getElementById('mnPreviewTitle').textContent = a.dataset.title;
-        document.getElementById('mnPreviewFrame').src = publicUrl(a.dataset.path) + '#toolbar=1';
-        document.getElementById('mnPreviewBackdrop').classList.remove('hidden');
+        openPreviewUrl(publicUrl(a.dataset.path), a.dataset.title);
       });
     });
     document.getElementById('mnHistBackdrop').classList.remove('hidden');

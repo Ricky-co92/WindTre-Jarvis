@@ -1994,8 +1994,13 @@
         <div class="title" id="mnPreviewTitle">Anteprima</div>
         <button type="button" class="of-modal-close" id="mnPreviewClose">&times;</button>
       </div>
-      <div class="of-modal-body" style="padding:0;flex:1;">
-        <iframe id="mnPreviewFrame" style="width:100%;height:100%;border:0;background:#1a1a1a;"></iframe>
+      <div class="of-modal-body" id="mnPreviewBody" style="padding:12px;flex:1;overflow:auto;background:#1a1a1a;display:flex;align-items:flex-start;justify-content:center;">
+        <canvas id="mnPreviewCanvas"></canvas>
+      </div>
+      <div class="of-modal-foot hidden" id="mnPreviewFoot" style="justify-content:center;gap:14px;">
+        <button type="button" class="mn-icon-btn" id="mnPreviewPrev" title="Pagina precedente">&#10094;</button>
+        <span class="status" id="mnPreviewPageInfo"></span>
+        <button type="button" class="mn-icon-btn" id="mnPreviewNext" title="Pagina successiva">&#10095;</button>
       </div>
     </div>
   </div>
@@ -2084,7 +2089,7 @@
 <script src="offerte.js?v=1"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="comuni.js?v=3"></script>
-<script src="manuali.js?v=5"></script>
+<script src="manuali.js?v=6"></script>
 <script src="settings.js?v=1"></script>
 <div id="login-flash"></div>
 <div id="login-iris"></div>
