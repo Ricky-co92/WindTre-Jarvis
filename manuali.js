@@ -31,14 +31,19 @@
       var pdf = await pdfjsLib.getDocument({ data: buf }).promise;
       var page = await pdf.getPage(1);
       var viewport = page.getViewport({ scale: 1 });
-      var scale = 300 / viewport.width;
+      var scale = 650 / viewport.width;
       var scaledViewport = page.getViewport({ scale: scale });
       var canvas = document.createElement('canvas');
       canvas.width = scaledViewport.width;
       canvas.height = scaledViewport.height;
-      await page.render({ canvasContext: canvas.getContext('2d'), viewport: scaledViewport }).promise;
+      var ctx = canvas.getContext('2d');
+      // Canvas starts transparent; compositing onto JPEG (no alpha) turns that black
+      // on any PDF without an opaque page background. Paint white first.
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      await page.render({ canvasContext: ctx, viewport: scaledViewport }).promise;
       return await new Promise(function (resolve) {
-        canvas.toBlob(function (blob) { resolve(blob); }, 'image/jpeg', 0.75);
+        canvas.toBlob(function (blob) { resolve(blob); }, 'image/jpeg', 0.88);
       });
     } catch (err) {
       console.warn('Miniatura non generata:', err);
@@ -162,6 +167,7 @@
       '<div class="mn-ver-tag">v' + d.versione + ' &middot; ' + fmtDate(d.uploaded_at) + '</div>' +
       '<div class="mn-card-actions">' +
       (history.length ? '<span class="mn-history-toggle" data-g="' + d.gruppo_id + '">Storico (' + history.length + ')</span>' : '<span></span>') +
+      '<button type="button" class="mn-icon-btn mn-edit-btn" data-g="' + d.gruppo_id + '" title="Modifica titolo/date">&#9998;</button>' +
       '<button type="button" class="mn-icon-btn mn-add-hist-btn" data-g="' + d.gruppo_id + '" title="Aggiungi versione storica">&#128193;+</button>' +
       '<button type="button" class="mn-icon-btn mn-del-btn" data-id="' + d.id + '" data-g="' + d.gruppo_id + '" title="Elimina">&#128465;</button>' +
       '</div></div>';
@@ -169,6 +175,7 @@
     card.querySelector('.mn-title').addEventListener('click', function () { openPreview(d); });
     var histToggle = card.querySelector('.mn-history-toggle');
     if (histToggle) histToggle.addEventListener('click', function (ev) { ev.stopPropagation(); openHistoryModal(d.gruppo_id, d.titolo); });
+    card.querySelector('.mn-edit-btn').addEventListener('click', function (ev) { ev.stopPropagation(); openEditModal(d.gruppo_id); });
     card.querySelector('.mn-add-hist-btn').addEventListener('click', function (ev) { ev.stopPropagation(); openImportHistModal(d.gruppo_id, d.titolo); });
     card.querySelector('.mn-del-btn').addEventListener('click', function (ev) { ev.stopPropagation(); deleteDoc(d.id, d.gruppo_id); });
     return card;
@@ -210,6 +217,77 @@
   });
   document.getElementById('mnHistBackdrop').addEventListener('click', function (ev) {
     if (ev.target.id === 'mnHistBackdrop') document.getElementById('mnHistClose').click();
+  });
+
+  var editTargetGruppo = null;
+
+  function openEditModal(gruppoId) {
+    editTargetGruppo = gruppoId;
+    var groupRows = allRows.filter(function (r) { return r.gruppo_id === gruppoId; })
+      .sort(function (a, b) { return new Date(a.uploaded_at) - new Date(b.uploaded_at); });
+    if (!groupRows.length) return;
+
+    document.getElementById('mnEditTitle').innerHTML = 'Modifica &mdash; ' + escapeHtml(groupRows[0].titolo);
+    document.getElementById('mnEditTitoloInput').value = groupRows[0].titolo;
+    document.getElementById('mnEditStatus').textContent = '';
+
+    var listEl = document.getElementById('mnEditVersionsList');
+    listEl.innerHTML = groupRows.map(function (r) {
+      var dateVal = r.uploaded_at ? new Date(r.uploaded_at).toISOString().slice(0, 10) : '';
+      return '<div class="mn-bulk-ver-row" data-id="' + r.id + '">' +
+        '<span style="flex:1;">' + escapeHtml(r.file_name) + '</span>' +
+        '<input type="date" class="mn-edit-ver-date" data-id="' + r.id + '" data-original="' + dateVal + '" value="' + dateVal + '">' +
+        '</div>';
+    }).join('');
+
+    document.getElementById('mnEditBackdrop').classList.remove('hidden');
+  }
+  document.getElementById('mnEditClose').addEventListener('click', function () {
+    document.getElementById('mnEditBackdrop').classList.add('hidden');
+  });
+  document.getElementById('mnEditBackdrop').addEventListener('click', function (ev) {
+    if (ev.target.id === 'mnEditBackdrop') document.getElementById('mnEditClose').click();
+  });
+
+  document.getElementById('mnEditSaveBtn').addEventListener('click', async function () {
+    if (!editTargetGruppo) return;
+    var statusEl = document.getElementById('mnEditStatus');
+    var newTitolo = document.getElementById('mnEditTitoloInput').value.trim();
+    if (!newTitolo) { statusEl.textContent = 'Il titolo non può essere vuoto.'; statusEl.className = 'status err'; return; }
+
+    statusEl.textContent = 'Salvataggio...';
+    statusEl.className = 'status';
+    try {
+      var titUpd = await sb.from('wt_manuali').update({ titolo: newTitolo }).eq('gruppo_id', editTargetGruppo);
+      if (titUpd.error) throw titUpd.error;
+
+      var dateInputs = document.querySelectorAll('#mnEditVersionsList .mn-edit-ver-date');
+      for (var i = 0; i < dateInputs.length; i++) {
+        var inp = dateInputs[i];
+        if (inp.value === inp.dataset.original || !inp.value) continue;
+        var dUpd = await sb.from('wt_manuali').update({ uploaded_at: new Date(inp.value + 'T12:00:00').toISOString() }).eq('id', inp.dataset.id);
+        if (dUpd.error) throw dUpd.error;
+      }
+
+      // Numero di versione e "ultima" non sono mai scritti dall'utente: si ricalcolano
+      // sempre dall'ordine cronologico reale delle date dopo ogni modifica.
+      var refreshed = await sb.from('wt_manuali').select('id, uploaded_at').eq('gruppo_id', editTargetGruppo);
+      if (refreshed.error) throw refreshed.error;
+      var ordered = refreshed.data.sort(function (a, b) { return new Date(a.uploaded_at) - new Date(b.uploaded_at); });
+      for (var vi = 0; vi < ordered.length; vi++) {
+        var isLatest = vi === ordered.length - 1;
+        var vUpd = await sb.from('wt_manuali').update({ versione: vi + 1, is_latest: isLatest }).eq('id', ordered[vi].id);
+        if (vUpd.error) throw vUpd.error;
+      }
+
+      statusEl.textContent = 'Salvato.';
+      statusEl.className = 'status ok';
+      await loadManuali();
+      document.getElementById('mnEditBackdrop').classList.add('hidden');
+    } catch (err) {
+      statusEl.textContent = 'Errore: ' + err.message;
+      statusEl.className = 'status err';
+    }
   });
 
   async function deleteDoc(id, gruppoId) {
@@ -345,12 +423,17 @@
     if (typeof PERMS === 'undefined' || !PERMS.ready) return;
     var canUpload = PERMS.can('manuali', 'upload');
     var canDelete = PERMS.can('manuali', 'delete');
+    var isSuperAdmin = !!PERMS.isSuperAdmin;
     var uploadBox = document.getElementById('mnUploadBox');
     if (uploadBox) uploadBox.style.display = canUpload ? 'flex' : 'none';
     document.querySelectorAll('.mn-del-btn').forEach(function (b) { b.style.display = canDelete ? '' : 'none'; });
-    document.querySelectorAll('.mn-add-hist-btn').forEach(function (b) { b.style.display = canUpload ? '' : 'none'; });
+    // Import da ZIP e "aggiungi versione storica" restano riservati al SuperAdmin,
+    // indipendentemente dal permesso granulare "upload" (che governa solo il
+    // caricamento di un singolo PDF, invariato qui sotto).
+    document.querySelectorAll('.mn-edit-btn').forEach(function (b) { b.style.display = isSuperAdmin ? '' : 'none'; });
+    document.querySelectorAll('.mn-add-hist-btn').forEach(function (b) { b.style.display = isSuperAdmin ? '' : 'none'; });
     var bulkBtn = document.getElementById('mnBulkOpenBtn');
-    if (bulkBtn) bulkBtn.style.display = canUpload ? '' : 'none';
+    if (bulkBtn) bulkBtn.style.display = isSuperAdmin ? '' : 'none';
   }
   document.addEventListener('jarvis:permsReady', applyManualiPerms);
 
@@ -462,6 +545,10 @@
     return stripped.toLowerCase() || nameNoExt.toLowerCase();
   }
 
+  function isGenericKey(key) {
+    return key.indexOf(' ') === -1 && key.length > 0 && key.length <= 12;
+  }
+
   function titleize(key) {
     return key.split(' ').filter(Boolean).map(function (w) {
       return w.charAt(0).toUpperCase() + w.slice(1);
@@ -483,6 +570,12 @@
   }
 
   var bulkFamilies = null; // { key: { titolo, categoria, versions:[{file, buf, path, date, dateGuessConfident}] } }
+
+  function versionDateSort(a, b) {
+    var da = a.date ? a.date.getTime() : Infinity;
+    var db = b.date ? b.date.getTime() : Infinity;
+    return da - db;
+  }
 
   document.getElementById('mnBulkOpenBtn').addEventListener('click', function () {
     document.getElementById('mnBulkFiles').value = '';
@@ -534,20 +627,28 @@
         var fileName = parts[parts.length - 1];
         var nameNoExt = fileName.replace(/\.pdf$/i, '');
         var key = familyKeyFromFilename(nameNoExt);
+        var titolo = titleize(key);
+        var immediateFolder = parts.length > 1 ? parts[parts.length - 2] : '';
+        if (isGenericKey(key) && immediateFolder) {
+          // Nome troppo generico (es. "DATI.pdf", "VOCE.pdf") per fondere file di cartelle/periodi diversi
+          // nella stessa famiglia: la cartella diventa parte della chiave per evitare falsi storici.
+          key = key + '::' + immediateFolder.toLowerCase();
+          titolo = titolo + ' (' + titleize(immediateFolder.toLowerCase()) + ')';
+        }
         var dateFromName = parseDateFromText(nameNoExt);
         var dateFromPath = dateFromName || parseDateFromText(parts.slice(0, -1).join(' '));
         var confident = !!dateFromName;
-        var finalDate = dateFromPath || new Date();
+        var finalDate = dateFromPath || null;
 
         if (!families[key]) {
-          families[key] = { titolo: titleize(key), categoria: guessCategoria(nameNoExt), versions: [] };
+          families[key] = { titolo: titolo, categoria: guessCategoria(nameNoExt), versions: [] };
         }
-        families[key].versions.push({ fileName: fileName, buf: buf, date: finalDate, confident: confident, sourcePath: path });
+        families[key].versions.push({ fileName: fileName, buf: buf, date: finalDate, confident: confident, noDate: !finalDate, sourcePath: path });
       }
     }
 
     Object.keys(families).forEach(function (k) {
-      families[k].versions.sort(function (a, b) { return a.date - b.date; });
+      families[k].versions.sort(versionDateSort);
     });
 
     bulkFamilies = families;
@@ -571,20 +672,25 @@
       var fam = bulkFamilies[key];
       var card = document.createElement('div');
       card.className = 'mn-bulk-fam';
-      var lowConfCount = fam.versions.filter(function (v) { return !v.confident; }).length;
+      var lowConfCount = fam.versions.filter(function (v) { return !v.confident && !v.noDate; }).length;
+      var noDateCount = fam.versions.filter(function (v) { return v.noDate; }).length;
       card.innerHTML =
         '<div class="mn-bulk-fam-head">' +
         '<input type="text" class="cfg-input mn-bulk-titolo" value="' + escapeHtml(fam.titolo) + '">' +
         '<select class="cfg-input mn-bulk-cat">' + bulkCatOptionsHtml(fam.categoria) + '</select>' +
         '<label style="font-size:12px;color:#7fc4dc;display:flex;align-items:center;gap:5px;"><input type="checkbox" class="mn-bulk-include" checked> Includi</label>' +
-        '<span class="mn-bulk-toggle-versions">' + fam.versions.length + ' versioni' + (lowConfCount ? ' &mdash; <span class="mn-bulk-flag">' + lowConfCount + ' con data incerta</span>' : '') + '</span>' +
+        '<span class="mn-bulk-toggle-versions">' + fam.versions.length + ' versioni' +
+        (lowConfCount ? ' &mdash; <span class="mn-bulk-flag">' + lowConfCount + ' con data incerta</span>' : '') +
+        (noDateCount ? ' &mdash; <span class="mn-bulk-flag" style="color:#ff6b6b;">' + noDateCount + ' senza data</span>' : '') +
+        '</span>' +
         '</div>' +
         '<div class="mn-bulk-versions">' +
         fam.versions.map(function (v, vi) {
           return '<div class="mn-bulk-ver-row"><input type="checkbox" class="mn-bulk-ver-include" checked data-vi="' + vi + '">' +
             '<span style="flex:1;">' + escapeHtml(v.fileName) + '</span>' +
-            '<input type="date" class="mn-bulk-ver-date" data-vi="' + vi + '" value="' + v.date.toISOString().slice(0, 10) + '">' +
-            (v.confident ? '' : '<span class="mn-bulk-flag" title="Data dedotta dalla cartella, verifica">?</span>') +
+            '<input type="date" class="mn-bulk-ver-date" data-vi="' + vi + '" value="' + (v.date ? v.date.toISOString().slice(0, 10) : '') + '">' +
+            (v.noDate ? '<span class="mn-bulk-flag" style="color:#ff6b6b;" title="Nessuna data trovata: verrà caricato con la data/ora reale di upload">!</span>' :
+              (v.confident ? '' : '<span class="mn-bulk-flag" title="Data dedotta dalla cartella, verifica">?</span>')) +
             '</div>';
         }).join('') +
         '</div>';
@@ -600,7 +706,7 @@
       });
       card.querySelectorAll('.mn-bulk-ver-date').forEach(function (inp) {
         inp.addEventListener('change', function () {
-          fam.versions[+this.dataset.vi].date = new Date(this.value + 'T12:00:00');
+          fam.versions[+this.dataset.vi].date = this.value ? new Date(this.value + 'T12:00:00') : null;
         });
       });
       card.querySelectorAll('.mn-bulk-ver-include').forEach(function (chk) {
@@ -611,40 +717,52 @@
     });
   }
 
+  var BULK_UPLOAD_CONCURRENCY = 5;
+
   document.getElementById('mnBulkConfirmBtn').addEventListener('click', async function () {
     if (!bulkFamilies) return;
     var statusEl = document.getElementById('mnBulkImportStatus');
     var keys = Object.keys(bulkFamilies).filter(function (k) { return !bulkFamilies[k]._excluded; });
-    var totalVersions = keys.reduce(function (s, k) { return s + bulkFamilies[k].versions.filter(function (v) { return !v._excluded; }).length; }, 0);
-    var done = 0;
 
-    for (var ki = 0; ki < keys.length; ki++) {
-      var fam = bulkFamilies[keys[ki]];
-      var versions = fam.versions.filter(function (v) { return !v._excluded; }).sort(function (a, b) { return a.date - b.date; });
-      if (!versions.length) continue;
+    // Versione/gruppoId/isLatest sono già determinati dall'ordine cronologico prima dell'upload,
+    // quindi le versioni (anche di famiglie diverse) possono essere caricate in parallelo a batch.
+    var tasks = [];
+    keys.forEach(function (key) {
+      var fam = bulkFamilies[key];
+      var versions = fam.versions.filter(function (v) { return !v._excluded; }).sort(versionDateSort);
+      if (!versions.length) return;
       var gruppoId = crypto.randomUUID();
-      for (var vi = 0; vi < versions.length; vi++) {
-        var v = versions[vi];
+      versions.forEach(function (v, vi) {
         var isLatest = vi === versions.length - 1;
-        done++;
-        statusEl.textContent = 'Import ' + done + '/' + totalVersions + ': ' + fam.titolo + ' (' + v.fileName + ')';
-        statusEl.className = 'status';
-        try {
+        tasks.push(function () {
           var blob = new Blob([v.buf], { type: 'application/pdf' });
           blob.name = v.fileName;
-          await uploadOne(blob, {
+          return uploadOne(blob, {
             gruppoId: gruppoId, titolo: fam.titolo, categoria: fam.categoria || null,
-            versione: vi + 1, isLatest: isLatest, uploadedAt: v.date.toISOString(),
+            versione: vi + 1, isLatest: isLatest,
+            uploadedAt: v.date ? v.date.toISOString() : undefined,
             skipThumb: !isLatest
           }, v.fileName);
-        } catch (err) {
-          statusEl.textContent = 'Errore su ' + v.fileName + ': ' + err.message;
-          statusEl.className = 'status err';
-          return;
-        }
+        });
+      });
+    });
+
+    var total = tasks.length;
+    var done = 0;
+    statusEl.className = 'status';
+    for (var bi = 0; bi < tasks.length; bi += BULK_UPLOAD_CONCURRENCY) {
+      var batch = tasks.slice(bi, bi + BULK_UPLOAD_CONCURRENCY);
+      statusEl.textContent = 'Import ' + (done + 1) + '-' + Math.min(done + batch.length, total) + '/' + total + '...';
+      try {
+        await Promise.all(batch.map(function (t) { return t(); }));
+      } catch (err) {
+        statusEl.textContent = 'Errore durante import: ' + err.message;
+        statusEl.className = 'status err';
+        return;
       }
+      done += batch.length;
     }
-    statusEl.textContent = 'Import completato: ' + totalVersions + ' file caricati.';
+    statusEl.textContent = 'Import completato: ' + total + ' file caricati.';
     statusEl.className = 'status ok';
     await loadManuali();
   });
