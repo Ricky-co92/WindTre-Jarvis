@@ -182,10 +182,10 @@
     background:rgba(13,25,36,.55); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
     padding:28px; animation:hudGlow 5s ease-in-out infinite; overflow:hidden;
   }
-  .panel::before{content:'';position:absolute;top:0;left:0;width:22px;height:22px;
+  .panel::before,.gd-panel::before{content:'';position:absolute;top:0;left:0;width:22px;height:22px;
     border-top:2px solid #8fe8ff;border-left:2px solid #8fe8ff;border-top-left-radius:4px;opacity:.9;
     filter:drop-shadow(0 0 4px rgba(143,232,255,.5));pointer-events:none;}
-  .panel::after{content:'';position:absolute;bottom:0;right:0;width:18px;height:18px;
+  .panel::after,.gd-panel::after{content:'';position:absolute;bottom:0;right:0;width:18px;height:18px;
     border-bottom:2px solid #ffb020;border-right:2px solid #ffb020;border-bottom-right-radius:14px;opacity:.6;pointer-events:none;}
   .panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px;position:relative;padding-bottom:14px;border-bottom:1px solid rgba(143,232,255,.12);}
   .panel-head::before{content:'';width:9px;height:9px;border-radius:50%;background:#8fe8ff;flex-shrink:0;
@@ -193,7 +193,7 @@
   .panel-head::after{content:'';position:absolute;bottom:-1px;left:0;width:35%;height:1px;
     background:linear-gradient(90deg,transparent,#8fe8ff,transparent);animation:hudScan 4s linear infinite;}
   @keyframes pulseDotHud{0%,100%{opacity:.5;box-shadow:0 0 4px #8fe8ff;}50%{opacity:1;box-shadow:0 0 10px #8fe8ff;}}
-  .panel .title{font-size:1.15rem;font-family:'Rajdhani',sans-serif;font-weight:700;letter-spacing:0.3px;color:#4fc8e8;text-transform:uppercase;}
+  .panel-head .title{font-size:1.15rem;font-family:'Rajdhani',sans-serif;font-weight:700;letter-spacing:0.3px;color:#4fc8e8;text-transform:uppercase;}
   .section-title{font-size:1.15rem;font-family:'Rajdhani',sans-serif;font-weight:700;letter-spacing:0.3px;color:#4fc8e8;text-transform:uppercase;margin-bottom:14px;}
   .panel-actions{display:flex;gap:10px;flex-wrap:wrap;}
   .placeholder-msg{padding:40px 10px;text-align:center;color:#8fb8cc;font-size:1rem;line-height:1.7;}
@@ -442,7 +442,7 @@
 
   /* ===== GESTIONE DATI (tabella editabile) ===== */
   .gd-panel{
-    border-radius:4px 16px 16px 16px; position:relative; margin-bottom:20px;
+    border-radius:4px 16px 16px 16px; position:relative; margin-bottom:20px; overflow:hidden;
     background:rgba(13,25,36,.55); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
     padding:28px; border:1px solid rgba(143,232,255,.15);
   }
