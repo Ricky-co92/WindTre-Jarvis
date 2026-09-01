@@ -211,9 +211,14 @@
   function ensureMap() {
     if (map || typeof L === 'undefined') return;
     map = L.map('cabMap', { zoomControl: true }).setView([CASALE.lat, CASALE.lon], 10);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-      subdomains: 'abcd',
+    // Standard OSM raster tiles (free, no API key) with a CSS filter (see
+    // #cabMap .leaflet-tile-pane below) faking the dark look -- CARTO's
+    // basemaps.cartocdn.com free dark_matter tiles now require an API key
+    // and were serving a watermarked "API KEY REQUIRED" placeholder instead
+    // of the map.
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      subdomains: 'abc',
       maxZoom: 19
     }).addTo(map);
     markersLayer = L.layerGroup().addTo(map);
