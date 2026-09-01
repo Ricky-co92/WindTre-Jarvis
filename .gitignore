@@ -8,3 +8,5 @@ import-manuali/regenerate-thumbs-report.json
 import-manuali/empty-categoria-families.json
 import-manuali/categoria-proposal.json
 import-manuali/duplicate-audit.json
+tools/node_modules/
+tools/geocode-comuni-report.json

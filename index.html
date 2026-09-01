@@ -12,6 +12,8 @@
 <link rel="apple-touch-icon" href="icon-180.png">
 <title>WindTre-Jarvis</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -335,11 +337,36 @@
   .cab-suggest-item{padding:8px 12px;font-size:13px;color:#c8f0ff;cursor:pointer;}
   .cab-suggest-item:hover{background:rgba(143,232,255,.08);}
   .cab-nearby-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-top:8px;}
-  .cab-nearby-chip{border:1px solid rgba(143,232,255,.18);border-radius:4px;padding:10px 12px;font-size:13px;display:flex;justify-content:space-between;align-items:center;background:rgba(13,25,36,.5);}
+  .cab-nearby-chip{border:1px solid rgba(143,232,255,.18);border-radius:4px;padding:10px 12px;font-size:13px;display:flex;justify-content:space-between;align-items:center;background:rgba(13,25,36,.5);cursor:pointer;}
   .cab-nearby-chip .name{color:#eafcff;font-family:'Rajdhani',sans-serif;font-weight:600;}
-  .cab-nearby-chip .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-left:8px;}
+  .cab-nearby-chip .right{display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:8px;}
+  .cab-nearby-chip .dist{font-size:11px;color:#7fc4dc;font-family:'Rajdhani',sans-serif;font-weight:600;white-space:nowrap;}
+  .cab-nearby-chip .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
   .cab-nearby-chip .dot.yes{background:#7fe8a0;box-shadow:0 0 6px rgba(127,232,160,.6);}
   .cab-nearby-chip .dot.no{background:#e05050;box-shadow:0 0 6px rgba(224,80,80,.5);}
+
+  .cab-radius-row{display:flex;align-items:center;gap:14px;margin:8px 0 16px;max-width:520px;}
+  .cab-radius-row input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:4px;border-radius:2px;background:linear-gradient(90deg,rgba(255,176,32,.85),rgba(143,232,255,.85));outline:none;cursor:pointer;}
+  .cab-radius-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border-radius:50%;background:#8fe8ff;border:2px solid #05141c;box-shadow:0 0 8px rgba(143,232,255,.7);cursor:pointer;}
+  .cab-radius-row input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#8fe8ff;border:2px solid #05141c;box-shadow:0 0 8px rgba(143,232,255,.7);cursor:pointer;}
+  .cab-radius-value{font-family:'Orbitron',sans-serif;font-weight:700;font-size:14px;color:#ffb020;min-width:56px;text-align:right;}
+
+  .cab-map-wrap{margin-top:18px;border:1px solid rgba(143,232,255,.18);border-radius:4px 12px 12px 12px;overflow:hidden;box-shadow:0 0 14px rgba(143,232,255,.06);}
+  #cabMap{height:420px;width:100%;background:#0d1924;}
+  .cab-map-marker{background:transparent;border:none;}
+  .cab-map-marker .pin{width:14px;height:14px;border-radius:50%;border:2px solid #05141c;box-shadow:0 0 6px rgba(0,0,0,.6);}
+  .cab-map-marker .pin-yes{background:#7fe8a0;box-shadow:0 0 8px rgba(127,232,160,.8);}
+  .cab-map-marker .pin-no{background:#e05050;box-shadow:0 0 8px rgba(224,80,80,.7);}
+  .cab-map-marker .pin-casale{width:18px;height:18px;background:#ffb020;box-shadow:0 0 10px rgba(255,176,32,.9);}
+  .leaflet-container{background:#0d1924;font-family:'Inter',sans-serif;}
+  .leaflet-popup-content-wrapper{background:#0d1924;color:#eafcff;border:1px solid rgba(143,232,255,.3);border-radius:6px;box-shadow:0 0 14px rgba(143,232,255,.15);}
+  .leaflet-popup-tip{background:#0d1924;border:1px solid rgba(143,232,255,.3);box-shadow:none;}
+  .leaflet-popup-content{font-size:12.5px;line-height:1.5;margin:10px 12px;}
+  .leaflet-popup-content b{color:#8fe8ff;font-family:'Rajdhani',sans-serif;font-size:14px;}
+  .leaflet-popup-close-button{color:#7fc4dc !important;}
+  .leaflet-control-zoom a{background:#0d1924 !important;color:#8fe8ff !important;border-color:rgba(143,232,255,.3) !important;}
+  .leaflet-control-attribution{background:rgba(5,20,28,.7) !important;color:#557b8c !important;}
+  .leaflet-control-attribution a{color:#7fc4dc !important;}
 
   /* ===== IMPOSTAZIONI ===== */
   .stg-user-card{border:1px solid rgba(143,232,255,.18);border-radius:4px;background:rgba(13,25,36,.5);margin-bottom:12px;overflow:hidden;}
@@ -1899,7 +1926,12 @@
 
       <div class="cab-nearby-section">
         <div class="cfg-label" style="margin-top:26px;">Comuni vicino a Casale Monferrato</div>
+        <div class="cab-radius-row">
+          <input type="range" id="cabRadiusSlider" min="5" max="50" step="1" value="20">
+          <span class="cab-radius-value" id="cabRadiusValue">20 km</span>
+        </div>
         <div class="cab-nearby-grid" id="cabNearbyGrid"></div>
+        <div class="cab-map-wrap"><div id="cabMap"></div></div>
       </div>
     </div>
   </div>
@@ -2088,7 +2120,7 @@
 <script src="compilatore.js?v=3"></script>
 <script src="offerte.js?v=1"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="comuni.js?v=3"></script>
+<script src="comuni.js?v=4"></script>
 <script src="manuali.js?v=6"></script>
 <script src="settings.js?v=1"></script>
 <div id="login-flash"></div>

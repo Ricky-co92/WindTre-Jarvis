@@ -1,0 +1,10 @@
+{
+  "name": "wt-jarvis-tools",
+  "private": true,
+  "version": "1.0.0",
+  "description": "One-off maintenance scripts for WindTre-Jarvis that don't belong under import-manuali/.",
+  "type": "commonjs",
+  "dependencies": {
+    "@supabase/supabase-js": "2.112.4"
+  }
+}

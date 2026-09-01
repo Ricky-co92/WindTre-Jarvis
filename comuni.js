@@ -2,11 +2,19 @@
   var comuni = [];
   var loaded = false;
 
-  var NEARBY = [
-    'Terruggia', 'Coniolo', 'Villanova Monferrato', 'Mirabello Monferrato',
-    'Occimiano', 'Ozzano Monferrato', 'San Giorgio Monferrato', 'Pontestura',
-    'Camino', 'Rosignano Monferrato', 'Balzola', 'Morano sul Po'
-  ];
+  var CASALE = { lat: 45.136266, lon: 8.449813 };
+  var DEFAULT_RADIUS_KM = 20;
+
+  // Local snapshot (comune, comune_norm, lat, lon) of every comune within 60km of
+  // Casale Monferrato, built once from OSM Overpass (see tools/fetch-comuni-vicino-casale.mjs).
+  // Needed separately from wt_comuni_aree_bianche because that table only lists
+  // comuni that qualify as "aree bianche" -- nearby comuni NOT in that list (already
+  // fully covered, so not "white areas") still need to show up here in red.
+  var nearbyUniverse = [];
+  var nearbyLoaded = false;
+
+  var map = null;
+  var markersLayer = null;
 
   function norm(s) {
     return String(s || '')
@@ -20,6 +28,29 @@
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
     });
+  }
+
+  function haversineKm(lat1, lon1, lat2, lon2) {
+    var R = 6371;
+    var toRad = function (d) { return d * Math.PI / 180; };
+    var dLat = toRad(lat2 - lat1);
+    var dLon = toRad(lon2 - lon1);
+    var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+
+  async function loadNearbyUniverse() {
+    try {
+      var res = await fetch('data/comuni-vicino-casale.json');
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      var data = await res.json();
+      nearbyUniverse = (data.comuni || []).filter(function (c) { return c.comune_norm !== norm('Casale Monferrato'); });
+      nearbyLoaded = true;
+      maybeRenderNearby();
+    } catch (err) {
+      console.error('Errore caricamento comuni vicini:', err);
+    }
   }
 
   async function loadComuni() {
@@ -37,8 +68,10 @@
       }
       comuni = all;
       loaded = true;
+      comuniByNorm = new Map();
+      all.forEach(function (c) { if (!comuniByNorm.has(c.comune_norm)) comuniByNorm.set(c.comune_norm, c); });
       renderMeta();
-      renderNearby();
+      maybeRenderNearby();
     } catch (err) {
       console.error('Errore caricamento comuni:', err);
       document.getElementById('cabMeta').textContent = 'Errore caricamento dati.';
@@ -57,6 +90,18 @@
     var n = norm(name);
     return comuni.filter(function (c) { return c.comune_norm === n; })[0] ||
       comuni.filter(function (c) { return c.comune_norm.indexOf(n) === 0; })[0];
+  }
+
+  // O(1) exact-match index for the radius list/map redraw, which can run on
+  // every 'input' tick while dragging the slider (up to ~440 comuni at 50km) --
+  // findComune()'s double linear scan over `comuni` would be too slow there.
+  // Falls back to findComune's prefix match for the rare miss (OSM vs Excel
+  // naming differences), same as the search box already tolerates.
+  var comuniByNorm = null;
+  function findComuneFast(name) {
+    var n = norm(name);
+    var hit = comuniByNorm && comuniByNorm.get(n);
+    return hit || findComune(name);
   }
 
   function renderResultCard(name) {
@@ -106,20 +151,108 @@
     if (ev.key === 'Enter') renderResultCard(this.value);
   });
 
-  function renderNearby() {
-    var grid = document.getElementById('cabNearbyGrid');
-    grid.innerHTML = NEARBY.map(function (name) {
-      var c = findComune(name);
-      return '<div class="cab-nearby-chip" data-name="' + escapeHtml(name) + '"><span class="name">' + escapeHtml(name) + '</span><span class="dot ' + (c ? 'yes' : 'no') + '" title="' + (c ? 'In elenco' : 'Non in elenco') + '"></span></div>';
-    }).join('');
-    grid.querySelectorAll('.cab-nearby-chip').forEach(function (chip) {
-      chip.addEventListener('click', function () {
-        document.getElementById('cabSearchInput').value = chip.dataset.name;
-        renderResultCard(chip.dataset.name);
-        chip.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      });
-    });
+  function maybeRenderNearby() {
+    if (!loaded || !nearbyLoaded) return;
+    renderNearby();
   }
+
+  function currentRadiusKm() {
+    var slider = document.getElementById('cabRadiusSlider');
+    return slider ? parseInt(slider.value, 10) : DEFAULT_RADIUS_KM;
+  }
+
+  function computeNearby(radiusKm) {
+    return nearbyUniverse
+      .map(function (c) {
+        return {
+          comune: c.comune, comune_norm: c.comune_norm, lat: c.lat, lon: c.lon,
+          dist: haversineKm(CASALE.lat, CASALE.lon, c.lat, c.lon)
+        };
+      })
+      .filter(function (c) { return c.dist <= radiusKm; })
+      .sort(function (a, b) { return a.dist - b.dist; });
+  }
+
+  function renderNearby() {
+    var radius = currentRadiusKm();
+    var valueEl = document.getElementById('cabRadiusValue');
+    if (valueEl) valueEl.textContent = radius + ' km';
+
+    var list = computeNearby(radius);
+
+    var grid = document.getElementById('cabNearbyGrid');
+    if (!list.length) {
+      grid.innerHTML = '<div style="color:#7fc4dc;font-size:13px;">Nessun comune entro ' + radius + ' km.</div>';
+    } else {
+      grid.innerHTML = list.map(function (c) {
+        var inElenco = findComuneFast(c.comune);
+        return '<div class="cab-nearby-chip" data-name="' + escapeHtml(c.comune) + '">' +
+          '<span class="name">' + escapeHtml(c.comune) + '</span>' +
+          '<span class="right"><span class="dist">' + c.dist.toFixed(1) + ' km</span>' +
+          '<span class="dot ' + (inElenco ? 'yes' : 'no') + '" title="' + (inElenco ? 'In elenco' : 'Non in elenco') + '"></span></span>' +
+          '</div>';
+      }).join('');
+      grid.querySelectorAll('.cab-nearby-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.getElementById('cabSearchInput').value = chip.dataset.name;
+          renderResultCard(chip.dataset.name);
+          chip.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        });
+      });
+    }
+
+    var viewEl = document.getElementById('view-comuni');
+    if (viewEl && !viewEl.classList.contains('hidden')) {
+      renderMap(list);
+    }
+  }
+
+  // ================= MAPPA (Leaflet) =================
+  function ensureMap() {
+    if (map || typeof L === 'undefined') return;
+    map = L.map('cabMap', { zoomControl: true }).setView([CASALE.lat, CASALE.lon], 10);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      subdomains: 'abcd',
+      maxZoom: 19
+    }).addTo(map);
+    markersLayer = L.layerGroup().addTo(map);
+    var casaleIcon = L.divIcon({ className: 'cab-map-marker', html: '<div class="pin pin-casale"></div>', iconSize: [18, 18], iconAnchor: [9, 9] });
+    L.marker([CASALE.lat, CASALE.lon], { icon: casaleIcon }).addTo(map)
+      .bindPopup('<b>Casale Monferrato</b><br>Punto di riferimento');
+  }
+
+  function renderMap(list) {
+    ensureMap();
+    if (!map || !markersLayer) return;
+    markersLayer.clearLayers();
+    list.forEach(function (c) {
+      var inElenco = findComuneFast(c.comune);
+      var cls = inElenco ? 'yes' : 'no';
+      var icon = L.divIcon({ className: 'cab-map-marker', html: '<div class="pin pin-' + cls + '"></div>', iconSize: [14, 14], iconAnchor: [7, 7] });
+      var popup = '<b>' + escapeHtml(c.comune) + '</b><br>' +
+        escapeHtml((inElenco && inElenco.provincia) || '') +
+        (inElenco && inElenco.provincia ? '<br>' : '') +
+        c.dist.toFixed(1) + ' km da Casale Monferrato';
+      if (inElenco) {
+        popup += '<br>Area ' + (inElenco.area != null ? inElenco.area : '-') +
+          ' &middot; UI FTTH ' + (inElenco.ui_ftth != null ? inElenco.ui_ftth : '-') +
+          ' &middot; UI totali ' + (inElenco.ui_totali != null ? inElenco.ui_totali : '-');
+      } else {
+        popup += '<br><i>Non in elenco aree bianche</i>';
+      }
+      L.marker([c.lat, c.lon], { icon: icon }).addTo(markersLayer).bindPopup(popup);
+    });
+    setTimeout(function () { if (map) map.invalidateSize(); }, 30);
+  }
+
+  var cabRadiusSliderEl = document.getElementById('cabRadiusSlider');
+  var renderNearbyRAF = null;
+  function renderNearbyThrottled() {
+    if (renderNearbyRAF) return;
+    renderNearbyRAF = requestAnimationFrame(function () { renderNearbyRAF = null; renderNearby(); });
+  }
+  if (cabRadiusSliderEl) cabRadiusSliderEl.addEventListener('input', renderNearbyThrottled);
 
   // ================= UPLOAD FILE =================
   document.getElementById('cabUploadBtn').addEventListener('click', function () {
@@ -204,6 +337,12 @@
     var view = ev.detail && ev.detail.view;
     if (view !== 'comuni') return;
     if (!loaded) loadComuni();
+    if (!nearbyLoaded) loadNearbyUniverse();
+    // View just became visible: (re)render so the map gets created/resized
+    // correctly now that #cabMap has real dimensions (Leaflet can't size
+    // itself against a display:none container).
+    maybeRenderNearby();
+    if (map) setTimeout(function () { map.invalidateSize(); }, 30);
   });
-  if (document.getElementById('view-comuni')) loadComuni();
+  if (document.getElementById('view-comuni')) { loadComuni(); loadNearbyUniverse(); }
 })();

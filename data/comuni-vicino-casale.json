@@ -1,0 +1,4727 @@
+{
+  "center": {
+    "lat": 45.136266,
+    "lon": 8.449813
+  },
+  "radius_km": 60,
+  "source": "OpenStreetMap Overpass API, dati ODbL 1.0 (c) OpenStreetMap contributors",
+  "generated_at": "2026-09-01T14:17:36.281Z",
+  "comuni": [
+    {
+      "comune": "Abbiategrasso",
+      "comune_norm": "abbiategrasso",
+      "lat": 45.3700246,
+      "lon": 8.9016879
+    },
+    {
+      "comune": "Acqui Terme",
+      "comune_norm": "acqui terme",
+      "lat": 44.6739963,
+      "lon": 8.4604898
+    },
+    {
+      "comune": "Agliano Terme",
+      "comune_norm": "agliano terme",
+      "lat": 44.7879241,
+      "lon": 8.2477495
+    },
+    {
+      "comune": "Agliè",
+      "comune_norm": "aglie",
+      "lat": 45.3653426,
+      "lon": 7.7743747
+    },
+    {
+      "comune": "Agrate Conturbia",
+      "comune_norm": "agrate conturbia",
+      "lat": 45.6647643,
+      "lon": 8.5673912
+    },
+    {
+      "comune": "Alagna",
+      "comune_norm": "alagna",
+      "lat": 45.1655328,
+      "lon": 8.8921526
+    },
+    {
+      "comune": "Alba",
+      "comune_norm": "alba",
+      "lat": 44.6862366,
+      "lon": 8.0324802
+    },
+    {
+      "comune": "Albairate",
+      "comune_norm": "albairate",
+      "lat": 45.4244909,
+      "lon": 8.94446
+    },
+    {
+      "comune": "Albano Vercellese",
+      "comune_norm": "albano vercellese",
+      "lat": 45.4286096,
+      "lon": 8.3800581
+    },
+    {
+      "comune": "Albiano d'Ivrea",
+      "comune_norm": "albiano d ivrea",
+      "lat": 45.429128,
+      "lon": 7.9465042
+    },
+    {
+      "comune": "Albonese",
+      "comune_norm": "albonese",
+      "lat": 45.2919932,
+      "lon": 8.706428
+    },
+    {
+      "comune": "Albugnano",
+      "comune_norm": "albugnano",
+      "lat": 45.0831063,
+      "lon": 7.9779139
+    },
+    {
+      "comune": "Alessandria",
+      "comune_norm": "alessandria",
+      "lat": 44.9168136,
+      "lon": 8.6464533
+    },
+    {
+      "comune": "Alfiano Natta",
+      "comune_norm": "alfiano natta",
+      "lat": 45.036779,
+      "lon": 8.2018489
+    },
+    {
+      "comune": "Alice Bel Colle",
+      "comune_norm": "alice bel colle",
+      "lat": 44.7367275,
+      "lon": 8.4623105
+    },
+    {
+      "comune": "Alice Castello",
+      "comune_norm": "alice castello",
+      "lat": 45.3713199,
+      "lon": 8.0830128
+    },
+    {
+      "comune": "Alluvioni Piovera",
+      "comune_norm": "alluvioni piovera",
+      "lat": 44.9708629,
+      "lon": 8.7647302
+    },
+    {
+      "comune": "Altavilla Monferrato",
+      "comune_norm": "altavilla monferrato",
+      "lat": 44.9804408,
+      "lon": 8.3756379
+    },
+    {
+      "comune": "Alzano Scrivia",
+      "comune_norm": "alzano scrivia",
+      "lat": 45.0177911,
+      "lon": 8.8792533
+    },
+    {
+      "comune": "Andezeno",
+      "comune_norm": "andezeno",
+      "lat": 45.036888,
+      "lon": 7.8684202
+    },
+    {
+      "comune": "Andorno Micca",
+      "comune_norm": "andorno micca",
+      "lat": 45.6589424,
+      "lon": 8.0059965
+    },
+    {
+      "comune": "Antignano",
+      "comune_norm": "antignano",
+      "lat": 44.837688,
+      "lon": 8.1409155
+    },
+    {
+      "comune": "Aramengo",
+      "comune_norm": "aramengo",
+      "lat": 45.1003348,
+      "lon": 7.9971314
+    },
+    {
+      "comune": "Arborio",
+      "comune_norm": "arborio",
+      "lat": 45.4921663,
+      "lon": 8.3772999
+    },
+    {
+      "comune": "Arconate",
+      "comune_norm": "arconate",
+      "lat": 45.5426549,
+      "lon": 8.8407426
+    },
+    {
+      "comune": "Arignano",
+      "comune_norm": "arignano",
+      "lat": 45.0395819,
+      "lon": 7.8993606
+    },
+    {
+      "comune": "Arluno",
+      "comune_norm": "arluno",
+      "lat": 45.5070139,
+      "lon": 8.9488986
+    },
+    {
+      "comune": "Arquata Scrivia",
+      "comune_norm": "arquata scrivia",
+      "lat": 44.6704549,
+      "lon": 8.8906403
+    },
+    {
+      "comune": "Asigliano Vercellese",
+      "comune_norm": "asigliano vercellese",
+      "lat": 45.2642639,
+      "lon": 8.4105153
+    },
+    {
+      "comune": "Assago",
+      "comune_norm": "assago",
+      "lat": 45.3992997,
+      "lon": 9.1368
+    },
+    {
+      "comune": "Asti",
+      "comune_norm": "asti",
+      "lat": 44.9177844,
+      "lon": 8.2023445
+    },
+    {
+      "comune": "Avolasca",
+      "comune_norm": "avolasca",
+      "lat": 44.8097067,
+      "lon": 8.9737185
+    },
+    {
+      "comune": "Azeglio",
+      "comune_norm": "azeglio",
+      "lat": 45.4233909,
+      "lon": 7.9942918
+    },
+    {
+      "comune": "Azzano d'Asti",
+      "comune_norm": "azzano d asti",
+      "lat": 44.8815394,
+      "lon": 8.2657681
+    },
+    {
+      "comune": "Bairo",
+      "comune_norm": "bairo",
+      "lat": 45.3751766,
+      "lon": 7.7494801
+    },
+    {
+      "comune": "Baldichieri d'Asti",
+      "comune_norm": "baldichieri d asti",
+      "lat": 44.9081246,
+      "lon": 8.0917791
+    },
+    {
+      "comune": "Baldissero d'Alba",
+      "comune_norm": "baldissero d alba",
+      "lat": 44.7627698,
+      "lon": 7.8881518
+    },
+    {
+      "comune": "Baldissero Torinese",
+      "comune_norm": "baldissero torinese",
+      "lat": 45.0680769,
+      "lon": 7.8005999
+    },
+    {
+      "comune": "Balocco",
+      "comune_norm": "balocco",
+      "lat": 45.4645545,
+      "lon": 8.2719166
+    },
+    {
+      "comune": "Balzola",
+      "comune_norm": "balzola",
+      "lat": 45.1858731,
+      "lon": 8.4115488
+    },
+    {
+      "comune": "Banchette",
+      "comune_norm": "banchette",
+      "lat": 45.4588769,
+      "lon": 7.8485305
+    },
+    {
+      "comune": "Barbaresco",
+      "comune_norm": "barbaresco",
+      "lat": 44.720381,
+      "lon": 8.0759476
+    },
+    {
+      "comune": "Barbianello",
+      "comune_norm": "barbianello",
+      "lat": 45.0785354,
+      "lon": 9.2080431
+    },
+    {
+      "comune": "Bareggio",
+      "comune_norm": "bareggio",
+      "lat": 45.4779884,
+      "lon": 8.9983944
+    },
+    {
+      "comune": "Barengo",
+      "comune_norm": "barengo",
+      "lat": 45.5674608,
+      "lon": 8.5087952
+    },
+    {
+      "comune": "Barone Canavese",
+      "comune_norm": "barone canavese",
+      "lat": 45.3221312,
+      "lon": 7.8588584
+    },
+    {
+      "comune": "Basaluzzo",
+      "comune_norm": "basaluzzo",
+      "lat": 44.7680407,
+      "lon": 8.7074222
+    },
+    {
+      "comune": "Basiglio",
+      "comune_norm": "basiglio",
+      "lat": 45.3483485,
+      "lon": 9.1655594
+    },
+    {
+      "comune": "Bassignana",
+      "comune_norm": "bassignana",
+      "lat": 45.0042515,
+      "lon": 8.7470087
+    },
+    {
+      "comune": "Bastida Pancarana",
+      "comune_norm": "bastida pancarana",
+      "lat": 45.0981833,
+      "lon": 9.0885416
+    },
+    {
+      "comune": "Battuda",
+      "comune_norm": "battuda",
+      "lat": 45.2717483,
+      "lon": 9.0636473
+    },
+    {
+      "comune": "Belforte Monferrato",
+      "comune_norm": "belforte monferrato",
+      "lat": 44.6045888,
+      "lon": 8.6682274
+    },
+    {
+      "comune": "Bellinzago Novarese",
+      "comune_norm": "bellinzago novarese",
+      "lat": 45.5507371,
+      "lon": 8.6497705
+    },
+    {
+      "comune": "Belveglio",
+      "comune_norm": "belveglio",
+      "lat": 44.8357921,
+      "lon": 8.3338587
+    },
+    {
+      "comune": "Benna",
+      "comune_norm": "benna",
+      "lat": 45.5122868,
+      "lon": 8.138804
+    },
+    {
+      "comune": "Bereguardo",
+      "comune_norm": "bereguardo",
+      "lat": 45.2526681,
+      "lon": 9.0123942
+    },
+    {
+      "comune": "Bergamasco",
+      "comune_norm": "bergamasco",
+      "lat": 44.8243944,
+      "lon": 8.4519534
+    },
+    {
+      "comune": "Bernate Ticino",
+      "comune_norm": "bernate ticino",
+      "lat": 45.4775494,
+      "lon": 8.8135319
+    },
+    {
+      "comune": "Berzano di San Pietro",
+      "comune_norm": "berzano di san pietro",
+      "lat": 45.0999776,
+      "lon": 7.9501136
+    },
+    {
+      "comune": "Berzano di Tortona",
+      "comune_norm": "berzano di tortona",
+      "lat": 44.8748788,
+      "lon": 8.9527752
+    },
+    {
+      "comune": "Besate",
+      "comune_norm": "besate",
+      "lat": 45.3036192,
+      "lon": 8.9668646
+    },
+    {
+      "comune": "Biandrate",
+      "comune_norm": "biandrate",
+      "lat": 45.44596,
+      "lon": 8.4755682
+    },
+    {
+      "comune": "Bianzè",
+      "comune_norm": "bianze",
+      "lat": 45.2954239,
+      "lon": 8.1416628
+    },
+    {
+      "comune": "Biella",
+      "comune_norm": "biella",
+      "lat": 45.5912343,
+      "lon": 8.0156825
+    },
+    {
+      "comune": "Binasco",
+      "comune_norm": "binasco",
+      "lat": 45.3304226,
+      "lon": 9.1038591
+    },
+    {
+      "comune": "Bioglio",
+      "comune_norm": "bioglio",
+      "lat": 45.6532013,
+      "lon": 8.0785444
+    },
+    {
+      "comune": "Bistagno",
+      "comune_norm": "bistagno",
+      "lat": 44.6695862,
+      "lon": 8.3767471
+    },
+    {
+      "comune": "Boca",
+      "comune_norm": "boca",
+      "lat": 45.681251,
+      "lon": 8.4084423
+    },
+    {
+      "comune": "Boffalora sopra Ticino",
+      "comune_norm": "boffalora sopra ticino",
+      "lat": 45.4557319,
+      "lon": 8.8311404
+    },
+    {
+      "comune": "Bogogno",
+      "comune_norm": "bogogno",
+      "lat": 45.6624922,
+      "lon": 8.5378184
+    },
+    {
+      "comune": "Bollengo",
+      "comune_norm": "bollengo",
+      "lat": 45.4690661,
+      "lon": 7.9502678
+    },
+    {
+      "comune": "Borgarello",
+      "comune_norm": "borgarello",
+      "lat": 45.2406496,
+      "lon": 9.151095
+    },
+    {
+      "comune": "Borgaro Torinese",
+      "comune_norm": "borgaro torinese",
+      "lat": 45.144599,
+      "lon": 7.6655682
+    },
+    {
+      "comune": "Borghetto di Borbera",
+      "comune_norm": "borghetto di borbera",
+      "lat": 44.7372865,
+      "lon": 8.9654806
+    },
+    {
+      "comune": "Borgo d'Ale",
+      "comune_norm": "borgo d ale",
+      "lat": 45.3603358,
+      "lon": 8.0671026
+    },
+    {
+      "comune": "Borgo Priolo",
+      "comune_norm": "borgo priolo",
+      "lat": 44.9566503,
+      "lon": 9.1491435
+    },
+    {
+      "comune": "Borgo San Martino",
+      "comune_norm": "borgo san martino",
+      "lat": 45.0942543,
+      "lon": 8.5334979
+    },
+    {
+      "comune": "Borgo San Siro",
+      "comune_norm": "borgo san siro",
+      "lat": 45.2422938,
+      "lon": 8.9318696
+    },
+    {
+      "comune": "Borgo Vercelli",
+      "comune_norm": "borgo vercelli",
+      "lat": 45.3596079,
+      "lon": 8.4603462
+    },
+    {
+      "comune": "Borgolavezzaro",
+      "comune_norm": "borgolavezzaro",
+      "lat": 45.3177321,
+      "lon": 8.6906879
+    },
+    {
+      "comune": "Borgomanero",
+      "comune_norm": "borgomanero",
+      "lat": 45.698752,
+      "lon": 8.4613047
+    },
+    {
+      "comune": "Borgomasino",
+      "comune_norm": "borgomasino",
+      "lat": 45.3625775,
+      "lon": 7.9831699
+    },
+    {
+      "comune": "Borgoratto Alessandrino",
+      "comune_norm": "borgoratto alessandrino",
+      "lat": 44.8240294,
+      "lon": 8.5206658
+    },
+    {
+      "comune": "Bornasco",
+      "comune_norm": "bornasco",
+      "lat": 45.267382,
+      "lon": 9.2080654
+    },
+    {
+      "comune": "Borriana",
+      "comune_norm": "borriana",
+      "lat": 45.5071389,
+      "lon": 8.0373414
+    },
+    {
+      "comune": "Bosco Marengo",
+      "comune_norm": "bosco marengo",
+      "lat": 44.8172609,
+      "lon": 8.7140677
+    },
+    {
+      "comune": "Bosconero",
+      "comune_norm": "bosconero",
+      "lat": 45.2705449,
+      "lon": 7.769679
+    },
+    {
+      "comune": "Bosio",
+      "comune_norm": "bosio",
+      "lat": 44.5765804,
+      "lon": 8.7802286
+    },
+    {
+      "comune": "Bozzole",
+      "comune_norm": "bozzole",
+      "lat": 45.0728934,
+      "lon": 8.6226419
+    },
+    {
+      "comune": "Brandizzo",
+      "comune_norm": "brandizzo",
+      "lat": 45.1729435,
+      "lon": 7.8345023
+    },
+    {
+      "comune": "Breme",
+      "comune_norm": "breme",
+      "lat": 45.1303508,
+      "lon": 8.6209269
+    },
+    {
+      "comune": "Bressana Bottarone",
+      "comune_norm": "bressana bottarone",
+      "lat": 45.0835699,
+      "lon": 9.1249625
+    },
+    {
+      "comune": "Brignano-Frascata",
+      "comune_norm": "brignano frascata",
+      "lat": 44.8100304,
+      "lon": 9.0448528
+    },
+    {
+      "comune": "Briona",
+      "comune_norm": "briona",
+      "lat": 45.5324805,
+      "lon": 8.5052999
+    },
+    {
+      "comune": "Brozolo",
+      "comune_norm": "brozolo",
+      "lat": 45.1148634,
+      "lon": 8.0701627
+    },
+    {
+      "comune": "Bruno",
+      "comune_norm": "bruno",
+      "lat": 44.7970175,
+      "lon": 8.4475218
+    },
+    {
+      "comune": "Brusasco",
+      "comune_norm": "brusasco",
+      "lat": 45.1537961,
+      "lon": 8.060868
+    },
+    {
+      "comune": "Brusnengo",
+      "comune_norm": "brusnengo",
+      "lat": 45.5729734,
+      "lon": 8.268898
+    },
+    {
+      "comune": "Bubbiano",
+      "comune_norm": "bubbiano",
+      "lat": 45.3288345,
+      "lon": 9.0056116
+    },
+    {
+      "comune": "Bubbio",
+      "comune_norm": "bubbio",
+      "lat": 44.6552068,
+      "lon": 8.2956882
+    },
+    {
+      "comune": "Buccinasco",
+      "comune_norm": "buccinasco",
+      "lat": 45.4071142,
+      "lon": 9.1098896
+    },
+    {
+      "comune": "Burolo",
+      "comune_norm": "burolo",
+      "lat": 45.483888,
+      "lon": 7.927639
+    },
+    {
+      "comune": "Buronzo",
+      "comune_norm": "buronzo",
+      "lat": 45.4870155,
+      "lon": 8.2634634
+    },
+    {
+      "comune": "Buscate",
+      "comune_norm": "buscate",
+      "lat": 45.5441042,
+      "lon": 8.8148577
+    },
+    {
+      "comune": "Busto Arsizio",
+      "comune_norm": "busto arsizio",
+      "lat": 45.6053799,
+      "lon": 8.8433804
+    },
+    {
+      "comune": "Busto Garolfo",
+      "comune_norm": "busto garolfo",
+      "lat": 45.5422464,
+      "lon": 8.886681
+    },
+    {
+      "comune": "Buttigliera d'Asti",
+      "comune_norm": "buttigliera d asti",
+      "lat": 45.006849,
+      "lon": 7.9556431
+    },
+    {
+      "comune": "Calamandrana",
+      "comune_norm": "calamandrana",
+      "lat": 44.7350148,
+      "lon": 8.3390716
+    },
+    {
+      "comune": "Calliano Monferrato",
+      "comune_norm": "calliano monferrato",
+      "lat": 45.0025422,
+      "lon": 8.2504725
+    },
+    {
+      "comune": "Calosso",
+      "comune_norm": "calosso",
+      "lat": 44.7461174,
+      "lon": 8.2318713
+    },
+    {
+      "comune": "Caltignaga",
+      "comune_norm": "caltignaga",
+      "lat": 45.5262809,
+      "lon": 8.5787114
+    },
+    {
+      "comune": "Caluso",
+      "comune_norm": "caluso",
+      "lat": 45.2823854,
+      "lon": 7.8773903
+    },
+    {
+      "comune": "Calvignano",
+      "comune_norm": "calvignano",
+      "lat": 44.984333,
+      "lon": 9.1644035
+    },
+    {
+      "comune": "Calvignasco",
+      "comune_norm": "calvignasco",
+      "lat": 45.3256802,
+      "lon": 9.0248768
+    },
+    {
+      "comune": "Camagna Monferrato",
+      "comune_norm": "camagna monferrato",
+      "lat": 45.0210678,
+      "lon": 8.4342973
+    },
+    {
+      "comune": "Cambiano",
+      "comune_norm": "cambiano",
+      "lat": 44.9738096,
+      "lon": 7.7584126
+    },
+    {
+      "comune": "Camburzano",
+      "comune_norm": "camburzano",
+      "lat": 45.5448127,
+      "lon": 7.9995951
+    },
+    {
+      "comune": "Camerano Casasco",
+      "comune_norm": "camerano casasco",
+      "lat": 44.9801458,
+      "lon": 8.090578
+    },
+    {
+      "comune": "Cameri",
+      "comune_norm": "cameri",
+      "lat": 45.5155857,
+      "lon": 8.6639345
+    },
+    {
+      "comune": "Camino",
+      "comune_norm": "camino",
+      "lat": 45.1622502,
+      "lon": 8.279106
+    },
+    {
+      "comune": "Campospinoso Albaredo",
+      "comune_norm": "campospinoso albaredo",
+      "lat": 45.1113374,
+      "lon": 9.2407403
+    },
+    {
+      "comune": "Canale",
+      "comune_norm": "canale",
+      "lat": 44.8022065,
+      "lon": 8.0028254
+    },
+    {
+      "comune": "Candelo",
+      "comune_norm": "candelo",
+      "lat": 45.5364401,
+      "lon": 8.1273861
+    },
+    {
+      "comune": "Candia Canavese",
+      "comune_norm": "candia canavese",
+      "lat": 45.331417,
+      "lon": 7.8983963
+    },
+    {
+      "comune": "Candia Lomellina",
+      "comune_norm": "candia lomellina",
+      "lat": 45.1774039,
+      "lon": 8.5854335
+    },
+    {
+      "comune": "Canegrate",
+      "comune_norm": "canegrate",
+      "lat": 45.5670721,
+      "lon": 8.9256941
+    },
+    {
+      "comune": "Canelli",
+      "comune_norm": "canelli",
+      "lat": 44.720147,
+      "lon": 8.2859577
+    },
+    {
+      "comune": "Cantarana",
+      "comune_norm": "cantarana",
+      "lat": 44.8963324,
+      "lon": 8.0261917
+    },
+    {
+      "comune": "Capriata d'Orba",
+      "comune_norm": "capriata d orba",
+      "lat": 44.7320007,
+      "lon": 8.6998287
+    },
+    {
+      "comune": "Capriglio",
+      "comune_norm": "capriglio",
+      "lat": 45.0073089,
+      "lon": 8.0104228
+    },
+    {
+      "comune": "Caravino",
+      "comune_norm": "caravino",
+      "lat": 45.3986824,
+      "lon": 7.9540023
+    },
+    {
+      "comune": "Carbonara al Ticino",
+      "comune_norm": "carbonara al ticino",
+      "lat": 45.1738189,
+      "lon": 9.0824911
+    },
+    {
+      "comune": "Carbonara Scrivia",
+      "comune_norm": "carbonara scrivia",
+      "lat": 44.8535607,
+      "lon": 8.8586603
+    },
+    {
+      "comune": "Cardano al Campo",
+      "comune_norm": "cardano al campo",
+      "lat": 45.6469946,
+      "lon": 8.7555616
+    },
+    {
+      "comune": "Carentino",
+      "comune_norm": "carentino",
+      "lat": 44.8212537,
+      "lon": 8.4857412
+    },
+    {
+      "comune": "Caresana",
+      "comune_norm": "caresana",
+      "lat": 45.2238742,
+      "lon": 8.513087
+    },
+    {
+      "comune": "Caresanablot",
+      "comune_norm": "caresanablot",
+      "lat": 45.3636077,
+      "lon": 8.3729802
+    },
+    {
+      "comune": "Carezzano",
+      "comune_norm": "carezzano",
+      "lat": 44.8088975,
+      "lon": 8.8958025
+    },
+    {
+      "comune": "Carisio",
+      "comune_norm": "carisio",
+      "lat": 45.4259687,
+      "lon": 8.2054183
+    },
+    {
+      "comune": "Carmagnola",
+      "comune_norm": "carmagnola",
+      "lat": 44.8618749,
+      "lon": 7.7346656
+    },
+    {
+      "comune": "Carpeneto",
+      "comune_norm": "carpeneto",
+      "lat": 44.6913445,
+      "lon": 8.6179839
+    },
+    {
+      "comune": "Carpignano Sesia",
+      "comune_norm": "carpignano sesia",
+      "lat": 45.5414405,
+      "lon": 8.4236031
+    },
+    {
+      "comune": "Carrosio",
+      "comune_norm": "carrosio",
+      "lat": 44.6551072,
+      "lon": 8.8416902
+    },
+    {
+      "comune": "Cartosio",
+      "comune_norm": "cartosio",
+      "lat": 44.5830172,
+      "lon": 8.4234266
+    },
+    {
+      "comune": "Casal Cermelli",
+      "comune_norm": "casal cermelli",
+      "lat": 44.8227241,
+      "lon": 8.6319541
+    },
+    {
+      "comune": "Casalbeltrame",
+      "comune_norm": "casalbeltrame",
+      "lat": 45.4285656,
+      "lon": 8.472764
+    },
+    {
+      "comune": "Casalborgone",
+      "comune_norm": "casalborgone",
+      "lat": 45.128669,
+      "lon": 7.9335678
+    },
+    {
+      "comune": "Casale Monferrato",
+      "comune_norm": "casale monferrato",
+      "lat": 45.1083372,
+      "lon": 8.4582469
+    },
+    {
+      "comune": "Casaleggio Boiro",
+      "comune_norm": "casaleggio boiro",
+      "lat": 44.6129115,
+      "lon": 8.7424309
+    },
+    {
+      "comune": "Casaleggio Novara",
+      "comune_norm": "casaleggio novara",
+      "lat": 45.4855937,
+      "lon": 8.5024463
+    },
+    {
+      "comune": "Casalino",
+      "comune_norm": "casalino",
+      "lat": 45.3840634,
+      "lon": 8.5258818
+    },
+    {
+      "comune": "Casalnoceto",
+      "comune_norm": "casalnoceto",
+      "lat": 44.9179077,
+      "lon": 8.9857846
+    },
+    {
+      "comune": "Casalvolone",
+      "comune_norm": "casalvolone",
+      "lat": 45.3986304,
+      "lon": 8.4687314
+    },
+    {
+      "comune": "Casanova Elvo",
+      "comune_norm": "casanova elvo",
+      "lat": 45.4002723,
+      "lon": 8.2939697
+    },
+    {
+      "comune": "Casanova Lonati",
+      "comune_norm": "casanova lonati",
+      "lat": 45.0949451,
+      "lon": 9.215872
+    },
+    {
+      "comune": "Casapinta",
+      "comune_norm": "casapinta",
+      "lat": 45.6131446,
+      "lon": 8.2000188
+    },
+    {
+      "comune": "Casarile",
+      "comune_norm": "casarile",
+      "lat": 45.3146272,
+      "lon": 9.1017709
+    },
+    {
+      "comune": "Casasco",
+      "comune_norm": "casasco",
+      "lat": 44.8213849,
+      "lon": 9.0040377
+    },
+    {
+      "comune": "Casatisma",
+      "comune_norm": "casatisma",
+      "lat": 45.053877,
+      "lon": 9.1223355
+    },
+    {
+      "comune": "Cascinette d'Ivrea",
+      "comune_norm": "cascinette d ivrea",
+      "lat": 45.4810777,
+      "lon": 7.9059598
+    },
+    {
+      "comune": "Casei Gerola",
+      "comune_norm": "casei gerola",
+      "lat": 45.0204608,
+      "lon": 8.9261162
+    },
+    {
+      "comune": "Caselle Torinese",
+      "comune_norm": "caselle torinese",
+      "lat": 45.1765707,
+      "lon": 7.6488169
+    },
+    {
+      "comune": "Casorate Primo",
+      "comune_norm": "casorate primo",
+      "lat": 45.3030261,
+      "lon": 9.0127062
+    },
+    {
+      "comune": "Casorezzo",
+      "comune_norm": "casorezzo",
+      "lat": 45.5268241,
+      "lon": 8.9073754
+    },
+    {
+      "comune": "Casorzo Monferrato",
+      "comune_norm": "casorzo monferrato",
+      "lat": 45.015248,
+      "lon": 8.3348189
+    },
+    {
+      "comune": "Cassano Spinola",
+      "comune_norm": "cassano spinola",
+      "lat": 44.7705909,
+      "lon": 8.873834
+    },
+    {
+      "comune": "Cassinasco",
+      "comune_norm": "cassinasco",
+      "lat": 44.6941796,
+      "lon": 8.3107401
+    },
+    {
+      "comune": "Cassine",
+      "comune_norm": "cassine",
+      "lat": 44.7539904,
+      "lon": 8.5252969
+    },
+    {
+      "comune": "Cassinelle",
+      "comune_norm": "cassinelle",
+      "lat": 44.5812529,
+      "lon": 8.5567237
+    },
+    {
+      "comune": "Cassinetta di Lugagnano",
+      "comune_norm": "cassinetta di lugagnano",
+      "lat": 45.4252411,
+      "lon": 8.908347
+    },
+    {
+      "comune": "Cassolnovo",
+      "comune_norm": "cassolnovo",
+      "lat": 45.3690734,
+      "lon": 8.793797
+    },
+    {
+      "comune": "Castagneto Po",
+      "comune_norm": "castagneto po",
+      "lat": 45.1599218,
+      "lon": 7.8965193
+    },
+    {
+      "comune": "Castagnito",
+      "comune_norm": "castagnito",
+      "lat": 44.7497028,
+      "lon": 8.0521382
+    },
+    {
+      "comune": "Castagnole delle Lanze",
+      "comune_norm": "castagnole delle lanze",
+      "lat": 44.7574123,
+      "lon": 8.1387643
+    },
+    {
+      "comune": "Castagnole Monferrato",
+      "comune_norm": "castagnole monferrato",
+      "lat": 44.955868,
+      "lon": 8.3097258
+    },
+    {
+      "comune": "Castano Primo",
+      "comune_norm": "castano primo",
+      "lat": 45.548296,
+      "lon": 8.7604284
+    },
+    {
+      "comune": "Casteggio",
+      "comune_norm": "casteggio",
+      "lat": 45.0099693,
+      "lon": 9.1346613
+    },
+    {
+      "comune": "Castel Boglione",
+      "comune_norm": "castel boglione",
+      "lat": 44.729685,
+      "lon": 8.3757519
+    },
+    {
+      "comune": "Castel Rocchero",
+      "comune_norm": "castel rocchero",
+      "lat": 44.7201161,
+      "lon": 8.4139178
+    },
+    {
+      "comune": "Castell'Alfero",
+      "comune_norm": "castell alfero",
+      "lat": 44.981782,
+      "lon": 8.2018079
+    },
+    {
+      "comune": "Castellamonte",
+      "comune_norm": "castellamonte",
+      "lat": 45.4276156,
+      "lon": 7.7344956
+    },
+    {
+      "comune": "Castellania Coppi",
+      "comune_norm": "castellania coppi",
+      "lat": 44.7974193,
+      "lon": 8.9396573
+    },
+    {
+      "comune": "Castellar Guidobono",
+      "comune_norm": "castellar guidobono",
+      "lat": 44.9049185,
+      "lon": 8.9514869
+    },
+    {
+      "comune": "Castellazzo Bormida",
+      "comune_norm": "castellazzo bormida",
+      "lat": 44.829299,
+      "lon": 8.5723777
+    },
+    {
+      "comune": "Castellazzo Novarese",
+      "comune_norm": "castellazzo novarese",
+      "lat": 45.5116456,
+      "lon": 8.4953127
+    },
+    {
+      "comune": "Castellero",
+      "comune_norm": "castellero",
+      "lat": 44.9204002,
+      "lon": 8.070944
+    },
+    {
+      "comune": "Castelletto Cervo",
+      "comune_norm": "castelletto cervo",
+      "lat": 45.5182321,
+      "lon": 8.2403577
+    },
+    {
+      "comune": "Castelletto d'Erro",
+      "comune_norm": "castelletto d erro",
+      "lat": 44.627541,
+      "lon": 8.3875956
+    },
+    {
+      "comune": "Castelletto d'Orba",
+      "comune_norm": "castelletto d orba",
+      "lat": 44.6820174,
+      "lon": 8.7088838
+    },
+    {
+      "comune": "Castelletto di Branduzzo",
+      "comune_norm": "castelletto di branduzzo",
+      "lat": 45.0717651,
+      "lon": 9.0949777
+    },
+    {
+      "comune": "Castelletto Merli",
+      "comune_norm": "castelletto merli",
+      "lat": 45.0752817,
+      "lon": 8.2389236
+    },
+    {
+      "comune": "Castelletto Molina",
+      "comune_norm": "castelletto molina",
+      "lat": 44.7445371,
+      "lon": 8.4309156
+    },
+    {
+      "comune": "Castelletto Monferrato",
+      "comune_norm": "castelletto monferrato",
+      "lat": 44.9715912,
+      "lon": 8.556246
+    },
+    {
+      "comune": "Castellinaldo d'Alba",
+      "comune_norm": "castellinaldo d alba",
+      "lat": 44.7790149,
+      "lon": 8.0339002
+    },
+    {
+      "comune": "Castello d'Agogna",
+      "comune_norm": "castello d agogna",
+      "lat": 45.235686,
+      "lon": 8.6859324
+    },
+    {
+      "comune": "Castello di Annone",
+      "comune_norm": "castello di annone",
+      "lat": 44.8953985,
+      "lon": 8.3291444
+    },
+    {
+      "comune": "Castelnovetto",
+      "comune_norm": "castelnovetto",
+      "lat": 45.2489124,
+      "lon": 8.6285695
+    },
+    {
+      "comune": "Castelnuovo Belbo",
+      "comune_norm": "castelnuovo belbo",
+      "lat": 44.8043809,
+      "lon": 8.4177683
+    },
+    {
+      "comune": "Castelnuovo Bormida",
+      "comune_norm": "castelnuovo bormida",
+      "lat": 44.7429819,
+      "lon": 8.5519822
+    },
+    {
+      "comune": "Castelnuovo Calcea",
+      "comune_norm": "castelnuovo calcea",
+      "lat": 44.7882413,
+      "lon": 8.2873029
+    },
+    {
+      "comune": "Castelnuovo Don Bosco",
+      "comune_norm": "castelnuovo don bosco",
+      "lat": 45.0340497,
+      "lon": 7.9792907
+    },
+    {
+      "comune": "Castelnuovo Scrivia",
+      "comune_norm": "castelnuovo scrivia",
+      "lat": 44.9759031,
+      "lon": 8.8806159
+    },
+    {
+      "comune": "Castelspina",
+      "comune_norm": "castelspina",
+      "lat": 44.8004749,
+      "lon": 8.5959006
+    },
+    {
+      "comune": "Castiglione Tinella",
+      "comune_norm": "castiglione tinella",
+      "lat": 44.7336138,
+      "lon": 8.1902482
+    },
+    {
+      "comune": "Castiglione Torinese",
+      "comune_norm": "castiglione torinese",
+      "lat": 45.1122059,
+      "lon": 7.7987582
+    },
+    {
+      "comune": "Castino",
+      "comune_norm": "castino",
+      "lat": 44.6251415,
+      "lon": 8.1603465
+    },
+    {
+      "comune": "Cava Manara",
+      "comune_norm": "cava manara",
+      "lat": 45.1263759,
+      "lon": 9.1124866
+    },
+    {
+      "comune": "Cavaglià",
+      "comune_norm": "cavaglia",
+      "lat": 45.3998964,
+      "lon": 8.1140333
+    },
+    {
+      "comune": "Cavaglietto",
+      "comune_norm": "cavaglietto",
+      "lat": 45.600498,
+      "lon": 8.4995709
+    },
+    {
+      "comune": "Cavaglio d'Agogna",
+      "comune_norm": "cavaglio d agogna",
+      "lat": 45.6060612,
+      "lon": 8.4747122
+    },
+    {
+      "comune": "Cavagnolo",
+      "comune_norm": "cavagnolo",
+      "lat": 45.1525967,
+      "lon": 8.0326972
+    },
+    {
+      "comune": "Cavallirio",
+      "comune_norm": "cavallirio",
+      "lat": 45.6664888,
+      "lon": 8.4080457
+    },
+    {
+      "comune": "Cavatore",
+      "comune_norm": "cavatore",
+      "lat": 44.6334007,
+      "lon": 8.4536231
+    },
+    {
+      "comune": "Cecima",
+      "comune_norm": "cecima",
+      "lat": 44.8412549,
+      "lon": 9.0726903
+    },
+    {
+      "comune": "Cella Monte",
+      "comune_norm": "cella monte",
+      "lat": 45.0669837,
+      "lon": 8.3811358
+    },
+    {
+      "comune": "Cellarengo",
+      "comune_norm": "cellarengo",
+      "lat": 44.8717138,
+      "lon": 7.9219323
+    },
+    {
+      "comune": "Celle Enomondo",
+      "comune_norm": "celle enomondo",
+      "lat": 44.8579742,
+      "lon": 8.1157737
+    },
+    {
+      "comune": "Cerano",
+      "comune_norm": "cerano",
+      "lat": 45.4048749,
+      "lon": 8.7866709
+    },
+    {
+      "comune": "Cereseto",
+      "comune_norm": "cereseto",
+      "lat": 45.0921867,
+      "lon": 8.3232335
+    },
+    {
+      "comune": "Ceresole Alba",
+      "comune_norm": "ceresole alba",
+      "lat": 44.8205624,
+      "lon": 7.8140896
+    },
+    {
+      "comune": "Ceretto Lomellina",
+      "comune_norm": "ceretto lomellina",
+      "lat": 45.2476798,
+      "lon": 8.6708047
+    },
+    {
+      "comune": "Cergnago",
+      "comune_norm": "cergnago",
+      "lat": 45.1971544,
+      "lon": 8.7613763
+    },
+    {
+      "comune": "Cerreto d'Asti",
+      "comune_norm": "cerreto d asti",
+      "lat": 45.0433582,
+      "lon": 8.0320439
+    },
+    {
+      "comune": "Cerreto Grue",
+      "comune_norm": "cerreto grue",
+      "lat": 44.8399305,
+      "lon": 8.9308713
+    },
+    {
+      "comune": "Cerrina Monferrato",
+      "comune_norm": "cerrina monferrato",
+      "lat": 45.1147542,
+      "lon": 8.2105241
+    },
+    {
+      "comune": "Cerrione",
+      "comune_norm": "cerrione",
+      "lat": 45.4744331,
+      "lon": 8.0716005
+    },
+    {
+      "comune": "Cerro Tanaro",
+      "comune_norm": "cerro tanaro",
+      "lat": 44.8775665,
+      "lon": 8.3703166
+    },
+    {
+      "comune": "Certosa di Pavia",
+      "comune_norm": "certosa di pavia",
+      "lat": 45.2528217,
+      "lon": 9.1260801
+    },
+    {
+      "comune": "Cervesina",
+      "comune_norm": "cervesina",
+      "lat": 45.0625993,
+      "lon": 9.0132395
+    },
+    {
+      "comune": "Cesano Boscone",
+      "comune_norm": "cesano boscone",
+      "lat": 45.4403998,
+      "lon": 9.0865777
+    },
+    {
+      "comune": "Cessole",
+      "comune_norm": "cessole",
+      "lat": 44.646163,
+      "lon": 8.2529588
+    },
+    {
+      "comune": "Chiaverano",
+      "comune_norm": "chiaverano",
+      "lat": 45.5044908,
+      "lon": 7.9045913
+    },
+    {
+      "comune": "Chieri",
+      "comune_norm": "chieri",
+      "lat": 45.0068017,
+      "lon": 7.8322619
+    },
+    {
+      "comune": "Chiusano d'Asti",
+      "comune_norm": "chiusano d asti",
+      "lat": 44.9844589,
+      "lon": 8.1200993
+    },
+    {
+      "comune": "Chivasso",
+      "comune_norm": "chivasso",
+      "lat": 45.2119117,
+      "lon": 7.8948603
+    },
+    {
+      "comune": "Ciconio",
+      "comune_norm": "ciconio",
+      "lat": 45.3287642,
+      "lon": 7.7618501
+    },
+    {
+      "comune": "Cigliano",
+      "comune_norm": "cigliano",
+      "lat": 45.2881811,
+      "lon": 8.0157882
+    },
+    {
+      "comune": "Cilavegna",
+      "comune_norm": "cilavegna",
+      "lat": 45.3114305,
+      "lon": 8.7542025
+    },
+    {
+      "comune": "Cinaglio",
+      "comune_norm": "cinaglio",
+      "lat": 44.9666653,
+      "lon": 8.0951255
+    },
+    {
+      "comune": "Cinzano",
+      "comune_norm": "cinzano",
+      "lat": 45.0917264,
+      "lon": 7.9241407
+    },
+    {
+      "comune": "Cisliano",
+      "comune_norm": "cisliano",
+      "lat": 45.4408392,
+      "lon": 8.9905754
+    },
+    {
+      "comune": "Cisterna d'Asti",
+      "comune_norm": "cisterna d asti",
+      "lat": 44.8409615,
+      "lon": 8.0016134
+    },
+    {
+      "comune": "Coazzolo",
+      "comune_norm": "coazzolo",
+      "lat": 44.7265538,
+      "lon": 8.1507099
+    },
+    {
+      "comune": "Cocconato",
+      "comune_norm": "cocconato",
+      "lat": 45.0878959,
+      "lon": 8.0482491
+    },
+    {
+      "comune": "Codevilla",
+      "comune_norm": "codevilla",
+      "lat": 44.9664021,
+      "lon": 9.057735
+    },
+    {
+      "comune": "Colleretto Giacosa",
+      "comune_norm": "colleretto giacosa",
+      "lat": 45.4297503,
+      "lon": 7.8110707
+    },
+    {
+      "comune": "Collobiano",
+      "comune_norm": "collobiano",
+      "lat": 45.3949321,
+      "lon": 8.3472038
+    },
+    {
+      "comune": "Confienza",
+      "comune_norm": "confienza",
+      "lat": 45.3344917,
+      "lon": 8.5806336
+    },
+    {
+      "comune": "Coniolo",
+      "comune_norm": "coniolo",
+      "lat": 45.1501222,
+      "lon": 8.3823283
+    },
+    {
+      "comune": "Conzano",
+      "comune_norm": "conzano",
+      "lat": 45.0346065,
+      "lon": 8.4633892
+    },
+    {
+      "comune": "Corana",
+      "comune_norm": "corana",
+      "lat": 45.067433,
+      "lon": 8.9634298
+    },
+    {
+      "comune": "Corbetta",
+      "comune_norm": "corbetta",
+      "lat": 45.4590432,
+      "lon": 8.9332568
+    },
+    {
+      "comune": "Cornale e Bastida",
+      "comune_norm": "cornale e bastida",
+      "lat": 45.0625594,
+      "lon": 8.911636
+    },
+    {
+      "comune": "Cornaredo",
+      "comune_norm": "cornaredo",
+      "lat": 45.4882025,
+      "lon": 9.0247002
+    },
+    {
+      "comune": "Corneliano d'Alba",
+      "comune_norm": "corneliano d alba",
+      "lat": 44.7348398,
+      "lon": 7.9657169
+    },
+    {
+      "comune": "Corsico",
+      "comune_norm": "corsico",
+      "lat": 45.4348406,
+      "lon": 9.0975208
+    },
+    {
+      "comune": "Corsione",
+      "comune_norm": "corsione",
+      "lat": 44.9991576,
+      "lon": 8.1573437
+    },
+    {
+      "comune": "Cortandone",
+      "comune_norm": "cortandone",
+      "lat": 44.955506,
+      "lon": 8.0581856
+    },
+    {
+      "comune": "Cortanze",
+      "comune_norm": "cortanze",
+      "lat": 45.020444,
+      "lon": 8.0853997
+    },
+    {
+      "comune": "Cortazzone",
+      "comune_norm": "cortazzone",
+      "lat": 44.9762556,
+      "lon": 8.0513551
+    },
+    {
+      "comune": "Cortiglione",
+      "comune_norm": "cortiglione",
+      "lat": 44.8296133,
+      "lon": 8.3687952
+    },
+    {
+      "comune": "Corvino San Quirico",
+      "comune_norm": "corvino san quirico",
+      "lat": 45.0181118,
+      "lon": 9.1518749
+    },
+    {
+      "comune": "Cossano Belbo",
+      "comune_norm": "cossano belbo",
+      "lat": 44.6609653,
+      "lon": 8.1957956
+    },
+    {
+      "comune": "Cossano Canavese",
+      "comune_norm": "cossano canavese",
+      "lat": 45.3870054,
+      "lon": 7.9981935
+    },
+    {
+      "comune": "Cossato",
+      "comune_norm": "cossato",
+      "lat": 45.5603813,
+      "lon": 8.1851531
+    },
+    {
+      "comune": "Cossombrato",
+      "comune_norm": "cossombrato",
+      "lat": 44.9816024,
+      "lon": 8.1396866
+    },
+    {
+      "comune": "Costa Vescovato",
+      "comune_norm": "costa vescovato",
+      "lat": 44.8156872,
+      "lon": 8.9311162
+    },
+    {
+      "comune": "Costanzana",
+      "comune_norm": "costanzana",
+      "lat": 45.2259262,
+      "lon": 8.358761
+    },
+    {
+      "comune": "Costigliole d'Asti",
+      "comune_norm": "costigliole d asti",
+      "lat": 44.7891471,
+      "lon": 8.1795015
+    },
+    {
+      "comune": "Cozzo",
+      "comune_norm": "cozzo",
+      "lat": 45.2072228,
+      "lon": 8.616945
+    },
+    {
+      "comune": "Cremolino",
+      "comune_norm": "cremolino",
+      "lat": 44.6333542,
+      "lon": 8.5768807
+    },
+    {
+      "comune": "Crescentino",
+      "comune_norm": "crescentino",
+      "lat": 45.2056758,
+      "lon": 8.1098647
+    },
+    {
+      "comune": "Cressa",
+      "comune_norm": "cressa",
+      "lat": 45.6465669,
+      "lon": 8.5091132
+    },
+    {
+      "comune": "Crova",
+      "comune_norm": "crova",
+      "lat": 45.3168991,
+      "lon": 8.2396733
+    },
+    {
+      "comune": "Cuceglio",
+      "comune_norm": "cuceglio",
+      "lat": 45.3588381,
+      "lon": 7.8104984
+    },
+    {
+      "comune": "Cuggiono",
+      "comune_norm": "cuggiono",
+      "lat": 45.5070459,
+      "lon": 8.7953903
+    },
+    {
+      "comune": "Cunico",
+      "comune_norm": "cunico",
+      "lat": 45.0418776,
+      "lon": 8.0917582
+    },
+    {
+      "comune": "Cureggio",
+      "comune_norm": "cureggio",
+      "lat": 45.6689265,
+      "lon": 8.4570602
+    },
+    {
+      "comune": "Curino",
+      "comune_norm": "curino",
+      "lat": 45.6380194,
+      "lon": 8.2396743
+    },
+    {
+      "comune": "Cusago",
+      "comune_norm": "cusago",
+      "lat": 45.4476777,
+      "lon": 9.0283316
+    },
+    {
+      "comune": "Dairago",
+      "comune_norm": "dairago",
+      "lat": 45.5632769,
+      "lon": 8.8527692
+    },
+    {
+      "comune": "Denice",
+      "comune_norm": "denice",
+      "lat": 44.6054115,
+      "lon": 8.3344174
+    },
+    {
+      "comune": "Desana",
+      "comune_norm": "desana",
+      "lat": 45.2624254,
+      "lon": 8.339267
+    },
+    {
+      "comune": "Divignano",
+      "comune_norm": "divignano",
+      "lat": 45.6567073,
+      "lon": 8.5987089
+    },
+    {
+      "comune": "Donato",
+      "comune_norm": "donato",
+      "lat": 45.5528716,
+      "lon": 7.9120003
+    },
+    {
+      "comune": "Dorno",
+      "comune_norm": "dorno",
+      "lat": 45.1465506,
+      "lon": 8.9464651
+    },
+    {
+      "comune": "Dorzano",
+      "comune_norm": "dorzano",
+      "lat": 45.4269462,
+      "lon": 8.1193981
+    },
+    {
+      "comune": "Dusino San Michele",
+      "comune_norm": "dusino san michele",
+      "lat": 44.920265,
+      "lon": 7.9805276
+    },
+    {
+      "comune": "Fara Novarese",
+      "comune_norm": "fara novarese",
+      "lat": 45.5590802,
+      "lon": 8.4565363
+    },
+    {
+      "comune": "Feletto",
+      "comune_norm": "feletto",
+      "lat": 45.2941467,
+      "lon": 7.7592334
+    },
+    {
+      "comune": "Felizzano",
+      "comune_norm": "felizzano",
+      "lat": 44.9109696,
+      "lon": 8.4250107
+    },
+    {
+      "comune": "Ferno",
+      "comune_norm": "ferno",
+      "lat": 45.6197179,
+      "lon": 8.7424443
+    },
+    {
+      "comune": "Ferrera Erbognone",
+      "comune_norm": "ferrera erbognone",
+      "lat": 45.1009971,
+      "lon": 8.8544594
+    },
+    {
+      "comune": "Ferrere",
+      "comune_norm": "ferrere",
+      "lat": 44.8728574,
+      "lon": 7.9909084
+    },
+    {
+      "comune": "Fiorano Canavese",
+      "comune_norm": "fiorano canavese",
+      "lat": 45.4678011,
+      "lon": 7.832102
+    },
+    {
+      "comune": "Foglizzo",
+      "comune_norm": "foglizzo",
+      "lat": 45.2695347,
+      "lon": 7.818848
+    },
+    {
+      "comune": "Fontaneto d'Agogna",
+      "comune_norm": "fontaneto d agogna",
+      "lat": 45.6401546,
+      "lon": 8.467471
+    },
+    {
+      "comune": "Fontanetto Po",
+      "comune_norm": "fontanetto po",
+      "lat": 45.1987112,
+      "lon": 8.187909
+    },
+    {
+      "comune": "Fontanile",
+      "comune_norm": "fontanile",
+      "lat": 44.7488817,
+      "lon": 8.4174019
+    },
+    {
+      "comune": "Formigliana",
+      "comune_norm": "formigliana",
+      "lat": 45.4342256,
+      "lon": 8.276973
+    },
+    {
+      "comune": "Fortunago",
+      "comune_norm": "fortunago",
+      "lat": 44.9109555,
+      "lon": 9.1864556
+    },
+    {
+      "comune": "Francavilla Bisio",
+      "comune_norm": "francavilla bisio",
+      "lat": 44.7249793,
+      "lon": 8.740088
+    },
+    {
+      "comune": "Frascaro",
+      "comune_norm": "frascaro",
+      "lat": 44.8152236,
+      "lon": 8.5176757
+    },
+    {
+      "comune": "Frascarolo",
+      "comune_norm": "frascarolo",
+      "lat": 45.0405971,
+      "lon": 8.6907624
+    },
+    {
+      "comune": "Frassinello Monferrato",
+      "comune_norm": "frassinello monferrato",
+      "lat": 45.0377464,
+      "lon": 8.3963871
+    },
+    {
+      "comune": "Frassineto Po",
+      "comune_norm": "frassineto po",
+      "lat": 45.136315,
+      "lon": 8.5491647
+    },
+    {
+      "comune": "Fresonara",
+      "comune_norm": "fresonara",
+      "lat": 44.7810751,
+      "lon": 8.6934901
+    },
+    {
+      "comune": "Frinco",
+      "comune_norm": "frinco",
+      "lat": 44.9939658,
+      "lon": 8.1745363
+    },
+    {
+      "comune": "Frugarolo",
+      "comune_norm": "frugarolo",
+      "lat": 44.8564798,
+      "lon": 8.6763472
+    },
+    {
+      "comune": "Fubine Monferrato",
+      "comune_norm": "fubine monferrato",
+      "lat": 44.9586046,
+      "lon": 8.4192341
+    },
+    {
+      "comune": "Gabiano",
+      "comune_norm": "gabiano",
+      "lat": 45.151777,
+      "lon": 8.2075999
+    },
+    {
+      "comune": "Gaggiano",
+      "comune_norm": "gaggiano",
+      "lat": 45.3967623,
+      "lon": 9.0210123
+    },
+    {
+      "comune": "Gaglianico",
+      "comune_norm": "gaglianico",
+      "lat": 45.5324318,
+      "lon": 8.0817685
+    },
+    {
+      "comune": "Galliate",
+      "comune_norm": "galliate",
+      "lat": 45.4891242,
+      "lon": 8.7201887
+    },
+    {
+      "comune": "Galliavola",
+      "comune_norm": "galliavola",
+      "lat": 45.0949226,
+      "lon": 8.8244723
+    },
+    {
+      "comune": "Gamalero",
+      "comune_norm": "gamalero",
+      "lat": 44.8030778,
+      "lon": 8.5284544
+    },
+    {
+      "comune": "Gambarana",
+      "comune_norm": "gambarana",
+      "lat": 45.0423218,
+      "lon": 8.7698299
+    },
+    {
+      "comune": "Gambolò",
+      "comune_norm": "gambolo",
+      "lat": 45.2560625,
+      "lon": 8.8810066
+    },
+    {
+      "comune": "Garbagna",
+      "comune_norm": "garbagna",
+      "lat": 44.7767091,
+      "lon": 8.99524
+    },
+    {
+      "comune": "Garbagna Novarese",
+      "comune_norm": "garbagna novarese",
+      "lat": 45.3925947,
+      "lon": 8.6612338
+    },
+    {
+      "comune": "Garlasco",
+      "comune_norm": "garlasco",
+      "lat": 45.2057786,
+      "lon": 8.9344764
+    },
+    {
+      "comune": "Gassino Torinese",
+      "comune_norm": "gassino torinese",
+      "lat": 45.1159323,
+      "lon": 7.8380185
+    },
+    {
+      "comune": "Gattinara",
+      "comune_norm": "gattinara",
+      "lat": 45.6081048,
+      "lon": 8.3567807
+    },
+    {
+      "comune": "Gavi",
+      "comune_norm": "gavi",
+      "lat": 44.6810349,
+      "lon": 8.816554
+    },
+    {
+      "comune": "Ghemme",
+      "comune_norm": "ghemme",
+      "lat": 45.5959171,
+      "lon": 8.4280582
+    },
+    {
+      "comune": "Ghislarengo",
+      "comune_norm": "ghislarengo",
+      "lat": 45.5265652,
+      "lon": 8.3744618
+    },
+    {
+      "comune": "Giarole",
+      "comune_norm": "giarole",
+      "lat": 45.0577926,
+      "lon": 8.5620347
+    },
+    {
+      "comune": "Gifflenga",
+      "comune_norm": "gifflenga",
+      "lat": 45.4946049,
+      "lon": 8.2346347
+    },
+    {
+      "comune": "Giussago",
+      "comune_norm": "giussago",
+      "lat": 45.2783356,
+      "lon": 9.153293
+    },
+    {
+      "comune": "Godiasco Salice Terme",
+      "comune_norm": "godiasco salice terme",
+      "lat": 44.8903654,
+      "lon": 9.0646069
+    },
+    {
+      "comune": "Govone",
+      "comune_norm": "govone",
+      "lat": 44.7933762,
+      "lon": 8.1041174
+    },
+    {
+      "comune": "Graglia",
+      "comune_norm": "graglia",
+      "lat": 45.5679225,
+      "lon": 7.9399904
+    },
+    {
+      "comune": "Grana Monferrato",
+      "comune_norm": "grana monferrato",
+      "lat": 45.002758,
+      "lon": 8.2952082
+    },
+    {
+      "comune": "Granozzo con Monticello",
+      "comune_norm": "granozzo con monticello",
+      "lat": 45.3711694,
+      "lon": 8.5880149
+    },
+    {
+      "comune": "Gravellona Lomellina",
+      "comune_norm": "gravellona lomellina",
+      "lat": 45.3378493,
+      "lon": 8.7769302
+    },
+    {
+      "comune": "Grazzano Badoglio",
+      "comune_norm": "grazzano badoglio",
+      "lat": 45.0357557,
+      "lon": 8.31168
+    },
+    {
+      "comune": "Greggio",
+      "comune_norm": "greggio",
+      "lat": 45.4557981,
+      "lon": 8.3799143
+    },
+    {
+      "comune": "Grignasco",
+      "comune_norm": "grignasco",
+      "lat": 45.6846168,
+      "lon": 8.3423695
+    },
+    {
+      "comune": "Grognardo",
+      "comune_norm": "grognardo",
+      "lat": 44.626945,
+      "lon": 8.4966394
+    },
+    {
+      "comune": "Gropello Cairoli",
+      "comune_norm": "gropello cairoli",
+      "lat": 45.1732988,
+      "lon": 8.9945785
+    },
+    {
+      "comune": "Guarene",
+      "comune_norm": "guarene",
+      "lat": 44.73542,
+      "lon": 8.0367902
+    },
+    {
+      "comune": "Guazzora",
+      "comune_norm": "guazzora",
+      "lat": 45.0214441,
+      "lon": 8.8581363
+    },
+    {
+      "comune": "Gudo Visconti",
+      "comune_norm": "gudo visconti",
+      "lat": 45.3821978,
+      "lon": 8.9912959
+    },
+    {
+      "comune": "Incisa Scapaccino",
+      "comune_norm": "incisa scapaccino",
+      "lat": 44.8172147,
+      "lon": 8.3870306
+    },
+    {
+      "comune": "Inveruno",
+      "comune_norm": "inveruno",
+      "lat": 45.5178558,
+      "lon": 8.8544793
+    },
+    {
+      "comune": "Isola d'Asti",
+      "comune_norm": "isola d asti",
+      "lat": 44.8283955,
+      "lon": 8.1736412
+    },
+    {
+      "comune": "Isola Sant'Antonio",
+      "comune_norm": "isola sant antonio",
+      "lat": 45.0326479,
+      "lon": 8.8471547
+    },
+    {
+      "comune": "Isolabella",
+      "comune_norm": "isolabella",
+      "lat": 44.9045055,
+      "lon": 7.9099794
+    },
+    {
+      "comune": "Ivrea",
+      "comune_norm": "ivrea",
+      "lat": 45.45165,
+      "lon": 7.8863221
+    },
+    {
+      "comune": "Lacchiarella",
+      "comune_norm": "lacchiarella",
+      "lat": 45.3193722,
+      "lon": 9.1575849
+    },
+    {
+      "comune": "Lamporo",
+      "comune_norm": "lamporo",
+      "lat": 45.2325545,
+      "lon": 8.1046786
+    },
+    {
+      "comune": "Landiona",
+      "comune_norm": "landiona",
+      "lat": 45.4940048,
+      "lon": 8.4228178
+    },
+    {
+      "comune": "Langosco",
+      "comune_norm": "langosco",
+      "lat": 45.2158517,
+      "lon": 8.5586611
+    },
+    {
+      "comune": "Lauriano",
+      "comune_norm": "lauriano",
+      "lat": 45.1522432,
+      "lon": 7.9888106
+    },
+    {
+      "comune": "Legnano",
+      "comune_norm": "legnano",
+      "lat": 45.595806,
+      "lon": 8.9059818
+    },
+    {
+      "comune": "Leini",
+      "comune_norm": "leini",
+      "lat": 45.1888149,
+      "lon": 7.7216777
+    },
+    {
+      "comune": "Lenta",
+      "comune_norm": "lenta",
+      "lat": 45.5586052,
+      "lon": 8.3656892
+    },
+    {
+      "comune": "Lerma",
+      "comune_norm": "lerma",
+      "lat": 44.6132619,
+      "lon": 8.7285509
+    },
+    {
+      "comune": "Lessona",
+      "comune_norm": "lessona",
+      "lat": 45.5746362,
+      "lon": 8.2069517
+    },
+    {
+      "comune": "Lignana",
+      "comune_norm": "lignana",
+      "lat": 45.2886583,
+      "lon": 8.3160806
+    },
+    {
+      "comune": "Livorno Ferraris",
+      "comune_norm": "livorno ferraris",
+      "lat": 45.2669041,
+      "lon": 8.1153011
+    },
+    {
+      "comune": "Loazzolo",
+      "comune_norm": "loazzolo",
+      "lat": 44.6598358,
+      "lon": 8.2574662
+    },
+    {
+      "comune": "Lombardore",
+      "comune_norm": "lombardore",
+      "lat": 45.2351571,
+      "lon": 7.7261897
+    },
+    {
+      "comune": "Lomello",
+      "comune_norm": "lomello",
+      "lat": 45.1209784,
+      "lon": 8.7925924
+    },
+    {
+      "comune": "Lonate Pozzolo",
+      "comune_norm": "lonate pozzolo",
+      "lat": 45.5880051,
+      "lon": 8.7377722
+    },
+    {
+      "comune": "Loranzè",
+      "comune_norm": "loranze",
+      "lat": 45.4457156,
+      "lon": 7.8083533
+    },
+    {
+      "comune": "Lozzolo",
+      "comune_norm": "lozzolo",
+      "lat": 45.617097,
+      "lon": 8.3243925
+    },
+    {
+      "comune": "Lu e Cuccaro Monferrato",
+      "comune_norm": "lu e cuccaro monferrato",
+      "lat": 45.0083157,
+      "lon": 8.4815119
+    },
+    {
+      "comune": "Lungavilla",
+      "comune_norm": "lungavilla",
+      "lat": 45.0350564,
+      "lon": 9.0816576
+    },
+    {
+      "comune": "Lusigliè",
+      "comune_norm": "lusiglie",
+      "lat": 45.3088594,
+      "lon": 7.7689934
+    },
+    {
+      "comune": "Magenta",
+      "comune_norm": "magenta",
+      "lat": 45.4511957,
+      "lon": 8.8621995
+    },
+    {
+      "comune": "Maggiora",
+      "comune_norm": "maggiora",
+      "lat": 45.6979178,
+      "lon": 8.4137454
+    },
+    {
+      "comune": "Magliano Alfieri",
+      "comune_norm": "magliano alfieri",
+      "lat": 44.7666442,
+      "lon": 8.0768805
+    },
+    {
+      "comune": "Maglione",
+      "comune_norm": "maglione",
+      "lat": 45.3485341,
+      "lon": 8.0071845
+    },
+    {
+      "comune": "Magnago",
+      "comune_norm": "magnago",
+      "lat": 45.5810186,
+      "lon": 8.8094779
+    },
+    {
+      "comune": "Magnano",
+      "comune_norm": "magnano",
+      "lat": 45.4664202,
+      "lon": 8.0037382
+    },
+    {
+      "comune": "Mandello Vitta",
+      "comune_norm": "mandello vitta",
+      "lat": 45.502742,
+      "lon": 8.46073
+    },
+    {
+      "comune": "Mango",
+      "comune_norm": "mango",
+      "lat": 44.6813844,
+      "lon": 8.1601561
+    },
+    {
+      "comune": "Mappano",
+      "comune_norm": "mappano",
+      "lat": 45.1511802,
+      "lon": 7.7051164
+    },
+    {
+      "comune": "Marano Ticino",
+      "comune_norm": "marano ticino",
+      "lat": 45.6296506,
+      "lon": 8.6302513
+    },
+    {
+      "comune": "Maranzana",
+      "comune_norm": "maranzana",
+      "lat": 44.7635442,
+      "lon": 8.4826176
+    },
+    {
+      "comune": "Marcallo con Casone",
+      "comune_norm": "marcallo con casone",
+      "lat": 45.4869129,
+      "lon": 8.8644971
+    },
+    {
+      "comune": "Marcignago",
+      "comune_norm": "marcignago",
+      "lat": 45.2477162,
+      "lon": 9.0812293
+    },
+    {
+      "comune": "Marentino",
+      "comune_norm": "marentino",
+      "lat": 45.066335,
+      "lon": 7.8786245
+    },
+    {
+      "comune": "Maretto",
+      "comune_norm": "maretto",
+      "lat": 44.9448625,
+      "lon": 8.0383834
+    },
+    {
+      "comune": "Masio",
+      "comune_norm": "masio",
+      "lat": 44.8665614,
+      "lon": 8.419691
+    },
+    {
+      "comune": "Massazza",
+      "comune_norm": "massazza",
+      "lat": 45.4876757,
+      "lon": 8.1625387
+    },
+    {
+      "comune": "Masserano",
+      "comune_norm": "masserano",
+      "lat": 45.5659142,
+      "lon": 8.2449286
+    },
+    {
+      "comune": "Mazzè",
+      "comune_norm": "mazze",
+      "lat": 45.2873311,
+      "lon": 7.9458111
+    },
+    {
+      "comune": "Mede",
+      "comune_norm": "mede",
+      "lat": 45.0932166,
+      "lon": 8.7352924
+    },
+    {
+      "comune": "Melazzo",
+      "comune_norm": "melazzo",
+      "lat": 44.6427458,
+      "lon": 8.4170702
+    },
+    {
+      "comune": "Mercenasco",
+      "comune_norm": "mercenasco",
+      "lat": 45.356046,
+      "lon": 7.8672448
+    },
+    {
+      "comune": "Mesero",
+      "comune_norm": "mesero",
+      "lat": 45.4940509,
+      "lon": 8.8511309
+    },
+    {
+      "comune": "Mezzana Bigli",
+      "comune_norm": "mezzana bigli",
+      "lat": 45.0662315,
+      "lon": 8.8814635
+    },
+    {
+      "comune": "Mezzana Mortigliengo",
+      "comune_norm": "mezzana mortigliengo",
+      "lat": 45.6304638,
+      "lon": 8.193014
+    },
+    {
+      "comune": "Mezzana Rabattone",
+      "comune_norm": "mezzana rabattone",
+      "lat": 45.099714,
+      "lon": 9.0372615
+    },
+    {
+      "comune": "Mezzanino",
+      "comune_norm": "mezzanino",
+      "lat": 45.1246071,
+      "lon": 9.2049228
+    },
+    {
+      "comune": "Mezzomerico",
+      "comune_norm": "mezzomerico",
+      "lat": 45.6215178,
+      "lon": 8.6030817
+    },
+    {
+      "comune": "Milano",
+      "comune_norm": "milano",
+      "lat": 45.4612932,
+      "lon": 9.1594985
+    },
+    {
+      "comune": "Mirabello Monferrato",
+      "comune_norm": "mirabello monferrato",
+      "lat": 45.030653,
+      "lon": 8.526693
+    },
+    {
+      "comune": "Moasca",
+      "comune_norm": "moasca",
+      "lat": 44.7640439,
+      "lon": 8.271758
+    },
+    {
+      "comune": "Molare",
+      "comune_norm": "molare",
+      "lat": 44.5730528,
+      "lon": 8.5857878
+    },
+    {
+      "comune": "Molino dei Torti",
+      "comune_norm": "molino dei torti",
+      "lat": 45.0284099,
+      "lon": 8.8937403
+    },
+    {
+      "comune": "Mombaruzzo",
+      "comune_norm": "mombaruzzo",
+      "lat": 44.7798576,
+      "lon": 8.4537607
+    },
+    {
+      "comune": "Mombello di Torino",
+      "comune_norm": "mombello di torino",
+      "lat": 45.0385297,
+      "lon": 7.9182569
+    },
+    {
+      "comune": "Mombello Monferrato",
+      "comune_norm": "mombello monferrato",
+      "lat": 45.1219296,
+      "lon": 8.2614613
+    },
+    {
+      "comune": "Mombercelli",
+      "comune_norm": "mombercelli",
+      "lat": 44.8277982,
+      "lon": 8.2986403
+    },
+    {
+      "comune": "Momo",
+      "comune_norm": "momo",
+      "lat": 45.5722343,
+      "lon": 8.5633275
+    },
+    {
+      "comune": "Momperone",
+      "comune_norm": "momperone",
+      "lat": 44.8403854,
+      "lon": 9.0356801
+    },
+    {
+      "comune": "Monale",
+      "comune_norm": "monale",
+      "lat": 44.9350654,
+      "lon": 8.0762676
+    },
+    {
+      "comune": "Monastero Bormida",
+      "comune_norm": "monastero bormida",
+      "lat": 44.645267,
+      "lon": 8.3230583
+    },
+    {
+      "comune": "Moncalieri",
+      "comune_norm": "moncalieri",
+      "lat": 44.9795487,
+      "lon": 7.7025653
+    },
+    {
+      "comune": "Moncalvo",
+      "comune_norm": "moncalvo",
+      "lat": 45.0471191,
+      "lon": 8.2695206
+    },
+    {
+      "comune": "Moncestino",
+      "comune_norm": "moncestino",
+      "lat": 45.1574097,
+      "lon": 8.1594048
+    },
+    {
+      "comune": "Moncrivello",
+      "comune_norm": "moncrivello",
+      "lat": 45.3185571,
+      "lon": 8.0071989
+    },
+    {
+      "comune": "Moncucco Torinese",
+      "comune_norm": "moncucco torinese",
+      "lat": 45.0680754,
+      "lon": 7.9225915
+    },
+    {
+      "comune": "Mongardino",
+      "comune_norm": "mongardino",
+      "lat": 44.8486541,
+      "lon": 8.2276358
+    },
+    {
+      "comune": "Mongrando",
+      "comune_norm": "mongrando",
+      "lat": 45.5224027,
+      "lon": 7.9865103
+    },
+    {
+      "comune": "Monleale",
+      "comune_norm": "monleale",
+      "lat": 44.8726599,
+      "lon": 8.9747197
+    },
+    {
+      "comune": "Montà",
+      "comune_norm": "monta",
+      "lat": 44.8250357,
+      "lon": 7.9449326
+    },
+    {
+      "comune": "Montabone",
+      "comune_norm": "montabone",
+      "lat": 44.7006387,
+      "lon": 8.3915293
+    },
+    {
+      "comune": "Montafia",
+      "comune_norm": "montafia",
+      "lat": 44.989761,
+      "lon": 8.0147772
+    },
+    {
+      "comune": "Montaldeo",
+      "comune_norm": "montaldeo",
+      "lat": 44.6655003,
+      "lon": 8.7274
+    },
+    {
+      "comune": "Montaldo Bormida",
+      "comune_norm": "montaldo bormida",
+      "lat": 44.6963172,
+      "lon": 8.5934573
+    },
+    {
+      "comune": "Montaldo Roero",
+      "comune_norm": "montaldo roero",
+      "lat": 44.7688193,
+      "lon": 7.9051111
+    },
+    {
+      "comune": "Montaldo Scarampi",
+      "comune_norm": "montaldo scarampi",
+      "lat": 44.8319826,
+      "lon": 8.2718458
+    },
+    {
+      "comune": "Montaldo Torinese",
+      "comune_norm": "montaldo torinese",
+      "lat": 45.0669719,
+      "lon": 7.8542539
+    },
+    {
+      "comune": "Montalenghe",
+      "comune_norm": "montalenghe",
+      "lat": 45.3318843,
+      "lon": 7.8365596
+    },
+    {
+      "comune": "Montalto Dora",
+      "comune_norm": "montalto dora",
+      "lat": 45.4921618,
+      "lon": 7.8627017
+    },
+    {
+      "comune": "Montalto Pavese",
+      "comune_norm": "montalto pavese",
+      "lat": 44.9752819,
+      "lon": 9.2243924
+    },
+    {
+      "comune": "Montanaro",
+      "comune_norm": "montanaro",
+      "lat": 45.2333918,
+      "lon": 7.8473809
+    },
+    {
+      "comune": "Montebello della Battaglia",
+      "comune_norm": "montebello della battaglia",
+      "lat": 45.0052915,
+      "lon": 9.0976459
+    },
+    {
+      "comune": "Montecastello",
+      "comune_norm": "montecastello",
+      "lat": 44.9575629,
+      "lon": 8.6918356
+    },
+    {
+      "comune": "Montechiaro d'Acqui",
+      "comune_norm": "montechiaro d acqui",
+      "lat": 44.5941927,
+      "lon": 8.381836
+    },
+    {
+      "comune": "Montechiaro d'Asti",
+      "comune_norm": "montechiaro d asti",
+      "lat": 45.0095087,
+      "lon": 8.1156331
+    },
+    {
+      "comune": "Montegioco",
+      "comune_norm": "montegioco",
+      "lat": 44.8399439,
+      "lon": 8.9593836
+    },
+    {
+      "comune": "Montegrosso d'Asti",
+      "comune_norm": "montegrosso d asti",
+      "lat": 44.8177011,
+      "lon": 8.2359974
+    },
+    {
+      "comune": "Montemagno Monferrato",
+      "comune_norm": "montemagno monferrato",
+      "lat": 44.9714801,
+      "lon": 8.3303363
+    },
+    {
+      "comune": "Montemarzino",
+      "comune_norm": "montemarzino",
+      "lat": 44.8486296,
+      "lon": 8.9922277
+    },
+    {
+      "comune": "Montesegale",
+      "comune_norm": "montesegale",
+      "lat": 44.9068788,
+      "lon": 9.1261892
+    },
+    {
+      "comune": "Monteu da Po",
+      "comune_norm": "monteu da po",
+      "lat": 45.1615666,
+      "lon": 8.0182107
+    },
+    {
+      "comune": "Monteu Roero",
+      "comune_norm": "monteu roero",
+      "lat": 44.795658,
+      "lon": 7.9222207
+    },
+    {
+      "comune": "Monticello d'Alba",
+      "comune_norm": "monticello d alba",
+      "lat": 44.7092071,
+      "lon": 7.9449236
+    },
+    {
+      "comune": "Montiglio Monferrato",
+      "comune_norm": "montiglio monferrato",
+      "lat": 45.0566786,
+      "lon": 8.1044143
+    },
+    {
+      "comune": "Morano sul Po",
+      "comune_norm": "morano sul po",
+      "lat": 45.1758888,
+      "lon": 8.3526198
+    },
+    {
+      "comune": "Moransengo-Tonengo",
+      "comune_norm": "moransengo tonengo",
+      "lat": 45.1177246,
+      "lon": 8.0140341
+    },
+    {
+      "comune": "Morbello",
+      "comune_norm": "morbello",
+      "lat": 44.5909429,
+      "lon": 8.5203302
+    },
+    {
+      "comune": "Morimondo",
+      "comune_norm": "morimondo",
+      "lat": 45.3515969,
+      "lon": 8.9546753
+    },
+    {
+      "comune": "Moriondo Torinese",
+      "comune_norm": "moriondo torinese",
+      "lat": 45.0368766,
+      "lon": 7.9346718
+    },
+    {
+      "comune": "Mornese",
+      "comune_norm": "mornese",
+      "lat": 44.6191288,
+      "lon": 8.7579043
+    },
+    {
+      "comune": "Mornico Losana",
+      "comune_norm": "mornico losana",
+      "lat": 45.0060819,
+      "lon": 9.208101
+    },
+    {
+      "comune": "Morsasco",
+      "comune_norm": "morsasco",
+      "lat": 44.6665362,
+      "lon": 8.5499806
+    },
+    {
+      "comune": "Mortara",
+      "comune_norm": "mortara",
+      "lat": 45.2469628,
+      "lon": 8.7438691
+    },
+    {
+      "comune": "Motta de' Conti",
+      "comune_norm": "motta de conti",
+      "lat": 45.1878239,
+      "lon": 8.5391459
+    },
+    {
+      "comune": "Motta Visconti",
+      "comune_norm": "motta visconti",
+      "lat": 45.2833694,
+      "lon": 8.9892975
+    },
+    {
+      "comune": "Mottalciata",
+      "comune_norm": "mottalciata",
+      "lat": 45.5057532,
+      "lon": 8.2038814
+    },
+    {
+      "comune": "Murisengo Monferrato",
+      "comune_norm": "murisengo monferrato",
+      "lat": 45.079398,
+      "lon": 8.1403141
+    },
+    {
+      "comune": "Muzzano",
+      "comune_norm": "muzzano",
+      "lat": 45.5719345,
+      "lon": 7.9626088
+    },
+    {
+      "comune": "Neive",
+      "comune_norm": "neive",
+      "lat": 44.7275695,
+      "lon": 8.114394
+    },
+    {
+      "comune": "Nerviano",
+      "comune_norm": "nerviano",
+      "lat": 45.5492438,
+      "lon": 8.979052
+    },
+    {
+      "comune": "Netro",
+      "comune_norm": "netro",
+      "lat": 45.5469797,
+      "lon": 7.9428449
+    },
+    {
+      "comune": "Neviglie",
+      "comune_norm": "neviglie",
+      "lat": 44.6920056,
+      "lon": 8.1187815
+    },
+    {
+      "comune": "Nibbiola",
+      "comune_norm": "nibbiola",
+      "lat": 45.370293,
+      "lon": 8.6498228
+    },
+    {
+      "comune": "Nicorvo",
+      "comune_norm": "nicorvo",
+      "lat": 45.283486,
+      "lon": 8.6684452
+    },
+    {
+      "comune": "Nizza Monferrato",
+      "comune_norm": "nizza monferrato",
+      "lat": 44.7666391,
+      "lon": 8.3534926
+    },
+    {
+      "comune": "Nosate",
+      "comune_norm": "nosate",
+      "lat": 45.5575583,
+      "lon": 8.7227995
+    },
+    {
+      "comune": "Novara",
+      "comune_norm": "novara",
+      "lat": 45.4432963,
+      "lon": 8.6162311
+    },
+    {
+      "comune": "Novi Ligure",
+      "comune_norm": "novi ligure",
+      "lat": 44.7622454,
+      "lon": 8.7868868
+    },
+    {
+      "comune": "Noviglio",
+      "comune_norm": "noviglio",
+      "lat": 45.3634662,
+      "lon": 9.0680642
+    },
+    {
+      "comune": "Occhieppo Inferiore",
+      "comune_norm": "occhieppo inferiore",
+      "lat": 45.5435377,
+      "lon": 8.021588
+    },
+    {
+      "comune": "Occhieppo Superiore",
+      "comune_norm": "occhieppo superiore",
+      "lat": 45.5785154,
+      "lon": 7.993934
+    },
+    {
+      "comune": "Occimiano",
+      "comune_norm": "occimiano",
+      "lat": 45.0622282,
+      "lon": 8.514003
+    },
+    {
+      "comune": "Odalengo Grande",
+      "comune_norm": "odalengo grande",
+      "lat": 45.1048349,
+      "lon": 8.1646226
+    },
+    {
+      "comune": "Odalengo Piccolo",
+      "comune_norm": "odalengo piccolo",
+      "lat": 45.0756115,
+      "lon": 8.2036916
+    },
+    {
+      "comune": "Oglianico",
+      "comune_norm": "oglianico",
+      "lat": 45.3107682,
+      "lon": 7.6878067
+    },
+    {
+      "comune": "Olcenengo",
+      "comune_norm": "olcenengo",
+      "lat": 45.355854,
+      "lon": 8.3183569
+    },
+    {
+      "comune": "Oldenico",
+      "comune_norm": "oldenico",
+      "lat": 45.3946106,
+      "lon": 8.3858237
+    },
+    {
+      "comune": "Oleggio",
+      "comune_norm": "oleggio",
+      "lat": 45.5992424,
+      "lon": 8.6426258
+    },
+    {
+      "comune": "Olevano di Lomellina",
+      "comune_norm": "olevano di lomellina",
+      "lat": 45.2049313,
+      "lon": 8.7189309
+    },
+    {
+      "comune": "Oliva Gessi",
+      "comune_norm": "oliva gessi",
+      "lat": 45.0009472,
+      "lon": 9.1854404
+    },
+    {
+      "comune": "Olivola",
+      "comune_norm": "olivola",
+      "lat": 45.0360156,
+      "lon": 8.3688407
+    },
+    {
+      "comune": "Orio Canavese",
+      "comune_norm": "orio canavese",
+      "lat": 45.3250675,
+      "lon": 7.8547182
+    },
+    {
+      "comune": "Orsara Bormida",
+      "comune_norm": "orsara bormida",
+      "lat": 44.6879568,
+      "lon": 8.5633958
+    },
+    {
+      "comune": "Ossona",
+      "comune_norm": "ossona",
+      "lat": 45.5038136,
+      "lon": 8.8939444
+    },
+    {
+      "comune": "Ottiglio",
+      "comune_norm": "ottiglio",
+      "lat": 45.0498663,
+      "lon": 8.3428062
+    },
+    {
+      "comune": "Ottobiano",
+      "comune_norm": "ottobiano",
+      "lat": 45.1599014,
+      "lon": 8.8251469
+    },
+    {
+      "comune": "Ovada",
+      "comune_norm": "ovada",
+      "lat": 44.623094,
+      "lon": 8.6357278
+    },
+    {
+      "comune": "Oviglio",
+      "comune_norm": "oviglio",
+      "lat": 44.8701972,
+      "lon": 8.4743617
+    },
+    {
+      "comune": "Ozegna",
+      "comune_norm": "ozegna",
+      "lat": 45.3432611,
+      "lon": 7.7507507
+    },
+    {
+      "comune": "Ozzano Monferrato",
+      "comune_norm": "ozzano monferrato",
+      "lat": 45.1014914,
+      "lon": 8.3625912
+    },
+    {
+      "comune": "Ozzero",
+      "comune_norm": "ozzero",
+      "lat": 45.3635033,
+      "lon": 8.9198867
+    },
+    {
+      "comune": "Paderna",
+      "comune_norm": "paderna",
+      "lat": 44.8259374,
+      "lon": 8.8860276
+    },
+    {
+      "comune": "Palazzo Canavese",
+      "comune_norm": "palazzo canavese",
+      "lat": 45.4573867,
+      "lon": 7.9798905
+    },
+    {
+      "comune": "Palazzolo Vercellese",
+      "comune_norm": "palazzolo vercellese",
+      "lat": 45.1862357,
+      "lon": 8.2362516
+    },
+    {
+      "comune": "Palestro",
+      "comune_norm": "palestro",
+      "lat": 45.2899625,
+      "lon": 8.5321348
+    },
+    {
+      "comune": "Pancarana",
+      "comune_norm": "pancarana",
+      "lat": 45.0810505,
+      "lon": 9.0481089
+    },
+    {
+      "comune": "Parabiago",
+      "comune_norm": "parabiago",
+      "lat": 45.5517035,
+      "lon": 8.9432965
+    },
+    {
+      "comune": "Parella",
+      "comune_norm": "parella",
+      "lat": 45.4249144,
+      "lon": 7.7992693
+    },
+    {
+      "comune": "Parodi Ligure",
+      "comune_norm": "parodi ligure",
+      "lat": 44.671708,
+      "lon": 8.7613357
+    },
+    {
+      "comune": "Parona",
+      "comune_norm": "parona",
+      "lat": 45.2827953,
+      "lon": 8.7598016
+    },
+    {
+      "comune": "Passerano Marmorito",
+      "comune_norm": "passerano marmorito",
+      "lat": 45.051759,
+      "lon": 8.012345
+    },
+    {
+      "comune": "Pasturana",
+      "comune_norm": "pasturana",
+      "lat": 44.7499757,
+      "lon": 8.7475236
+    },
+    {
+      "comune": "Pavarolo",
+      "comune_norm": "pavarolo",
+      "lat": 45.0760651,
+      "lon": 7.829612
+    },
+    {
+      "comune": "Pavia",
+      "comune_norm": "pavia",
+      "lat": 45.1945233,
+      "lon": 9.1654656
+    },
+    {
+      "comune": "Pavone Canavese",
+      "comune_norm": "pavone canavese",
+      "lat": 45.4307632,
+      "lon": 7.8517637
+    },
+    {
+      "comune": "Pecetto di Valenza",
+      "comune_norm": "pecetto di valenza",
+      "lat": 44.9893433,
+      "lon": 8.6746045
+    },
+    {
+      "comune": "Pecetto Torinese",
+      "comune_norm": "pecetto torinese",
+      "lat": 45.0167872,
+      "lon": 7.7490418
+    },
+    {
+      "comune": "Penango",
+      "comune_norm": "penango",
+      "lat": 45.0256055,
+      "lon": 8.2611093
+    },
+    {
+      "comune": "Perosa Canavese",
+      "comune_norm": "perosa canavese",
+      "lat": 45.4055389,
+      "lon": 7.8359455
+    },
+    {
+      "comune": "Pertengo",
+      "comune_norm": "pertengo",
+      "lat": 45.2339408,
+      "lon": 8.4137049
+    },
+    {
+      "comune": "Pettinengo",
+      "comune_norm": "pettinengo",
+      "lat": 45.666864,
+      "lon": 8.0352075
+    },
+    {
+      "comune": "Pezzana",
+      "comune_norm": "pezzana",
+      "lat": 45.2599295,
+      "lon": 8.4986658
+    },
+    {
+      "comune": "Piatto",
+      "comune_norm": "piatto",
+      "lat": 45.6205191,
+      "lon": 8.1134378
+    },
+    {
+      "comune": "Piea",
+      "comune_norm": "piea",
+      "lat": 45.0202051,
+      "lon": 8.0606942
+    },
+    {
+      "comune": "Pietra Marazzi",
+      "comune_norm": "pietra marazzi",
+      "lat": 44.9467994,
+      "lon": 8.6766629
+    },
+    {
+      "comune": "Pieve Albignola",
+      "comune_norm": "pieve albignola",
+      "lat": 45.1029166,
+      "lon": 8.9639517
+    },
+    {
+      "comune": "Pieve del Cairo",
+      "comune_norm": "pieve del cairo",
+      "lat": 45.0527771,
+      "lon": 8.8147063
+    },
+    {
+      "comune": "Pinarolo Po",
+      "comune_norm": "pinarolo po",
+      "lat": 45.0789132,
+      "lon": 9.1709798
+    },
+    {
+      "comune": "Pino d'Asti",
+      "comune_norm": "pino d asti",
+      "lat": 45.0509043,
+      "lon": 7.9879481
+    },
+    {
+      "comune": "Pino Torinese",
+      "comune_norm": "pino torinese",
+      "lat": 45.04196,
+      "lon": 7.7755204
+    },
+    {
+      "comune": "Piobesi d'Alba",
+      "comune_norm": "piobesi d alba",
+      "lat": 44.7325305,
+      "lon": 7.9863187
+    },
+    {
+      "comune": "Piovà Massaia",
+      "comune_norm": "piova massaia",
+      "lat": 45.0437232,
+      "lon": 8.049856
+    },
+    {
+      "comune": "Piverone",
+      "comune_norm": "piverone",
+      "lat": 45.4416282,
+      "lon": 8.005295
+    },
+    {
+      "comune": "Pizzale",
+      "comune_norm": "pizzale",
+      "lat": 45.0467951,
+      "lon": 9.0531415
+    },
+    {
+      "comune": "Pogliano Milanese",
+      "comune_norm": "pogliano milanese",
+      "lat": 45.5366847,
+      "lon": 8.990315
+    },
+    {
+      "comune": "Poirino",
+      "comune_norm": "poirino",
+      "lat": 44.8967287,
+      "lon": 7.84378
+    },
+    {
+      "comune": "Pollone",
+      "comune_norm": "pollone",
+      "lat": 45.6016888,
+      "lon": 7.9580585
+    },
+    {
+      "comune": "Pomaro Monferrato",
+      "comune_norm": "pomaro monferrato",
+      "lat": 45.0668237,
+      "lon": 8.5841937
+    },
+    {
+      "comune": "Pombia",
+      "comune_norm": "pombia",
+      "lat": 45.6465069,
+      "lon": 8.6477271
+    },
+    {
+      "comune": "Ponderano",
+      "comune_norm": "ponderano",
+      "lat": 45.5290599,
+      "lon": 8.0509951
+    },
+    {
+      "comune": "Ponte Nizza",
+      "comune_norm": "ponte nizza",
+      "lat": 44.8529834,
+      "lon": 9.1208704
+    },
+    {
+      "comune": "Pontecurone",
+      "comune_norm": "pontecurone",
+      "lat": 44.9564277,
+      "lon": 8.9404454
+    },
+    {
+      "comune": "Pontestura",
+      "comune_norm": "pontestura",
+      "lat": 45.1346248,
+      "lon": 8.329953
+    },
+    {
+      "comune": "Ponti",
+      "comune_norm": "ponti",
+      "lat": 44.6300719,
+      "lon": 8.3589122
+    },
+    {
+      "comune": "Ponzano Monferrato",
+      "comune_norm": "ponzano monferrato",
+      "lat": 45.0830701,
+      "lon": 8.2754853
+    },
+    {
+      "comune": "Ponzone",
+      "comune_norm": "ponzone",
+      "lat": 44.5596038,
+      "lon": 8.504266
+    },
+    {
+      "comune": "Portacomaro",
+      "comune_norm": "portacomaro",
+      "lat": 44.9489745,
+      "lon": 8.2667968
+    },
+    {
+      "comune": "Pozzol Groppo",
+      "comune_norm": "pozzol groppo",
+      "lat": 44.8689317,
+      "lon": 9.0383962
+    },
+    {
+      "comune": "Pozzolo Formigaro",
+      "comune_norm": "pozzolo formigaro",
+      "lat": 44.8104742,
+      "lon": 8.7940268
+    },
+    {
+      "comune": "Pralormo",
+      "comune_norm": "pralormo",
+      "lat": 44.8538664,
+      "lon": 7.8980285
+    },
+    {
+      "comune": "Pralungo",
+      "comune_norm": "pralungo",
+      "lat": 45.6021601,
+      "lon": 8.0243844
+    },
+    {
+      "comune": "Prarolo",
+      "comune_norm": "prarolo",
+      "lat": 45.2790702,
+      "lon": 8.4827267
+    },
+    {
+      "comune": "Prasco",
+      "comune_norm": "prasco",
+      "lat": 44.6432417,
+      "lon": 8.543159
+    },
+    {
+      "comune": "Prato Sesia",
+      "comune_norm": "prato sesia",
+      "lat": 45.6653045,
+      "lon": 8.3692982
+    },
+    {
+      "comune": "Predosa",
+      "comune_norm": "predosa",
+      "lat": 44.7534068,
+      "lon": 8.6369897
+    },
+    {
+      "comune": "Pregnana Milanese",
+      "comune_norm": "pregnana milanese",
+      "lat": 45.5164973,
+      "lon": 9.0040849
+    },
+    {
+      "comune": "Priocca",
+      "comune_norm": "priocca",
+      "lat": 44.792815,
+      "lon": 8.0639616
+    },
+    {
+      "comune": "Quaranti",
+      "comune_norm": "quaranti",
+      "lat": 44.7483888,
+      "lon": 8.4500741
+    },
+    {
+      "comune": "Quaregna Cerreto",
+      "comune_norm": "quaregna cerreto",
+      "lat": 45.5776384,
+      "lon": 8.1603883
+    },
+    {
+      "comune": "Quargnento",
+      "comune_norm": "quargnento",
+      "lat": 44.9518066,
+      "lon": 8.4867803
+    },
+    {
+      "comune": "Quattordio",
+      "comune_norm": "quattordio",
+      "lat": 44.9052724,
+      "lon": 8.388546
+    },
+    {
+      "comune": "Quinto Vercellese",
+      "comune_norm": "quinto vercellese",
+      "lat": 45.3799534,
+      "lon": 8.353858
+    },
+    {
+      "comune": "Rea",
+      "comune_norm": "rea",
+      "lat": 45.1173459,
+      "lon": 9.1563921
+    },
+    {
+      "comune": "Recetto",
+      "comune_norm": "recetto",
+      "lat": 45.4578898,
+      "lon": 8.4251545
+    },
+    {
+      "comune": "Redavalle",
+      "comune_norm": "redavalle",
+      "lat": 45.0477769,
+      "lon": 9.2071101
+    },
+    {
+      "comune": "Refrancore",
+      "comune_norm": "refrancore",
+      "lat": 44.9299702,
+      "lon": 8.3409379
+    },
+    {
+      "comune": "Retorbido",
+      "comune_norm": "retorbido",
+      "lat": 44.9462939,
+      "lon": 9.0493464
+    },
+    {
+      "comune": "Revigliasco d'Asti",
+      "comune_norm": "revigliasco d asti",
+      "lat": 44.8552871,
+      "lon": 8.1665763
+    },
+    {
+      "comune": "Ricaldone",
+      "comune_norm": "ricaldone",
+      "lat": 44.7428585,
+      "lon": 8.4779729
+    },
+    {
+      "comune": "Riva presso Chieri",
+      "comune_norm": "riva presso chieri",
+      "lat": 44.9775779,
+      "lon": 7.8880866
+    },
+    {
+      "comune": "Rivalba",
+      "comune_norm": "rivalba",
+      "lat": 45.1259832,
+      "lon": 7.8908242
+    },
+    {
+      "comune": "Rivalta Bormida",
+      "comune_norm": "rivalta bormida",
+      "lat": 44.7121528,
+      "lon": 8.5572719
+    },
+    {
+      "comune": "Rivanazzano Terme",
+      "comune_norm": "rivanazzano terme",
+      "lat": 44.9335564,
+      "lon": 9.0233994
+    },
+    {
+      "comune": "Rivarolo Canavese",
+      "comune_norm": "rivarolo canavese",
+      "lat": 45.3035902,
+      "lon": 7.7288496
+    },
+    {
+      "comune": "Rivarone",
+      "comune_norm": "rivarone",
+      "lat": 44.9721571,
+      "lon": 8.714581
+    },
+    {
+      "comune": "Rivarossa",
+      "comune_norm": "rivarossa",
+      "lat": 45.2560527,
+      "lon": 7.7030251
+    },
+    {
+      "comune": "Rive",
+      "comune_norm": "rive",
+      "lat": 45.2087668,
+      "lon": 8.4206846
+    },
+    {
+      "comune": "Roasio",
+      "comune_norm": "roasio",
+      "lat": 45.5975329,
+      "lon": 8.2902082
+    },
+    {
+      "comune": "Roatto",
+      "comune_norm": "roatto",
+      "lat": 44.9521943,
+      "lon": 8.0166908
+    },
+    {
+      "comune": "Robbio",
+      "comune_norm": "robbio",
+      "lat": 45.3039027,
+      "lon": 8.6110842
+    },
+    {
+      "comune": "Robecchetto con Induno",
+      "comune_norm": "robecchetto con induno",
+      "lat": 45.5201088,
+      "lon": 8.75923
+    },
+    {
+      "comune": "Robecco Pavese",
+      "comune_norm": "robecco pavese",
+      "lat": 45.0526307,
+      "lon": 9.1508595
+    },
+    {
+      "comune": "Robecco sul Naviglio",
+      "comune_norm": "robecco sul naviglio",
+      "lat": 45.4252886,
+      "lon": 8.8701228
+    },
+    {
+      "comune": "Robella",
+      "comune_norm": "robella",
+      "lat": 45.1058455,
+      "lon": 8.1027189
+    },
+    {
+      "comune": "Rocca d'Arazzo",
+      "comune_norm": "rocca d arazzo",
+      "lat": 44.8673305,
+      "lon": 8.2881403
+    },
+    {
+      "comune": "Rocca Grimalda",
+      "comune_norm": "rocca grimalda",
+      "lat": 44.6873487,
+      "lon": 8.6387713
+    },
+    {
+      "comune": "Rocca Susella",
+      "comune_norm": "rocca susella",
+      "lat": 44.9191438,
+      "lon": 9.0966331
+    },
+    {
+      "comune": "Roccaverano",
+      "comune_norm": "roccaverano",
+      "lat": 44.5886354,
+      "lon": 8.2866297
+    },
+    {
+      "comune": "Rocchetta Belbo",
+      "comune_norm": "rocchetta belbo",
+      "lat": 44.6385367,
+      "lon": 8.1746247
+    },
+    {
+      "comune": "Rocchetta Palafea",
+      "comune_norm": "rocchetta palafea",
+      "lat": 44.7047016,
+      "lon": 8.3451227
+    },
+    {
+      "comune": "Rocchetta Tanaro",
+      "comune_norm": "rocchetta tanaro",
+      "lat": 44.8572063,
+      "lon": 8.3462315
+    },
+    {
+      "comune": "Rognano",
+      "comune_norm": "rognano",
+      "lat": 45.2975267,
+      "lon": 9.0873805
+    },
+    {
+      "comune": "Romagnano Sesia",
+      "comune_norm": "romagnano sesia",
+      "lat": 45.6226536,
+      "lon": 8.3894997
+    },
+    {
+      "comune": "Romano Canavese",
+      "comune_norm": "romano canavese",
+      "lat": 45.3998759,
+      "lon": 7.8766155
+    },
+    {
+      "comune": "Romentino",
+      "comune_norm": "romentino",
+      "lat": 45.4634432,
+      "lon": 8.7458432
+    },
+    {
+      "comune": "Ronco Biellese",
+      "comune_norm": "ronco biellese",
+      "lat": 45.5855937,
+      "lon": 8.0940148
+    },
+    {
+      "comune": "Rondissone",
+      "comune_norm": "rondissone",
+      "lat": 45.2468141,
+      "lon": 7.9595503
+    },
+    {
+      "comune": "Ronsecco",
+      "comune_norm": "ronsecco",
+      "lat": 45.2625741,
+      "lon": 8.2624415
+    },
+    {
+      "comune": "Roppolo",
+      "comune_norm": "roppolo",
+      "lat": 45.4221036,
+      "lon": 8.0723703
+    },
+    {
+      "comune": "Rosasco",
+      "comune_norm": "rosasco",
+      "lat": 45.2541157,
+      "lon": 8.5619113
+    },
+    {
+      "comune": "Rosate",
+      "comune_norm": "rosate",
+      "lat": 45.3533288,
+      "lon": 9.0220779
+    },
+    {
+      "comune": "Rosignano Monferrato",
+      "comune_norm": "rosignano monferrato",
+      "lat": 45.070531,
+      "lon": 8.4210641
+    },
+    {
+      "comune": "Rovasenda",
+      "comune_norm": "rovasenda",
+      "lat": 45.5379668,
+      "lon": 8.3126899
+    },
+    {
+      "comune": "Rozzano",
+      "comune_norm": "rozzano",
+      "lat": 45.381658,
+      "lon": 9.1638306
+    },
+    {
+      "comune": "Sala Biellese",
+      "comune_norm": "sala biellese",
+      "lat": 45.5085267,
+      "lon": 7.9541015
+    },
+    {
+      "comune": "Sala Monferrato",
+      "comune_norm": "sala monferrato",
+      "lat": 45.0760688,
+      "lon": 8.3574995
+    },
+    {
+      "comune": "Salasco",
+      "comune_norm": "salasco",
+      "lat": 45.3173563,
+      "lon": 8.2856321
+    },
+    {
+      "comune": "Sale",
+      "comune_norm": "sale",
+      "lat": 44.9643502,
+      "lon": 8.8009717
+    },
+    {
+      "comune": "Salerano Canavese",
+      "comune_norm": "salerano canavese",
+      "lat": 45.4587858,
+      "lon": 7.8417364
+    },
+    {
+      "comune": "Sali Vercellese",
+      "comune_norm": "sali vercellese",
+      "lat": 45.3068057,
+      "lon": 8.3146506
+    },
+    {
+      "comune": "Saluggia",
+      "comune_norm": "saluggia",
+      "lat": 45.2314894,
+      "lon": 8.0266346
+    },
+    {
+      "comune": "Salussola",
+      "comune_norm": "salussola",
+      "lat": 45.4521045,
+      "lon": 8.1461793
+    },
+    {
+      "comune": "Samarate",
+      "comune_norm": "samarate",
+      "lat": 45.6213038,
+      "lon": 8.7738541
+    },
+    {
+      "comune": "Samone",
+      "comune_norm": "samone",
+      "lat": 45.4523564,
+      "lon": 7.8381814
+    },
+    {
+      "comune": "San Benigno Canavese",
+      "comune_norm": "san benigno canavese",
+      "lat": 45.2321319,
+      "lon": 7.7858146
+    },
+    {
+      "comune": "San Cristoforo",
+      "comune_norm": "san cristoforo",
+      "lat": 44.6977907,
+      "lon": 8.7464678
+    },
+    {
+      "comune": "San Damiano d'Asti",
+      "comune_norm": "san damiano d asti",
+      "lat": 44.8465412,
+      "lon": 8.0531821
+    },
+    {
+      "comune": "San Genesio ed Uniti",
+      "comune_norm": "san genesio ed uniti",
+      "lat": 45.2374516,
+      "lon": 9.1869546
+    },
+    {
+      "comune": "San Germano Vercellese",
+      "comune_norm": "san germano vercellese",
+      "lat": 45.3578579,
+      "lon": 8.2640154
+    },
+    {
+      "comune": "San Giacomo Vercellese",
+      "comune_norm": "san giacomo vercellese",
+      "lat": 45.4879824,
+      "lon": 8.3280217
+    },
+    {
+      "comune": "San Giorgio Canavese",
+      "comune_norm": "san giorgio canavese",
+      "lat": 45.318198,
+      "lon": 7.8058588
+    },
+    {
+      "comune": "San Giorgio di Lomellina",
+      "comune_norm": "san giorgio di lomellina",
+      "lat": 45.1751755,
+      "lon": 8.7808896
+    },
+    {
+      "comune": "San Giorgio Monferrato",
+      "comune_norm": "san giorgio monferrato",
+      "lat": 45.1108575,
+      "lon": 8.4139424
+    },
+    {
+      "comune": "San Giorgio Scarampi",
+      "comune_norm": "san giorgio scarampi",
+      "lat": 44.6083787,
+      "lon": 8.2401432
+    },
+    {
+      "comune": "San Giorgio su Legnano",
+      "comune_norm": "san giorgio su legnano",
+      "lat": 45.5692604,
+      "lon": 8.9097156
+    },
+    {
+      "comune": "San Giusto Canavese",
+      "comune_norm": "san giusto canavese",
+      "lat": 45.2991916,
+      "lon": 7.8046561
+    },
+    {
+      "comune": "San Martino Alfieri",
+      "comune_norm": "san martino alfieri",
+      "lat": 44.8233263,
+      "lon": 8.1149476
+    },
+    {
+      "comune": "San Martino Canavese",
+      "comune_norm": "san martino canavese",
+      "lat": 45.3937914,
+      "lon": 7.8051661
+    },
+    {
+      "comune": "San Martino Siccomario",
+      "comune_norm": "san martino siccomario",
+      "lat": 45.158777,
+      "lon": 9.113867
+    },
+    {
+      "comune": "San Marzano Oliveto",
+      "comune_norm": "san marzano oliveto",
+      "lat": 44.7543484,
+      "lon": 8.2960822
+    },
+    {
+      "comune": "San Mauro Torinese",
+      "comune_norm": "san mauro torinese",
+      "lat": 45.1022911,
+      "lon": 7.7651156
+    },
+    {
+      "comune": "San Nazzaro Sesia",
+      "comune_norm": "san nazzaro sesia",
+      "lat": 45.4229782,
+      "lon": 8.4236435
+    },
+    {
+      "comune": "San Paolo Solbrito",
+      "comune_norm": "san paolo solbrito",
+      "lat": 44.9533242,
+      "lon": 7.9803977
+    },
+    {
+      "comune": "San Pietro Mosezzo",
+      "comune_norm": "san pietro mosezzo",
+      "lat": 45.4661256,
+      "lon": 8.5377593
+    },
+    {
+      "comune": "San Raffaele Cimena",
+      "comune_norm": "san raffaele cimena",
+      "lat": 45.1532453,
+      "lon": 7.8553682
+    },
+    {
+      "comune": "San Salvatore Monferrato",
+      "comune_norm": "san salvatore monferrato",
+      "lat": 45.00361,
+      "lon": 8.5580646
+    },
+    {
+      "comune": "San Sebastiano da Po",
+      "comune_norm": "san sebastiano da po",
+      "lat": 45.1612591,
+      "lon": 7.9416719
+    },
+    {
+      "comune": "Sandigliano",
+      "comune_norm": "sandigliano",
+      "lat": 45.5127155,
+      "lon": 8.0762691
+    },
+    {
+      "comune": "Sannazzaro de' Burgondi",
+      "comune_norm": "sannazzaro de burgondi",
+      "lat": 45.0939895,
+      "lon": 8.9146071
+    },
+    {
+      "comune": "Sant'Agata Fossili",
+      "comune_norm": "sant agata fossili",
+      "lat": 44.782956,
+      "lon": 8.9039689
+    },
+    {
+      "comune": "Sant'Angelo Lomellina",
+      "comune_norm": "sant angelo lomellina",
+      "lat": 45.2394768,
+      "lon": 8.6445326
+    },
+    {
+      "comune": "Santa Giuletta",
+      "comune_norm": "santa giuletta",
+      "lat": 45.0381417,
+      "lon": 9.190665
+    },
+    {
+      "comune": "Santena",
+      "comune_norm": "santena",
+      "lat": 44.9409648,
+      "lon": 7.7824253
+    },
+    {
+      "comune": "Santhià",
+      "comune_norm": "santhia",
+      "lat": 45.3865151,
+      "lon": 8.1981393
+    },
+    {
+      "comune": "Santo Stefano Belbo",
+      "comune_norm": "santo stefano belbo",
+      "lat": 44.7027114,
+      "lon": 8.2144372
+    },
+    {
+      "comune": "Santo Stefano Roero",
+      "comune_norm": "santo stefano roero",
+      "lat": 44.8078404,
+      "lon": 7.921527
+    },
+    {
+      "comune": "Santo Stefano Ticino",
+      "comune_norm": "santo stefano ticino",
+      "lat": 45.4905168,
+      "lon": 8.9126899
+    },
+    {
+      "comune": "Sardigliano",
+      "comune_norm": "sardigliano",
+      "lat": 44.7652763,
+      "lon": 8.9205244
+    },
+    {
+      "comune": "Sarezzano",
+      "comune_norm": "sarezzano",
+      "lat": 44.8636635,
+      "lon": 8.9273248
+    },
+    {
+      "comune": "Sartirana Lomellina",
+      "comune_norm": "sartirana lomellina",
+      "lat": 45.1062112,
+      "lon": 8.6627493
+    },
+    {
+      "comune": "Scaldasole",
+      "comune_norm": "scaldasole",
+      "lat": 45.1322657,
+      "lon": 8.9016888
+    },
+    {
+      "comune": "Scarmagno",
+      "comune_norm": "scarmagno",
+      "lat": 45.3829756,
+      "lon": 7.8454112
+    },
+    {
+      "comune": "Sciolze",
+      "comune_norm": "sciolze",
+      "lat": 45.0995339,
+      "lon": 7.8810811
+    },
+    {
+      "comune": "Scurzolengo",
+      "comune_norm": "scurzolengo",
+      "lat": 44.9652479,
+      "lon": 8.2743523
+    },
+    {
+      "comune": "Sedriano",
+      "comune_norm": "sedriano",
+      "lat": 45.4839796,
+      "lon": 8.9758123
+    },
+    {
+      "comune": "Semiana",
+      "comune_norm": "semiana",
+      "lat": 45.140744,
+      "lon": 8.7285455
+    },
+    {
+      "comune": "Serralunga di Crea",
+      "comune_norm": "serralunga di crea",
+      "lat": 45.096888,
+      "lon": 8.2917948
+    },
+    {
+      "comune": "Serravalle Scrivia",
+      "comune_norm": "serravalle scrivia",
+      "lat": 44.7267836,
+      "lon": 8.853325
+    },
+    {
+      "comune": "Serravalle Sesia",
+      "comune_norm": "serravalle sesia",
+      "lat": 45.6708666,
+      "lon": 8.3110422
+    },
+    {
+      "comune": "Sessame",
+      "comune_norm": "sessame",
+      "lat": 44.6694937,
+      "lon": 8.339225
+    },
+    {
+      "comune": "Settime",
+      "comune_norm": "settime",
+      "lat": 44.9606847,
+      "lon": 8.114166
+    },
+    {
+      "comune": "Settimo Milanese",
+      "comune_norm": "settimo milanese",
+      "lat": 45.483485,
+      "lon": 9.054884
+    },
+    {
+      "comune": "Settimo Rottaro",
+      "comune_norm": "settimo rottaro",
+      "lat": 45.4054037,
+      "lon": 7.9936014
+    },
+    {
+      "comune": "Settimo Torinese",
+      "comune_norm": "settimo torinese",
+      "lat": 45.1432298,
+      "lon": 7.7747225
+    },
+    {
+      "comune": "Sezzadio",
+      "comune_norm": "sezzadio",
+      "lat": 44.7555538,
+      "lon": 8.584126
+    },
+    {
+      "comune": "Sillavengo",
+      "comune_norm": "sillavengo",
+      "lat": 45.5180174,
+      "lon": 8.4347202
+    },
+    {
+      "comune": "Silvano d'Orba",
+      "comune_norm": "silvano d orba",
+      "lat": 44.6809041,
+      "lon": 8.6788703
+    },
+    {
+      "comune": "Silvano Pietra",
+      "comune_norm": "silvano pietra",
+      "lat": 45.0565693,
+      "lon": 8.9469504
+    },
+    {
+      "comune": "Sizzano",
+      "comune_norm": "sizzano",
+      "lat": 45.5773941,
+      "lon": 8.4420149
+    },
+    {
+      "comune": "Soglio",
+      "comune_norm": "soglio",
+      "lat": 44.9929768,
+      "lon": 8.0799041
+    },
+    {
+      "comune": "Solero",
+      "comune_norm": "solero",
+      "lat": 44.9097883,
+      "lon": 8.4972752
+    },
+    {
+      "comune": "Solonghello",
+      "comune_norm": "solonghello",
+      "lat": 45.1295585,
+      "lon": 8.2928151
+    },
+    {
+      "comune": "Somma Lombardo",
+      "comune_norm": "somma lombardo",
+      "lat": 45.6684618,
+      "lon": 8.6852884
+    },
+    {
+      "comune": "Sommariva Perno",
+      "comune_norm": "sommariva perno",
+      "lat": 44.7452914,
+      "lon": 7.8868855
+    },
+    {
+      "comune": "Sommo",
+      "comune_norm": "sommo",
+      "lat": 45.1237213,
+      "lon": 9.0826172
+    },
+    {
+      "comune": "Sordevolo",
+      "comune_norm": "sordevolo",
+      "lat": 45.5926187,
+      "lon": 7.9421069
+    },
+    {
+      "comune": "Sostegno",
+      "comune_norm": "sostegno",
+      "lat": 45.6512178,
+      "lon": 8.2863229
+    },
+    {
+      "comune": "Sozzago",
+      "comune_norm": "sozzago",
+      "lat": 45.3948936,
+      "lon": 8.7236109
+    },
+    {
+      "comune": "Spineto Scrivia",
+      "comune_norm": "spineto scrivia",
+      "lat": 44.8370556,
+      "lon": 8.8734358
+    },
+    {
+      "comune": "Stazzano",
+      "comune_norm": "stazzano",
+      "lat": 44.7352817,
+      "lon": 8.9063177
+    },
+    {
+      "comune": "Strambino",
+      "comune_norm": "strambino",
+      "lat": 45.383943,
+      "lon": 7.9055941
+    },
+    {
+      "comune": "Strevi",
+      "comune_norm": "strevi",
+      "lat": 44.6972382,
+      "lon": 8.5189487
+    },
+    {
+      "comune": "Strona",
+      "comune_norm": "strona",
+      "lat": 45.6247386,
+      "lon": 8.1728962
+    },
+    {
+      "comune": "Stroppiana",
+      "comune_norm": "stroppiana",
+      "lat": 45.2304305,
+      "lon": 8.455393
+    },
+    {
+      "comune": "Suardi",
+      "comune_norm": "suardi",
+      "lat": 45.0267149,
+      "lon": 8.7429617
+    },
+    {
+      "comune": "Suno",
+      "comune_norm": "suno",
+      "lat": 45.625439,
+      "lon": 8.5461911
+    },
+    {
+      "comune": "Tagliolo Monferrato",
+      "comune_norm": "tagliolo monferrato",
+      "lat": 44.6155103,
+      "lon": 8.6993651
+    },
+    {
+      "comune": "Tassarolo",
+      "comune_norm": "tassarolo",
+      "lat": 44.7269977,
+      "lon": 8.7692957
+    },
+    {
+      "comune": "Terdobbiate",
+      "comune_norm": "terdobbiate",
+      "lat": 45.3746956,
+      "lon": 8.6969831
+    },
+    {
+      "comune": "Ternengo",
+      "comune_norm": "ternengo",
+      "lat": 45.5894549,
+      "lon": 8.116769
+    },
+    {
+      "comune": "Terruggia",
+      "comune_norm": "terruggia",
+      "lat": 45.0761334,
+      "lon": 8.4479864
+    },
+    {
+      "comune": "Terzo",
+      "comune_norm": "terzo",
+      "lat": 44.6790832,
+      "lon": 8.4155664
+    },
+    {
+      "comune": "Ticineto",
+      "comune_norm": "ticineto",
+      "lat": 45.1020004,
+      "lon": 8.5545403
+    },
+    {
+      "comune": "Tigliole",
+      "comune_norm": "tigliole",
+      "lat": 44.8821322,
+      "lon": 8.0818306
+    },
+    {
+      "comune": "Tollegno",
+      "comune_norm": "tollegno",
+      "lat": 45.6008639,
+      "lon": 8.0383716
+    },
+    {
+      "comune": "Tonco",
+      "comune_norm": "tonco",
+      "lat": 45.0223292,
+      "lon": 8.1887168
+    },
+    {
+      "comune": "Torino",
+      "comune_norm": "torino",
+      "lat": 45.073505,
+      "lon": 7.6755868
+    },
+    {
+      "comune": "Tornaco",
+      "comune_norm": "tornaco",
+      "lat": 45.3533732,
+      "lon": 8.7290298
+    },
+    {
+      "comune": "Torrazza Coste",
+      "comune_norm": "torrazza coste",
+      "lat": 44.9628868,
+      "lon": 9.0973979
+    },
+    {
+      "comune": "Torrazza Piemonte",
+      "comune_norm": "torrazza piemonte",
+      "lat": 45.219377,
+      "lon": 7.9815192
+    },
+    {
+      "comune": "Torrazzo",
+      "comune_norm": "torrazzo",
+      "lat": 45.4981901,
+      "lon": 7.9478839
+    },
+    {
+      "comune": "Torre Beretti e Castellaro",
+      "comune_norm": "torre beretti e castellaro",
+      "lat": 45.0756522,
+      "lon": 8.6834458
+    },
+    {
+      "comune": "Torre Canavese",
+      "comune_norm": "torre canavese",
+      "lat": 45.3991202,
+      "lon": 7.7558122
+    },
+    {
+      "comune": "Torre d'Isola",
+      "comune_norm": "torre d isola",
+      "lat": 45.2211442,
+      "lon": 9.0722872
+    },
+    {
+      "comune": "Torricella Verzate",
+      "comune_norm": "torricella verzate",
+      "lat": 45.0245011,
+      "lon": 9.1721607
+    },
+    {
+      "comune": "Tortona",
+      "comune_norm": "tortona",
+      "lat": 44.8841753,
+      "lon": 8.8420189
+    },
+    {
+      "comune": "Travacò Siccomario",
+      "comune_norm": "travaco siccomario",
+      "lat": 45.1475639,
+      "lon": 9.1776414
+    },
+    {
+      "comune": "Trecate",
+      "comune_norm": "trecate",
+      "lat": 45.4319831,
+      "lon": 8.7404312
+    },
+    {
+      "comune": "Treiso",
+      "comune_norm": "treiso",
+      "lat": 44.6837259,
+      "lon": 8.0826985
+    },
+    {
+      "comune": "Treville",
+      "comune_norm": "treville",
+      "lat": 45.0972767,
+      "lon": 8.3557888
+    },
+    {
+      "comune": "Trezzano sul Naviglio",
+      "comune_norm": "trezzano sul naviglio",
+      "lat": 45.4218941,
+      "lon": 9.0571327
+    },
+    {
+      "comune": "Trezzo Tinella",
+      "comune_norm": "trezzo tinella",
+      "lat": 44.6687402,
+      "lon": 8.1155816
+    },
+    {
+      "comune": "Tricerro",
+      "comune_norm": "tricerro",
+      "lat": 45.2334028,
+      "lon": 8.3123861
+    },
+    {
+      "comune": "Trino",
+      "comune_norm": "trino",
+      "lat": 45.224272,
+      "lon": 8.2674454
+    },
+    {
+      "comune": "Trisobbio",
+      "comune_norm": "trisobbio",
+      "lat": 44.6607516,
+      "lon": 8.5890238
+    },
+    {
+      "comune": "Trivolzio",
+      "comune_norm": "trivolzio",
+      "lat": 45.2621994,
+      "lon": 9.0468353
+    },
+    {
+      "comune": "Trofarello",
+      "comune_norm": "trofarello",
+      "lat": 44.9771252,
+      "lon": 7.7438032
+    },
+    {
+      "comune": "Tromello",
+      "comune_norm": "tromello",
+      "lat": 45.2044497,
+      "lon": 8.8504104
+    },
+    {
+      "comune": "Tronzano Vercellese",
+      "comune_norm": "tronzano vercellese",
+      "lat": 45.3212792,
+      "lon": 8.1840436
+    },
+    {
+      "comune": "Trovo",
+      "comune_norm": "trovo",
+      "lat": 45.2885593,
+      "lon": 9.041438
+    },
+    {
+      "comune": "Turbigo",
+      "comune_norm": "turbigo",
+      "lat": 45.5258259,
+      "lon": 8.7366307
+    },
+    {
+      "comune": "Vaglio Serra",
+      "comune_norm": "vaglio serra",
+      "lat": 44.8019951,
+      "lon": 8.3420806
+    },
+    {
+      "comune": "Valdengo",
+      "comune_norm": "valdengo",
+      "lat": 45.5667835,
+      "lon": 8.1341491
+    },
+    {
+      "comune": "Valdilana",
+      "comune_norm": "valdilana",
+      "lat": 45.6773393,
+      "lon": 8.1117328
+    },
+    {
+      "comune": "Valeggio",
+      "comune_norm": "valeggio",
+      "lat": 45.1497608,
+      "lon": 8.8727761
+    },
+    {
+      "comune": "Valenza",
+      "comune_norm": "valenza",
+      "lat": 45.0181096,
+      "lon": 8.6325026
+    },
+    {
+      "comune": "Valfenera",
+      "comune_norm": "valfenera",
+      "lat": 44.8837827,
+      "lon": 7.9562227
+    },
+    {
+      "comune": "Vallanzengo",
+      "comune_norm": "vallanzengo",
+      "lat": 45.6486038,
+      "lon": 8.1133565
+    },
+    {
+      "comune": "Valle Lomellina",
+      "comune_norm": "valle lomellina",
+      "lat": 45.1555438,
+      "lon": 8.6711863
+    },
+    {
+      "comune": "Valle Salimbene",
+      "comune_norm": "valle salimbene",
+      "lat": 45.160116,
+      "lon": 9.2333035
+    },
+    {
+      "comune": "Valle San Nicolao",
+      "comune_norm": "valle san nicolao",
+      "lat": 45.6590004,
+      "lon": 8.084075
+    },
+    {
+      "comune": "Valmacca",
+      "comune_norm": "valmacca",
+      "lat": 45.1079358,
+      "lon": 8.5974125
+    },
+    {
+      "comune": "Vanzaghello",
+      "comune_norm": "vanzaghello",
+      "lat": 45.5835654,
+      "lon": 8.7777189
+    },
+    {
+      "comune": "Vanzago",
+      "comune_norm": "vanzago",
+      "lat": 45.51984,
+      "lon": 8.98542
+    },
+    {
+      "comune": "Vaprio d'Agogna",
+      "comune_norm": "vaprio d agogna",
+      "lat": 45.6038295,
+      "lon": 8.5532923
+    },
+    {
+      "comune": "Varallo Pombia",
+      "comune_norm": "varallo pombia",
+      "lat": 45.669437,
+      "lon": 8.6439535
+    },
+    {
+      "comune": "Velezzo Lomellina",
+      "comune_norm": "velezzo lomellina",
+      "lat": 45.1576761,
+      "lon": 8.7369967
+    },
+    {
+      "comune": "Vellezzo Bellini",
+      "comune_norm": "vellezzo bellini",
+      "lat": 45.2738396,
+      "lon": 9.1035868
+    },
+    {
+      "comune": "Vercelli",
+      "comune_norm": "vercelli",
+      "lat": 45.3250387,
+      "lon": 8.4149259
+    },
+    {
+      "comune": "Vermezzo con Zelo",
+      "comune_norm": "vermezzo con zelo",
+      "lat": 45.3908596,
+      "lon": 8.9815036
+    },
+    {
+      "comune": "Vernate",
+      "comune_norm": "vernate",
+      "lat": 45.3195963,
+      "lon": 9.0561849
+    },
+    {
+      "comune": "Verolengo",
+      "comune_norm": "verolengo",
+      "lat": 45.2036999,
+      "lon": 7.9940142
+    },
+    {
+      "comune": "Verretto",
+      "comune_norm": "verretto",
+      "lat": 45.0395147,
+      "lon": 9.108786
+    },
+    {
+      "comune": "Verrone",
+      "comune_norm": "verrone",
+      "lat": 45.5018332,
+      "lon": 8.1190925
+    },
+    {
+      "comune": "Verrua Po",
+      "comune_norm": "verrua po",
+      "lat": 45.1109404,
+      "lon": 9.1815929
+    },
+    {
+      "comune": "Verrua Savoia",
+      "comune_norm": "verrua savoia",
+      "lat": 45.1552033,
+      "lon": 8.1035525
+    },
+    {
+      "comune": "Vesime",
+      "comune_norm": "vesime",
+      "lat": 44.6329395,
+      "lon": 8.2364711
+    },
+    {
+      "comune": "Vespolate",
+      "comune_norm": "vespolate",
+      "lat": 45.3484562,
+      "lon": 8.6552347
+    },
+    {
+      "comune": "Vestignè",
+      "comune_norm": "vestigne",
+      "lat": 45.3944939,
+      "lon": 7.9405708
+    },
+    {
+      "comune": "Vezza d'Alba",
+      "comune_norm": "vezza d alba",
+      "lat": 44.7652774,
+      "lon": 7.9934283
+    },
+    {
+      "comune": "Viale",
+      "comune_norm": "viale",
+      "lat": 45.0030166,
+      "lon": 8.0517403
+    },
+    {
+      "comune": "Vialfrè",
+      "comune_norm": "vialfre",
+      "lat": 45.3718154,
+      "lon": 7.8114423
+    },
+    {
+      "comune": "Viarigi",
+      "comune_norm": "viarigi",
+      "lat": 44.9616102,
+      "lon": 8.3640518
+    },
+    {
+      "comune": "Vicolungo",
+      "comune_norm": "vicolungo",
+      "lat": 45.4756486,
+      "lon": 8.4576248
+    },
+    {
+      "comune": "Vigevano",
+      "comune_norm": "vigevano",
+      "lat": 45.3077489,
+      "lon": 8.8849171
+    },
+    {
+      "comune": "Vigliano Biellese",
+      "comune_norm": "vigliano biellese",
+      "lat": 45.5621043,
+      "lon": 8.1268687
+    },
+    {
+      "comune": "Vigliano d'Asti",
+      "comune_norm": "vigliano d asti",
+      "lat": 44.8317311,
+      "lon": 8.2305204
+    },
+    {
+      "comune": "Vignale Monferrato",
+      "comune_norm": "vignale monferrato",
+      "lat": 45.0038151,
+      "lon": 8.399284
+    },
+    {
+      "comune": "Vignole Borbera",
+      "comune_norm": "vignole borbera",
+      "lat": 44.7109474,
+      "lon": 8.9036359
+    },
+    {
+      "comune": "Viguzzolo",
+      "comune_norm": "viguzzolo",
+      "lat": 44.9076395,
+      "lon": 8.9274027
+    },
+    {
+      "comune": "Villa Biscossi",
+      "comune_norm": "villa biscossi",
+      "lat": 45.0861029,
+      "lon": 8.7874322
+    },
+    {
+      "comune": "Villa Cortese",
+      "comune_norm": "villa cortese",
+      "lat": 45.56806,
+      "lon": 8.8866559
+    },
+    {
+      "comune": "Villa del Bosco",
+      "comune_norm": "villa del bosco",
+      "lat": 45.6213482,
+      "lon": 8.2877733
+    },
+    {
+      "comune": "Villa San Secondo",
+      "comune_norm": "villa san secondo",
+      "lat": 44.9963441,
+      "lon": 8.1479967
+    },
+    {
+      "comune": "Villadeati",
+      "comune_norm": "villadeati",
+      "lat": 45.0564684,
+      "lon": 8.1714842
+    },
+    {
+      "comune": "Villafranca d'Asti",
+      "comune_norm": "villafranca d asti",
+      "lat": 44.9197086,
+      "lon": 8.0365719
+    },
+    {
+      "comune": "Villalvernia",
+      "comune_norm": "villalvernia",
+      "lat": 44.8091411,
+      "lon": 8.8567531
+    },
+    {
+      "comune": "Villamiroglio",
+      "comune_norm": "villamiroglio",
+      "lat": 45.1325723,
+      "lon": 8.1605134
+    },
+    {
+      "comune": "Villanova Biellese",
+      "comune_norm": "villanova biellese",
+      "lat": 45.4741089,
+      "lon": 8.1985251
+    },
+    {
+      "comune": "Villanova d'Ardenghi",
+      "comune_norm": "villanova d ardenghi",
+      "lat": 45.167114,
+      "lon": 9.0392587
+    },
+    {
+      "comune": "Villanova d'Asti",
+      "comune_norm": "villanova d asti",
+      "lat": 44.9531285,
+      "lon": 7.9387778
+    },
+    {
+      "comune": "Villanova Monferrato",
+      "comune_norm": "villanova monferrato",
+      "lat": 45.1832637,
+      "lon": 8.4737146
+    },
+    {
+      "comune": "Villarboit",
+      "comune_norm": "villarboit",
+      "lat": 45.4399141,
+      "lon": 8.3289524
+    },
+    {
+      "comune": "Villareggia",
+      "comune_norm": "villareggia",
+      "lat": 45.2896991,
+      "lon": 7.967875
+    },
+    {
+      "comune": "Villaromagnano",
+      "comune_norm": "villaromagnano",
+      "lat": 44.8453775,
+      "lon": 8.8949545
+    },
+    {
+      "comune": "Villastellone",
+      "comune_norm": "villastellone",
+      "lat": 44.9125752,
+      "lon": 7.7459138
+    },
+    {
+      "comune": "Villata",
+      "comune_norm": "villata",
+      "lat": 45.3883144,
+      "lon": 8.4264219
+    },
+    {
+      "comune": "Vinchio",
+      "comune_norm": "vinchio",
+      "lat": 44.8054341,
+      "lon": 8.319574
+    },
+    {
+      "comune": "Vinzaglio",
+      "comune_norm": "vinzaglio",
+      "lat": 45.3296257,
+      "lon": 8.5005065
+    },
+    {
+      "comune": "Vische",
+      "comune_norm": "vische",
+      "lat": 45.3415136,
+      "lon": 7.9369186
+    },
+    {
+      "comune": "Visone",
+      "comune_norm": "visone",
+      "lat": 44.6528629,
+      "lon": 8.5048473
+    },
+    {
+      "comune": "Vittuone",
+      "comune_norm": "vittuone",
+      "lat": 45.4774556,
+      "lon": 8.9567408
+    },
+    {
+      "comune": "Viverone",
+      "comune_norm": "viverone",
+      "lat": 45.4206886,
+      "lon": 8.0467936
+    },
+    {
+      "comune": "Vizzola Ticino",
+      "comune_norm": "vizzola ticino",
+      "lat": 45.6255461,
+      "lon": 8.6840559
+    },
+    {
+      "comune": "Voghera",
+      "comune_norm": "voghera",
+      "lat": 45.0140292,
+      "lon": 9.0156793
+    },
+    {
+      "comune": "Volpedo",
+      "comune_norm": "volpedo",
+      "lat": 44.8852691,
+      "lon": 8.9977348
+    },
+    {
+      "comune": "Volpeglino",
+      "comune_norm": "volpeglino",
+      "lat": 44.8957795,
+      "lon": 8.9587664
+    },
+    {
+      "comune": "Volpiano",
+      "comune_norm": "volpiano",
+      "lat": 45.1921736,
+      "lon": 7.7850778
+    },
+    {
+      "comune": "Zeccone",
+      "comune_norm": "zeccone",
+      "lat": 45.2600074,
+      "lon": 9.190081
+    },
+    {
+      "comune": "Zeme",
+      "comune_norm": "zeme",
+      "lat": 45.1956596,
+      "lon": 8.6760828
+    },
+    {
+      "comune": "Zerbolò",
+      "comune_norm": "zerbolo",
+      "lat": 45.21558,
+      "lon": 9.0185033
+    },
+    {
+      "comune": "Zibido San Giacomo",
+      "comune_norm": "zibido san giacomo",
+      "lat": 45.3734049,
+      "lon": 9.1091137
+    },
+    {
+      "comune": "Zimone",
+      "comune_norm": "zimone",
+      "lat": 45.4507624,
+      "lon": 8.0401435
+    },
+    {
+      "comune": "Zinasco",
+      "comune_norm": "zinasco",
+      "lat": 45.112747,
+      "lon": 9.0301747
+    },
+    {
+      "comune": "Zubiena",
+      "comune_norm": "zubiena",
+      "lat": 45.4896198,
+      "lon": 8.0064544
+    },
+    {
+      "comune": "Zumaglia",
+      "comune_norm": "zumaglia",
+      "lat": 45.5945923,
+      "lon": 8.0852071
+    }
+  ]
+}

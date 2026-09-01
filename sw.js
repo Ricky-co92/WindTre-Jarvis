@@ -1,4 +1,4 @@
-const CACHE_NAME = "windtre-jarvis-cache-v1";
+const CACHE_NAME = "windtre-jarvis-cache-v2";
 const CORE_ASSETS = ["./", "./index.html", "./app.js", "./config.js", "./manifest.json"];
 
 self.addEventListener("install", (event) => {
