@@ -196,6 +196,13 @@
   .panel-head .title{font-size:1.15rem;font-family:'Rajdhani',sans-serif;font-weight:700;letter-spacing:0.3px;color:#4fc8e8;text-transform:uppercase;}
   .section-title{font-size:1.15rem;font-family:'Rajdhani',sans-serif;font-weight:700;letter-spacing:0.3px;color:#4fc8e8;text-transform:uppercase;margin-bottom:14px;}
   .panel-actions{display:flex;gap:10px;flex-wrap:wrap;}
+  .page-toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:20px;}
+  .pt-btn{background:transparent;border:1px solid rgba(143,232,255,.3);color:#8fe8ff;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.02em;padding:8px 16px;border-radius:4px;cursor:pointer;transition:all .15s ease;}
+  .pt-btn:hover{background:rgba(143,232,255,.08);border-color:#8fe8ff;}
+  .pt-btn.primary{border-color:#ffb020;color:#ffb020;background:rgba(255,176,32,.06);}
+  .pt-btn.primary:hover{background:rgba(255,176,32,.12);}
+  .pt-btn.danger{border-color:#c0392b;color:#ff8f7a;background:transparent;}
+  .pt-btn.danger:hover{background:rgba(192,57,43,.15);}
   .placeholder-msg{padding:40px 10px;text-align:center;color:#8fb8cc;font-size:1rem;line-height:1.7;}
   .placeholder-msg .big{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1.05rem;color:#4fc8e8;text-transform:uppercase;letter-spacing:0.3px;display:block;margin-bottom:10px;}
 
@@ -227,6 +234,7 @@
   }
   .of-search-input::placeholder{color:rgba(234,252,255,.35);}
   .of-search-input:focus{outline:none; border-color:#8fe8ff; box-shadow:0 0 0 2px rgba(143,232,255,.15);}
+  .page-toolbar .of-search-input{flex:0 1 260px;}
   .of-toolbar{display:flex;flex-wrap:wrap;gap:18px;align-items:center;margin-bottom:20px;}
   .of-filter-group{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
   .of-filter-label{font-family:'Rajdhani',sans-serif;font-size:12px;color:#7fc4dc;text-transform:uppercase;letter-spacing:.05em;font-weight:700;}
@@ -570,6 +578,10 @@
 
   <!-- COMPILATORE MODULI -->
   <div id="view-compilatore" class="hidden">
+    <div class="gd-panel">
+      <div class="panel-head">
+        <div class="title">&#9672; compilatore moduli</div>
+      </div>
 <div id="app-root">
 
 
@@ -1675,48 +1687,46 @@
 </div>
 
 </div>
+    </div>
   </div>
 
   <!-- ANALIZZATORE OFFERTE -->
   <div id="view-offerte" class="hidden">
-    <div class="of-search-row">
-      <input type="text" id="ofSearchInput" class="of-search-input" placeholder="Cerca per nome, dettagli, badge, prezzo&hellip;">
-    </div>
-    <div class="of-tabs-bar">
-      <button type="button" class="of-tab-btn active" id="ofTabTariffe">Tariffe</button>
-      <button type="button" class="of-tab-btn" id="ofTabOpzioni">Opzioni</button>
-      <button type="button" class="of-tab-btn" id="ofTabConfig">Configurazioni</button>
-    </div>
-    <div class="of-toolbar">
-      <div class="of-filter-group" id="ofCatFilterGroup">
-        <span class="of-filter-label">Categoria</span>
-        <button type="button" class="of-chip" data-filter-cat="consumer">Consumer</button>
-        <button type="button" class="of-chip" data-filter-cat="business">Business</button>
-      </div>
-      <div class="of-filter-group hidden" id="cfgCatFilterGroup">
-        <span class="of-filter-label">Categoria</span>
-        <button type="button" class="of-chip" data-cfg-filter-cat="consumer">Consumer</button>
-        <button type="button" class="of-chip" data-cfg-filter-cat="business">Business</button>
-      </div>
-      <div class="of-filter-group" id="ofTipoFilterGroup">
-        <span class="of-filter-label">Tipo</span>
-        <button type="button" class="of-chip" data-filter-tipo="mobile">Mobile</button>
-        <button type="button" class="of-chip" data-filter-tipo="fisso">Fisso</button>
-      </div>
-      <div class="of-filter-group" style="margin-left:auto;">
-        <button type="button" class="of-chip of-manage-btn" id="ofReorderBtn">&#8597; Riordina</button>
-        <button type="button" class="of-chip of-manage-btn hidden" id="cfgReorderBtn">&#8597; Riordina</button>
-        <button type="button" class="of-chip of-manage-btn" id="ofAddNewCard">+ Nuova tariffa</button>
-        <button type="button" class="of-chip of-manage-btn hidden" id="cfgAddNewCard">+ Nuova configurazione</button>
-      </div>
-      <div class="of-filter-group hidden" id="ofBadgeFilterGroup">
-        <span class="of-filter-label">Badge</span>
-      </div>
-    </div>
-
     <div class="panel">
       <div class="panel-head">
         <div class="title">◈ dettaglio tariffe</div>
+      </div>
+      <div class="of-tabs-bar">
+        <button type="button" class="of-tab-btn active" id="ofTabTariffe">Tariffe</button>
+        <button type="button" class="of-tab-btn" id="ofTabOpzioni">Opzioni</button>
+        <button type="button" class="of-tab-btn" id="ofTabConfig">Configurazioni</button>
+      </div>
+      <div class="page-toolbar">
+        <input type="text" id="ofSearchInput" class="of-search-input" placeholder="Cerca per nome, dettagli, badge, prezzo&hellip;">
+        <div class="of-filter-group" id="ofCatFilterGroup">
+          <span class="of-filter-label">Categoria</span>
+          <button type="button" class="of-chip" data-filter-cat="consumer">Consumer</button>
+          <button type="button" class="of-chip" data-filter-cat="business">Business</button>
+        </div>
+        <div class="of-filter-group hidden" id="cfgCatFilterGroup">
+          <span class="of-filter-label">Categoria</span>
+          <button type="button" class="of-chip" data-cfg-filter-cat="consumer">Consumer</button>
+          <button type="button" class="of-chip" data-cfg-filter-cat="business">Business</button>
+        </div>
+        <div class="of-filter-group" id="ofTipoFilterGroup">
+          <span class="of-filter-label">Tipo</span>
+          <button type="button" class="of-chip" data-filter-tipo="mobile">Mobile</button>
+          <button type="button" class="of-chip" data-filter-tipo="fisso">Fisso</button>
+        </div>
+        <div class="of-filter-group hidden" id="ofBadgeFilterGroup">
+          <span class="of-filter-label">Badge</span>
+        </div>
+        <div class="of-filter-group" style="margin-left:auto;">
+          <button type="button" class="pt-btn" id="ofReorderBtn">&#8597; Riordina</button>
+          <button type="button" class="pt-btn hidden" id="cfgReorderBtn">&#8597; Riordina</button>
+          <button type="button" class="pt-btn primary" id="ofAddNewCard">+ Nuova tariffa</button>
+          <button type="button" class="pt-btn primary hidden" id="cfgAddNewCard">+ Nuova configurazione</button>
+        </div>
       </div>
       <div class="of-grid" id="ofGrid">
         <p class="sub" id="ofEmptyMsg">Nessuna tariffa trovata. Usa "+ Nuova tariffa" per aggiungerne.</p>
@@ -1882,17 +1892,15 @@
     <div class="gd-panel">
       <div class="panel-head">
         <div class="title">◈ database offerte</div>
-        <div class="panel-actions">
-          <button type="button" class="of-btn" id="gdAddColumn">+ Aggiungi colonna</button>
-          <button type="button" class="of-btn" id="gdAddRow">+ Nuova riga</button>
-          <button type="button" class="of-btn danger hidden" id="gdDeleteSelected">Elimina selezionate</button>
-          <button type="button" class="of-btn accent" id="gdSaveAll">Salva tutte le modifiche</button>
-          <span class="status" id="gdStatus"></span>
-        </div>
       </div>
       <p class="sub" style="margin:0 0 14px">Modifica le celle direttamente, poi premi "Salva tutte le modifiche". Le righe modificate sono evidenziate.</p>
-      <div class="of-search-row" style="margin-bottom:14px">
+      <div class="page-toolbar">
         <input type="text" id="gdSearchInput" class="of-search-input" placeholder="Cerca per nome, dettagli, badge, prezzo&hellip;">
+        <button type="button" class="pt-btn" id="gdAddColumn">+ Aggiungi colonna</button>
+        <button type="button" class="pt-btn" id="gdAddRow">+ Nuova riga</button>
+        <button type="button" class="pt-btn danger hidden" id="gdDeleteSelected">Elimina selezionate</button>
+        <button type="button" class="pt-btn primary" id="gdSaveAll">Salva tutte le modifiche</button>
+        <span class="status" id="gdStatus"></span>
       </div>
       <div class="gd-table-wrap">
         <table class="gd-table" id="gdTable">
@@ -1912,13 +1920,13 @@
     <div class="gd-panel">
       <div class="panel-head">
         <div class="title">&#9670; comuni aree bianche</div>
-        <div class="panel-actions">
-          <input type="file" id="cabFileInput" accept=".xlsx" class="hidden">
-          <button type="button" class="of-btn" id="cabUploadBtn">Carica file aggiornato</button>
-          <span class="status" id="cabUploadStatus"></span>
-        </div>
       </div>
       <p class="sub" id="cabMeta" style="margin:0 0 18px"></p>
+      <div class="page-toolbar">
+        <input type="file" id="cabFileInput" accept=".xlsx" class="hidden">
+        <button type="button" class="pt-btn primary" id="cabUploadBtn">Carica file aggiornato</button>
+        <span class="status" id="cabUploadStatus"></span>
+      </div>
 
       <div class="cab-search-box">
         <input type="text" id="cabSearchInput" class="cfg-input" placeholder="Scrivi il nome di un comune&hellip;" autocomplete="off">
@@ -1944,38 +1952,38 @@
       </div>
       <p class="sub" style="margin:0 0 18px">Raccolta PDF con le spiegazioni WindTre. Caricando un aggiornamento di un manuale esistente, la versione precedente resta archiviata nello storico.</p>
 
-      <div id="mnUploadBox" class="cfg-fascia-row" style="align-items:flex-end;margin-bottom:22px;flex-wrap:wrap;">
-        <div style="flex:2;min-width:180px;">
-          <label class="cfg-label" style="margin-top:0;">Documento</label>
-          <select id="mnTargetSelect" class="cfg-input">
-            <option value="">+ Nuovo documento</option>
-          </select>
-        </div>
-        <div id="mnNewFields" style="display:flex;gap:12px;flex:2;flex-wrap:wrap;">
-          <div style="flex:1;min-width:160px;">
-            <label class="cfg-label" style="margin-top:0;">Titolo</label>
-            <input type="text" id="mnTitoloInput" class="cfg-input" placeholder="Es. Guida attivazione SIM">
-          </div>
-          <div style="flex:1;min-width:140px;">
-            <label class="cfg-label" style="margin-top:0;">Categoria</label>
-            <select id="mnCategoriaInput" class="cfg-input">
-              <option value="Manuali">Manuali</option>
-              <option value="Sintesi Offerte">Sintesi Offerte</option>
-              <option value="Guide">Guide</option>
+      <div class="page-toolbar">
+        <div id="mnUploadBox" class="cfg-fascia-row" style="align-items:flex-end;flex-wrap:wrap;flex:1 1 100%;">
+          <div style="flex:2;min-width:180px;">
+            <label class="cfg-label" style="margin-top:0;">Documento</label>
+            <select id="mnTargetSelect" class="cfg-input">
+              <option value="">+ Nuovo documento</option>
             </select>
           </div>
+          <div id="mnNewFields" style="display:flex;gap:12px;flex:2;flex-wrap:wrap;">
+            <div style="flex:1;min-width:160px;">
+              <label class="cfg-label" style="margin-top:0;">Titolo</label>
+              <input type="text" id="mnTitoloInput" class="cfg-input" placeholder="Es. Guida attivazione SIM">
+            </div>
+            <div style="flex:1;min-width:140px;">
+              <label class="cfg-label" style="margin-top:0;">Categoria</label>
+              <select id="mnCategoriaInput" class="cfg-input">
+                <option value="Manuali">Manuali</option>
+                <option value="Sintesi Offerte">Sintesi Offerte</option>
+                <option value="Guide">Guide</option>
+              </select>
+            </div>
+          </div>
+          <input type="file" id="mnFileInput" accept="application/pdf" class="hidden">
+          <button type="button" class="pt-btn primary" id="mnUploadTriggerBtn">Scegli PDF e carica</button>
+          <span class="status" id="mnUploadStatus"></span>
         </div>
-        <input type="file" id="mnFileInput" accept="application/pdf" class="hidden">
-        <button type="button" class="of-chip of-manage-btn" id="mnUploadTriggerBtn">Scegli PDF e carica</button>
-        <span class="status" id="mnUploadStatus"></span>
-      </div>
 
-      <div class="of-search-row" style="margin-bottom:14px">
         <input type="text" id="mnSearchInput" class="of-search-input" placeholder="Cerca manuale per titolo o categoria&hellip;">
-      </div>
 
-      <button type="button" class="of-chip of-manage-btn" id="mnBulkOpenBtn" style="margin-bottom:18px;">Importa da ZIP (archivio storico)</button>
-      <button type="button" class="of-chip of-manage-btn hidden" id="mnCatManageBtn" style="margin-bottom:18px;">Gestisci categorie</button>
+        <button type="button" class="pt-btn" id="mnBulkOpenBtn">Importa da ZIP (archivio storico)</button>
+        <button type="button" class="pt-btn hidden" id="mnCatManageBtn">Gestisci categorie</button>
+      </div>
 
       <div id="mnList"></div>
     </div>
