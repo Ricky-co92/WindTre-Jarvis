@@ -78,6 +78,22 @@
       CATEGORIE.map(function (c) { return '<option value="' + escapeHtml(c) + '"' + (selected === c ? ' selected' : '') + '>' + escapeHtml(c) + '</option>'; }).join('');
   }
 
+  // Come bulkCatOptionsHtml, ma se la categoria attuale del documento non è (più) tra
+  // quelle configurate (es. cancellata da "Gestisci categorie") la preserva comunque
+  // come opzione selezionata invece di far sparire silenziosamente il valore dal select.
+  function editCatOptionsHtml(selected) {
+    var html = '<option value=""' + (!selected ? ' selected' : '') + '>(nessuna categoria)</option>';
+    var found = false;
+    html += CATEGORIE.map(function (c) {
+      if (c === selected) found = true;
+      return '<option value="' + escapeHtml(c) + '"' + (selected === c ? ' selected' : '') + '>' + escapeHtml(c) + '</option>';
+    }).join('');
+    if (selected && !found) {
+      html += '<option value="' + escapeHtml(selected) + '" selected>' + escapeHtml(selected) + ' (non più configurata)</option>';
+    }
+    return html;
+  }
+
   async function loadManuali() {
     try {
       var res = await sb.from('wt_manuali').select('*').order('titolo').order('versione', { ascending: false });
@@ -276,6 +292,7 @@
 
     document.getElementById('mnEditTitle').innerHTML = 'Modifica &mdash; ' + escapeHtml(groupRows[0].titolo);
     document.getElementById('mnEditTitoloInput').value = groupRows[0].titolo;
+    document.getElementById('mnEditCategoriaInput').innerHTML = editCatOptionsHtml(groupRows[0].categoria || '');
     document.getElementById('mnEditStatus').textContent = '';
 
     var listEl = document.getElementById('mnEditVersionsList');
@@ -318,6 +335,7 @@
     if (!editTargetGruppo) return;
     var statusEl = document.getElementById('mnEditStatus');
     var newTitolo = document.getElementById('mnEditTitoloInput').value.trim();
+    var newCategoria = document.getElementById('mnEditCategoriaInput').value || null;
     if (!newTitolo) { statusEl.textContent = 'Il titolo non può essere vuoto.'; statusEl.className = 'status err'; return; }
 
     // Se il nuovo titolo (normalizzato: senza spazi/maiuscole/punteggiatura) coincide
@@ -340,12 +358,12 @@
       if (doMerge) {
         var moveUpd = await sb.from('wt_manuali').update({ gruppo_id: mergeTarget.gruppo_id }).eq('gruppo_id', editTargetGruppo);
         if (moveUpd.error) throw moveUpd.error;
-        var mergedTitUpd = await sb.from('wt_manuali').update({ titolo: newTitolo }).eq('gruppo_id', mergeTarget.gruppo_id);
+        var mergedTitUpd = await sb.from('wt_manuali').update({ titolo: newTitolo, categoria: newCategoria }).eq('gruppo_id', mergeTarget.gruppo_id);
         if (mergedTitUpd.error) throw mergedTitUpd.error;
         var mergedCount = await recomputeVersionsForGroup(mergeTarget.gruppo_id);
         statusEl.textContent = 'Unito — ' + mergedCount + ' versioni totali.';
       } else {
-        var titUpd = await sb.from('wt_manuali').update({ titolo: newTitolo }).eq('gruppo_id', editTargetGruppo);
+        var titUpd = await sb.from('wt_manuali').update({ titolo: newTitolo, categoria: newCategoria }).eq('gruppo_id', editTargetGruppo);
         if (titUpd.error) throw titUpd.error;
 
         var dateInputs = document.querySelectorAll('#mnEditVersionsList .mn-edit-ver-date');
