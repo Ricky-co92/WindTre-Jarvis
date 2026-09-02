@@ -344,7 +344,7 @@
   .cab-suggest-list{border:1px solid rgba(143,232,255,.2);border-radius:4px;margin-top:6px;max-height:220px;overflow-y:auto;position:absolute;background:#0d1924;width:100%;z-index:5;}
   .cab-suggest-item{padding:8px 12px;font-size:13px;color:#c8f0ff;cursor:pointer;}
   .cab-suggest-item:hover{background:rgba(143,232,255,.08);}
-  .cab-nearby-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-top:8px;}
+  .cab-nearby-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-top:18px;}
   .cab-nearby-chip{border:1px solid rgba(143,232,255,.18);border-radius:4px;padding:10px 12px;font-size:13px;display:flex;justify-content:space-between;align-items:center;background:rgba(13,25,36,.5);cursor:pointer;}
   .cab-nearby-chip .name{color:#eafcff;font-family:'Rajdhani',sans-serif;font-weight:600;}
   .cab-nearby-chip .right{display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:8px;}
@@ -1939,8 +1939,8 @@
           <input type="range" id="cabRadiusSlider" min="5" max="50" step="1" value="20">
           <span class="cab-radius-value" id="cabRadiusValue">20 km</span>
         </div>
-        <div class="cab-nearby-grid" id="cabNearbyGrid"></div>
         <div class="cab-map-wrap"><div id="cabMap"></div></div>
+        <div class="cab-nearby-grid" id="cabNearbyGrid"></div>
       </div>
     </div>
   </div>
