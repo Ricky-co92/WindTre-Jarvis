@@ -534,6 +534,181 @@
     });
   }
 
+  // ================= EXPORT PDF =================
+  document.getElementById('psExportPdfBtn').addEventListener('click', function () { exportSchedaPdf(); });
+
+  // Da 'FFRRGGBB' (ARGB usato da ExcelJS) a [r,g,b] per jsPDF, così i due export
+  // condividono la stessa tavolozza definita in statusColorsForRimanenza().
+  function hexToRgb(argb) {
+    var hex = argb.length === 8 ? argb.slice(2) : argb;
+    return [parseInt(hex.slice(0, 2), 16), parseInt(hex.slice(2, 4), 16), parseInt(hex.slice(4, 6), 16)];
+  }
+
+  var PDF_HEAD_BG = [18, 35, 47];
+  var PDF_HEAD_TEXT = [79, 200, 232];
+  var PDF_HEAD_RULE = [42, 184, 217];
+  var PDF_SEZ_BG = [13, 25, 36];
+  var PDF_SEZ_TEXT = [143, 232, 255];
+  var PDF_ZEBRA = [250, 251, 252];
+  var PDF_BORDER = [226, 228, 231];
+
+  function exportSchedaPdf() {
+    if (typeof window.jspdf === 'undefined' || !window.jspdf.jsPDF) {
+      alert('Libreria PDF non disponibile (controlla la connessione).');
+      return;
+    }
+    var cliente = document.getElementById('psClienteInput').value.trim() || 'Cliente';
+    var note = document.getElementById('psNoteInput').value.trim();
+
+    var meaningfulRighe = currentRighe.filter(function (r) {
+      return !!(r.piano_tariffario || r.numero || r.seriale || r.puk || r.utente_utilizzatore ||
+        r.data_attivazione || r.data_scadenza || r.terminale || (r.canone != null && r.canone !== ''));
+    });
+    var totSim = meaningfulRighe.filter(function (r) { return r.sezione !== FISSO_SEZIONE; }).length;
+    var totFissi = meaningfulRighe.filter(function (r) { return r.sezione === FISSO_SEZIONE; }).length;
+
+    var order = SEZIONI.map(function (s) { return s.nome; });
+    var bySezione = {};
+    meaningfulRighe.forEach(function (r) {
+      var key = r.sezione || '(senza sezione)';
+      if (!bySezione[key]) bySezione[key] = [];
+      bySezione[key].push(r);
+    });
+    var sezOrder = order.filter(function (s) { return bySezione[s]; })
+      .concat(Object.keys(bySezione).filter(function (s) { return order.indexOf(s) === -1; }));
+
+    // body + rowMeta viaggiano allineati per indice riga: rowMeta guida gli stili
+    // (sezione/zebra/semaforo) che didParseCell applica, dato che autotable non
+    // porta dati custom sulle celle di testo.
+    var body = [];
+    var rowMeta = [];
+    var zebraIdx = 0;
+    sezOrder.forEach(function (sezName) {
+      body.push([{ content: sezName, colSpan: 12, styles: { halign: 'left' } }]);
+      rowMeta.push({ type: 'section' });
+      bySezione[sezName].forEach(function (r) {
+        var calc = computeCalc(r);
+        body.push([
+          r.canone != null ? ('€ ' + Number(r.canone).toFixed(2)) : '',
+          r.piano_tariffario || '',
+          r.numero || '',
+          r.seriale || '',
+          r.puk || '',
+          r.utente_utilizzatore || '',
+          r.data_attivazione ? fmtDateShort(r.data_attivazione) : '',
+          r.data_scadenza ? fmtDateShort(r.data_scadenza) : '',
+          calc.durata != null ? calc.durata : '',
+          calc.rimanenza != null ? calc.rimanenza : '',
+          calc.pct != null ? (calc.pct + '%') : '',
+          r.terminale || ''
+        ]);
+        rowMeta.push({ type: 'data', zebra: zebraIdx % 2 === 1, colors: statusColorsForRimanenza(calc.rimanenza) });
+        zebraIdx++;
+      });
+    });
+
+    var doc = new window.jspdf.jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+    var pageWidth = doc.internal.pageSize.getWidth();
+    var marginX = 8;
+    var bannerTop = 8;
+    var generatedOn = 'Generato il ' + new Date().toLocaleDateString('it-IT');
+
+    function drawHeader() {
+      // Banner cliente (stessa gerarchia del banner Excel: nome + sottotitolo a
+      // sinistra, data generazione a destra, su fondo scuro con riga ciano sotto).
+      doc.setFillColor.apply(doc, PDF_HEAD_BG);
+      doc.rect(marginX, bannerTop, pageWidth - marginX * 2, 14, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(14);
+      doc.text(cliente, marginX + 3, bannerTop + 6.5);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8.5);
+      doc.setTextColor(143, 232, 255);
+      doc.text('Parco SIM · Dettaglio contratti WindTre', marginX + 3, bannerTop + 11);
+      doc.setTextColor(200, 216, 224);
+      doc.setFontSize(8.5);
+      doc.text(generatedOn, pageWidth - marginX - 3, bannerTop + 8, { align: 'right' });
+      doc.setDrawColor.apply(doc, PDF_HEAD_RULE);
+      doc.setLineWidth(0.6);
+      doc.line(marginX, bannerTop + 14, pageWidth - marginX, bannerTop + 14);
+
+      // Riga note/totali.
+      var noteY = bannerTop + 21;
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      doc.setTextColor(30, 30, 30);
+      doc.text('NOTE:', marginX + 1, noteY);
+      doc.setFont('helvetica', 'normal');
+      doc.text(note || '—', marginX + 16, noteY);
+      doc.setFont('helvetica', 'bold');
+      doc.text('TOTALE SIM: ' + totSim, pageWidth - marginX - 70, noteY);
+      doc.text('TOTALE FISSI: ' + totFissi, pageWidth - marginX - 25, noteY);
+      doc.setDrawColor.apply(doc, PDF_BORDER);
+      doc.setLineWidth(0.2);
+      doc.line(marginX, noteY + 3, pageWidth - marginX, noteY + 3);
+    }
+
+    doc.autoTable({
+      startY: bannerTop + 30,
+      margin: { left: marginX, right: marginX, top: bannerTop + 30, bottom: 14 },
+      theme: 'plain',
+      styles: { font: 'helvetica', fontSize: 7.5, cellPadding: 1.8, lineColor: PDF_BORDER, lineWidth: 0.15, textColor: [30, 30, 30], valign: 'middle' },
+      headStyles: { fillColor: PDF_HEAD_BG, textColor: PDF_HEAD_TEXT, fontStyle: 'bold', halign: 'center', valign: 'middle', fontSize: 7.5, lineColor: PDF_HEAD_RULE, lineWidth: 0.2 },
+      columnStyles: {
+        // PIANO TARIFFARIO (1) e UTENTE UTILIZZATORE (5) restano senza cellWidth fisso
+        // così autotable assorbe lì lo spazio residuo della pagina landscape invece di
+        // lasciarlo vuoto a destra (le altre colonne hanno contenuto a lunghezza fissa).
+        0: { cellWidth: 15, halign: 'right' }, 2: { cellWidth: 19 },
+        3: { cellWidth: 20 }, 4: { cellWidth: 18, halign: 'center' },
+        6: { cellWidth: 18, halign: 'center' }, 7: { cellWidth: 18, halign: 'center' },
+        8: { cellWidth: 14, halign: 'center' }, 9: { cellWidth: 16, halign: 'center' },
+        10: { cellWidth: 16, halign: 'center' }, 11: { cellWidth: 22 }
+      },
+      head: [[
+        { content: 'CANONE', rowSpan: 2 }, { content: 'PIANO TARIFFARIO', rowSpan: 2 }, { content: 'NUMERO', rowSpan: 2 },
+        { content: 'SERIALE / PUK', colSpan: 2 }, { content: 'UTENTE UTILIZZATORE', rowSpan: 2 },
+        { content: 'DATA ATTIVAZIONE', rowSpan: 2 }, { content: 'DATA SCADENZA', rowSpan: 2 },
+        { content: 'DURATA (GG)', rowSpan: 2 }, { content: 'RIMANENZA (GG)', rowSpan: 2 },
+        { content: '% COMPLETATO', rowSpan: 2 }, { content: 'TERMINALE', rowSpan: 2 }
+      ], [
+        { content: 'SERIALE' }, { content: 'PUK' }
+      ]],
+      body: body,
+      didDrawPage: drawHeader,
+      didParseCell: function (data) {
+        if (data.section !== 'body') return;
+        var meta = rowMeta[data.row.index];
+        if (!meta) return;
+        if (meta.type === 'section') {
+          data.cell.styles.fillColor = PDF_SEZ_BG;
+          data.cell.styles.textColor = PDF_SEZ_TEXT;
+          data.cell.styles.fontStyle = 'bold';
+          return;
+        }
+        data.cell.styles.fillColor = meta.zebra ? PDF_ZEBRA : [255, 255, 255];
+        if ((data.column.index === 9 || data.column.index === 10) && meta.colors) {
+          data.cell.styles.fillColor = hexToRgb(meta.colors.fill);
+          data.cell.styles.textColor = hexToRgb(meta.colors.text);
+          data.cell.styles.fontStyle = 'bold';
+        }
+      }
+    });
+
+    // Numero pagina, aggiunto in un secondo passaggio perché il totale pagine non
+    // è noto finché autoTable non ha finito di impaginare.
+    var pageCount = doc.internal.getNumberOfPages();
+    for (var p = 1; p <= pageCount; p++) {
+      doc.setPage(p);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7.5);
+      doc.setTextColor(140, 140, 140);
+      doc.text('Pagina ' + p + ' di ' + pageCount, pageWidth - marginX, doc.internal.pageSize.getHeight() - 6, { align: 'right' });
+    }
+
+    doc.save('ParcoSIM_' + cliente.replace(/[^a-zA-Z0-9]+/g, '_') + '_' + todayISO() + '.pdf');
+  }
+
   // ================= PERMESSI =================
   function applyParcoSimPerms() {
     if (typeof PERMS === 'undefined' || !PERMS.ready) return;
@@ -557,6 +732,7 @@
     document.getElementById('psNoteInput').disabled = !canEdit;
     document.getElementById('psDeleteSchedaBtn').classList.toggle('hidden', !(currentSchedaId && canDelete));
     document.getElementById('psExportBtn').classList.toggle('hidden', !canExport);
+    document.getElementById('psExportPdfBtn').classList.toggle('hidden', !canExport);
   }
 
   // ================= GESTIONE SEZIONI (SuperAdmin) =================
