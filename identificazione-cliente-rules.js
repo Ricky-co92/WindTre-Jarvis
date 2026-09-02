@@ -135,7 +135,7 @@
       out.extra.push(map[state.redditoCat]);
     }
 
-    out.note.push("Il Codice Fiscale è comunque sempre un dato anagrafico obbligatorio, a prescindere dalla copia fisica del documento.");
+    out.note.push("Il Codice Fiscale è comunque sempre un dato anagrafico obbligatorio, a prescindere dalla copia fisica del documento, da allegare se non presente sul documento di identità.");
     return out;
   }
 
