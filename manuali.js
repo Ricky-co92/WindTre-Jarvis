@@ -101,6 +101,7 @@
       allRows = res.data || [];
       docs = allRows.filter(function (r) { return r.is_latest; });
       populateTargetSelect();
+      populateTitoliDatalist();
       renderList();
     } catch (err) {
       console.error('Errore caricamento manuali:', err);
@@ -114,6 +115,19 @@
     sel.innerHTML = '<option value="">+ Nuovo documento</option>' +
       docs.map(function (d) { return '<option value="' + d.gruppo_id + '">' + escapeHtml(d.titolo) + ' (v' + d.versione + ')</option>'; }).join('');
     sel.value = current;
+  }
+
+  // "Rubrica" dei titoli già usati: un <datalist> condiviso tra il campo Titolo del
+  // nuovo upload e quello della modale Modifica, così rinominando/caricando un file si
+  // può selezionare un nome esistente (invece di ridigitarlo a mano, con rischio di
+  // refusi che creerebbero una famiglia/gruppo duplicato) oppure digitarne uno nuovo,
+  // che semplicemente non troverà corrispondenza nella lista.
+  function populateTitoliDatalist() {
+    var dl = document.getElementById('mnTitoliList');
+    if (!dl) return;
+    var titoli = docs.map(function (d) { return d.titolo; }).filter(Boolean);
+    titoli = titoli.filter(function (t, i) { return titoli.indexOf(t) === i; }).sort(function (a, b) { return a.localeCompare(b, 'it'); });
+    dl.innerHTML = titoli.map(function (t) { return '<option value="' + escapeHtml(t) + '">'; }).join('');
   }
 
   document.getElementById('mnTargetSelect').addEventListener('change', function () {

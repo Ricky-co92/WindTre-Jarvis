@@ -2033,7 +2033,7 @@
           <div id="mnNewFields" style="display:flex;gap:12px;flex:2;flex-wrap:wrap;">
             <div style="flex:1;min-width:160px;">
               <label class="cfg-label" style="margin-top:0;">Titolo</label>
-              <input type="text" id="mnTitoloInput" class="cfg-input" placeholder="Es. Guida attivazione SIM">
+              <input type="text" id="mnTitoloInput" class="cfg-input" placeholder="Es. Guida attivazione SIM" list="mnTitoliList" autocomplete="off">
             </div>
             <div style="flex:1;min-width:140px;">
               <label class="cfg-label" style="margin-top:0;">Categoria</label>
@@ -2054,6 +2054,8 @@
         <button type="button" class="pt-btn" id="mnBulkOpenBtn">Importa da ZIP (archivio storico)</button>
         <button type="button" class="pt-btn hidden" id="mnCatManageBtn">Gestisci categorie</button>
       </div>
+
+      <datalist id="mnTitoliList"></datalist>
 
       <div id="mnList"></div>
     </div>
@@ -2157,7 +2159,7 @@
       </div>
       <div class="of-modal-body">
         <label class="cfg-label" style="margin-top:0;">Titolo</label>
-        <input type="text" id="mnEditTitoloInput" class="cfg-input">
+        <input type="text" id="mnEditTitoloInput" class="cfg-input" list="mnTitoliList" autocomplete="off">
         <label class="cfg-label">Categoria</label>
         <select id="mnEditCategoriaInput" class="cfg-input"></select>
         <label class="cfg-label">Versioni &mdash; data di ciascuna (l'ordine, il numero di versione e quale sia l'ultima vengono ricalcolati automaticamente dalle date)</label>
@@ -2309,7 +2311,7 @@
 <script src="offerte.js?v=1"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="comuni.js?v=5"></script>
-<script src="manuali.js?v=7"></script>
+<script src="manuali.js?v=8"></script>
 <script src="parco-sim.js?v=2"></script>
 <script src="identificazione-cliente-rules.js?v=3"></script>
 <script src="identificazione-cliente.js?v=2"></script>
