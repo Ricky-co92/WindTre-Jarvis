@@ -357,39 +357,91 @@
   // ================= EXPORT EXCEL =================
   document.getElementById('psExportBtn').addEventListener('click', function () { exportScheda(); });
 
+  var THIN_GRAY_BORDER = { style: 'thin', color: { argb: 'FFE2E4E7' } };
+  var DATA_COLS = ['B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M'];
+
+  function applyThinBorder(cell) {
+    cell.border = { top: THIN_GRAY_BORDER, left: THIN_GRAY_BORDER, bottom: THIN_GRAY_BORDER, right: THIN_GRAY_BORDER };
+  }
+
+  // Verde >90gg rimasti, ambra 0-90gg, rosso già scaduto. La % completato usa la
+  // STESSA soglia di rimanenza (sono derivate dagli stessi due campi data), non una
+  // propria fascia calcolata sulla percentuale.
+  function statusColorsForRimanenza(rimanenza) {
+    if (rimanenza == null) return null;
+    if (rimanenza < 0) return { fill: 'FFFBDCDC', text: 'FFB02020' };
+    if (rimanenza <= 90) return { fill: 'FFFDECC8', text: 'FF8A5A00' };
+    return { fill: 'FFDCF3E2', text: 'FF1A7A3C' };
+  }
+
+  function applyBadge(cell, colors) {
+    if (!colors) return;
+    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: colors.fill } };
+    cell.font = Object.assign({}, cell.font, { color: { argb: colors.text }, bold: true });
+  }
+
   function exportScheda() {
     if (typeof ExcelJS === 'undefined') { alert('Libreria Excel non disponibile (controlla la connessione).'); return; }
     var cliente = document.getElementById('psClienteInput').value.trim() || 'Cliente';
     var note = document.getElementById('psNoteInput').value.trim();
+
+    // Una riga aggiunta con "+ Aggiungi riga" e mai compilata non ha alcun dato utile:
+    // non finisce nell'export (né nei totali) invece di apparire come riga vuota fantasma.
+    var meaningfulRighe = currentRighe.filter(function (r) {
+      return !!(r.piano_tariffario || r.numero || r.seriale || r.puk || r.utente_utilizzatore ||
+        r.data_attivazione || r.data_scadenza || r.terminale || (r.canone != null && r.canone !== ''));
+    });
 
     var wb = new ExcelJS.Workbook();
     var ws = wb.addWorksheet('Parco SIM');
     ws.columns = [
       { key: 'a', width: 3 }, { key: 'canone', width: 10 }, { key: 'piano', width: 24 },
       { key: 'numero', width: 14 }, { key: 'seriale', width: 16 }, { key: 'puk', width: 10 },
-      { key: 'utente', width: 22 }, { key: 'attiv', width: 13 }, { key: 'scad', width: 13 },
-      { key: 'durata', width: 10 }, { key: 'rimanenza', width: 12 }, { key: 'pct', width: 10 },
+      { key: 'utente', width: 22 }, { key: 'attiv', width: 15 }, { key: 'scad', width: 15 },
+      { key: 'durata', width: 11 }, { key: 'rimanenza', width: 13 }, { key: 'pct', width: 11 },
       { key: 'terminale', width: 20 }
     ];
 
-    ws.getCell('B2').value = cliente;
-    ws.getCell('B2').font = { bold: true, size: 14, color: { argb: 'FFEAFCFF' } };
-    ws.getCell('M2').value = 'Generato il ' + new Date().toLocaleDateString('it-IT');
-    ws.getCell('M2').alignment = { horizontal: 'right' };
+    // ---- Banner intestazione (righe 2) ----
+    ws.getRow(2).height = 34;
+    ws.mergeCells('B2:I2');
+    var bannerName = ws.getCell('B2');
+    bannerName.value = {
+      richText: [
+        { font: { bold: true, size: 17, color: { argb: 'FFFFFFFF' } }, text: cliente + '\n' },
+        { font: { size: 10, color: { argb: 'FF8FE8FF' } }, text: 'Parco SIM · Dettaglio contratti WindTre' }
+      ]
+    };
+    bannerName.alignment = { vertical: 'middle', wrapText: true };
+    bannerName.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF12232F' } };
 
-    ws.getCell('B4').value = 'NOTE:';
-    ws.getCell('B4').font = { bold: true };
-    ws.mergeCells('C4:M4');
+    ws.mergeCells('J2:M2');
+    var bannerDate = ws.getCell('J2');
+    bannerDate.value = 'Generato il ' + new Date().toLocaleDateString('it-IT');
+    bannerDate.font = { size: 10, color: { argb: 'FFC8D8E0' } };
+    bannerDate.alignment = { vertical: 'middle', horizontal: 'right' };
+    bannerDate.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF12232F' } };
+    DATA_COLS.forEach(function (col) {
+      ws.getCell(col + '2').border = { bottom: { style: 'medium', color: { argb: 'FF2AB8D9' } } };
+    });
+
+    // ---- Note / totali (riga 4, un'unica riga con i tre valori affiancati) ----
+    var meaningfulRigheForCount = meaningfulRighe;
+    var totSim = meaningfulRigheForCount.filter(function (r) { return r.sezione !== FISSO_SEZIONE; }).length;
+    var totFissi = meaningfulRigheForCount.filter(function (r) { return r.sezione === FISSO_SEZIONE; }).length;
+
+    ws.getCell('B4').value = 'NOTE:'; ws.getCell('B4').font = { bold: true };
+    ws.mergeCells('C4:F4');
     ws.getCell('C4').value = note || '';
-    ws.getCell('C4').alignment = { wrapText: true };
+    ws.getCell('G4').value = 'TOTALE SIM:'; ws.getCell('G4').font = { bold: true };
+    ws.getCell('H4').value = totSim;
+    ws.getCell('I4').value = 'TOTALE FISSI:'; ws.getCell('I4').font = { bold: true };
+    ws.getCell('J4').value = totFissi;
+    DATA_COLS.forEach(function (col) {
+      ws.getCell(col + '4').border = { bottom: THIN_GRAY_BORDER };
+    });
 
-    var totSim = currentRighe.filter(function (r) { return r.sezione !== FISSO_SEZIONE; }).length;
-    var totFissi = currentRighe.filter(function (r) { return r.sezione === FISSO_SEZIONE; }).length;
-    ws.getCell('B5').value = 'TOTALE SIM:'; ws.getCell('B5').font = { bold: true };
-    ws.getCell('C5').value = totSim;
-    ws.getCell('B6').value = 'TOTALE FISSI:'; ws.getCell('B6').font = { bold: true };
-    ws.getCell('C6').value = totFissi;
-
+    // ---- Intestazioni tabella (righe 6-7) ----
     var headFont = { bold: true, color: { argb: 'FF4FC8E8' } };
     var headFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF12232F' } };
     function head(cell, text) {
@@ -398,18 +450,23 @@
       c.font = headFont;
       c.fill = headFill;
       c.alignment = { vertical: 'middle', wrapText: true };
+      applyThinBorder(c);
     }
-    ['B', 'C', 'D', 'G', 'H', 'I', 'J', 'K', 'L', 'M'].forEach(function (col) { ws.mergeCells(col + '8:' + col + '9'); });
-    head('B8', 'CANONE'); head('C8', 'PIANO TARIFFARIO'); head('D8', 'NUMERO');
-    ws.mergeCells('E8:F8'); head('E8', 'SERIALE / PUK'); head('E9', 'SERIALE'); head('F9', 'PUK');
-    head('G8', 'UTENTE UTILIZZATORE'); head('H8', 'DATA ATTIVAZIONE'); head('I8', 'DATA SCADENZA');
-    head('J8', 'DURATA (GIORNI)'); head('K8', 'RIMANENZA (GIORNI)'); head('L8', '% DEL CONTRATTO COMPLETATA');
-    head('M8', 'TERMINALE');
+    ['B', 'C', 'D', 'G', 'H', 'I', 'J', 'K', 'L', 'M'].forEach(function (col) {
+      ws.mergeCells(col + '6:' + col + '7');
+    });
+    head('B6', 'CANONE'); head('C6', 'PIANO TARIFFARIO'); head('D6', 'NUMERO');
+    ws.mergeCells('E6:F6'); head('E6', 'SERIALE / PUK'); head('E7', 'SERIALE'); head('F7', 'PUK');
+    head('G6', 'UTENTE UTILIZZATORE'); head('H6', 'DATA ATTIVAZIONE'); head('I6', 'DATA SCADENZA');
+    head('J6', 'DURATA (GIORNI)'); head('K6', 'RIMANENZA (GIORNI)'); head('L6', '% DEL CONTRATTO COMPLETATA');
+    head('M6', 'TERMINALE');
+    // head() ha già bordato B7/C7/D7/G7-M7 tramite gli anchor merge; bordo anche E7/F7 già coperto sopra.
 
-    var rowIdx = 10;
+    // ---- Righe dati, raggruppate per sezione ----
+    var rowIdx = 8;
     var order = SEZIONI.map(function (s) { return s.nome; });
     var bySezione = {};
-    currentRighe.forEach(function (r) {
+    meaningfulRighe.forEach(function (r) {
       var key = r.sezione || '(senza sezione)';
       if (!bySezione[key]) bySezione[key] = [];
       bySezione[key].push(r);
@@ -417,30 +474,52 @@
     var sezOrder = order.filter(function (s) { return bySezione[s]; })
       .concat(Object.keys(bySezione).filter(function (s) { return order.indexOf(s) === -1; }));
 
+    var zebraIdx = 0;
     sezOrder.forEach(function (sezName) {
       ws.mergeCells('B' + rowIdx + ':M' + rowIdx);
       var c = ws.getCell('B' + rowIdx);
       c.value = sezName;
       c.font = { bold: true, color: { argb: 'FF8FE8FF' } };
       c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0D1924' } };
+      DATA_COLS.forEach(function (col) { applyThinBorder(ws.getCell(col + rowIdx)); });
       rowIdx++;
+
       bySezione[sezName].forEach(function (r) {
         var calc = computeCalc(r);
-        ws.getCell('B' + rowIdx).value = r.canone != null ? r.canone : null;
-        ws.getCell('C' + rowIdx).value = r.piano_tariffario || '';
-        ws.getCell('D' + rowIdx).value = r.numero || '';
-        ws.getCell('E' + rowIdx).value = r.seriale || '';
-        ws.getCell('F' + rowIdx).value = r.puk || '';
-        ws.getCell('G' + rowIdx).value = r.utente_utilizzatore || '';
-        ws.getCell('H' + rowIdx).value = r.data_attivazione ? fmtDateShort(r.data_attivazione) : '';
-        ws.getCell('I' + rowIdx).value = r.data_scadenza ? fmtDateShort(r.data_scadenza) : '';
-        ws.getCell('J' + rowIdx).value = calc.durata != null ? calc.durata : '';
-        ws.getCell('K' + rowIdx).value = calc.rimanenza != null ? calc.rimanenza : '';
-        ws.getCell('L' + rowIdx).value = calc.pct != null ? (calc.pct + '%') : '';
-        ws.getCell('M' + rowIdx).value = r.terminale || '';
+        var rowCells = {};
+        DATA_COLS.forEach(function (col) { rowCells[col] = ws.getCell(col + rowIdx); });
+
+        rowCells.B.value = r.canone != null ? r.canone : null;
+        rowCells.C.value = r.piano_tariffario || '';
+        rowCells.D.value = r.numero || '';
+        rowCells.E.value = r.seriale || '';
+        rowCells.F.value = r.puk || '';
+        rowCells.G.value = r.utente_utilizzatore || '';
+        rowCells.H.value = r.data_attivazione ? fmtDateShort(r.data_attivazione) : '';
+        rowCells.I.value = r.data_scadenza ? fmtDateShort(r.data_scadenza) : '';
+        rowCells.J.value = calc.durata != null ? calc.durata : '';
+        rowCells.K.value = calc.rimanenza != null ? calc.rimanenza : '';
+        rowCells.L.value = calc.pct != null ? (calc.pct + '%') : '';
+        rowCells.M.value = r.terminale || '';
+
+        var zebraFill = (zebraIdx % 2 === 0) ? 'FFFFFFFF' : 'FFFAFBFC';
+        DATA_COLS.forEach(function (col) {
+          var cell = rowCells[col];
+          applyThinBorder(cell);
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: zebraFill } };
+        });
+        zebraIdx++;
+
+        var statusColors = statusColorsForRimanenza(calc.rimanenza);
+        applyBadge(rowCells.K, statusColors);
+        applyBadge(rowCells.L, statusColors);
+
         rowIdx++;
       });
     });
+
+    // Header sempre visibile scorrendo righe lunghe.
+    ws.views = [{ state: 'frozen', ySplit: 7 }];
 
     wb.xlsx.writeBuffer().then(function (buf) {
       var blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
