@@ -121,26 +121,52 @@
     renderResult();
   }
 
-  function docGroupHtml(cls, icon, title, items, emptyText) {
+  // Una card documento: icona ti-id-badge per i documenti di identità (dentro i path),
+  // ti-file-plus per tutto ciò che è "extra" (extras di un path o documentazione aggiuntiva).
+  function docCardHtml(icon, text, extraClass) {
+    return '<div class="ic-doc-card' + (extraClass ? ' ic-doc-card-extra' : '') + '"><i class="ti ' + icon + '"></i><span>' + escapeHtml(text) + '</span></div>';
+  }
+
+  // Un path = un percorso documentale completo e alternativo agli altri path dello
+  // stesso risultato: idChoices sono alternative OR tra loro (separate da "oppure"),
+  // extras sono documenti aggiuntivi obbligatori per quel percorso (AND, sotto "+ obbligatorio").
+  function pathBlockHtml(p) {
+    var idCards = p.idChoices.map(function (t, i) {
+      return (i > 0 ? '<div class="ic-or-sep">oppure</div>' : '') + docCardHtml('ti-id-badge', t, false);
+    }).join('');
+    var html = '<div class="ic-path-block"><div class="ic-card-row">' + idCards + '</div>';
+    if (p.extras && p.extras.length) {
+      html += '<div class="ic-extras-sep">+ obbligatorio</div><div class="ic-card-row">' +
+        p.extras.map(function (t) { return docCardHtml('ti-file-plus', t, true); }).join('') + '</div>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  function pathsGroupHtml(paths) {
+    var body = paths.length
+      ? '<div class="ic-paths-wrap">' + paths.map(pathBlockHtml).join('<div class="ic-path-divider">OPPURE</div>') + '</div>'
+      : '<div class="ic-empty">Nessun documento richiesto per questa combinazione.</div>';
+    return '<div class="ic-result-group ic-main"><div class="ic-result-head"><span class="icon"><i class="ti ti-id-badge"></i></span>Documento/i di identità</div>' + body + '</div>';
+  }
+
+  function extraGroupHtml(items) {
     var body = items.length
-      ? '<div class="ic-doc-list">' + items.map(function (t) { return '<div class="ic-doc-item">' + escapeHtml(t) + '</div>'; }).join('') + '</div>'
-      : '<div class="ic-empty">' + escapeHtml(emptyText) + '</div>';
-    return '<div class="ic-result-group ' + cls + '"><div class="ic-result-head"><span class="icon">' + icon + '</span>' + escapeHtml(title) + '</div>' + body + '</div>';
+      ? '<div class="ic-card-row">' + items.map(function (t) { return docCardHtml('ti-file-plus', t, true); }).join('') + '</div>'
+      : '<div class="ic-empty">Nessuna documentazione aggiuntiva necessaria.</div>';
+    return '<div class="ic-result-group ic-extra"><div class="ic-result-head"><span class="icon"><i class="ti ti-file-plus"></i></span>Documentazione aggiuntiva</div>' + body + '</div>';
   }
 
   function noteGroupHtml(items) {
     var body = items.length
       ? '<div class="ic-note-list">' + items.map(function (t) { return '<div class="ic-note-item">' + escapeHtml(t) + '</div>'; }).join('') + '</div>'
       : '<div class="ic-empty">Nessuna nota operativa.</div>';
-    return '<div class="ic-result-group ic-notes"><div class="ic-result-head"><span class="icon">&#8505;</span>Note operative</div>' + body + '</div>';
+    return '<div class="ic-result-group ic-notes"><div class="ic-result-head"><span class="icon"><i class="ti ti-info-circle"></i></span>Note operative</div>' + body + '</div>';
   }
 
   function renderResult() {
     var res = ICRules.computeDocuments(state);
-    var html =
-      docGroupHtml('ic-main', '&#128100;', 'Documento/i di identità', res.main, 'Nessun documento richiesto per questa combinazione.') +
-      docGroupHtml('ic-extra', '&#128196;', 'Documentazione aggiuntiva', res.extra, 'Nessuna documentazione aggiuntiva necessaria.') +
-      noteGroupHtml(res.note);
+    var html = pathsGroupHtml(res.paths) + extraGroupHtml(res.extra) + noteGroupHtml(res.note);
     document.getElementById('icResult').innerHTML = html;
   }
 

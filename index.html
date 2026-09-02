@@ -13,6 +13,7 @@
 <title>WindTre-Jarvis</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/3.46.0/tabler-icons.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -425,15 +426,21 @@
   .ic-result-group.ic-extra{border-color:rgba(255,176,32,.35);background:linear-gradient(160deg,rgba(255,176,32,.05),rgba(13,25,36,.5));}
   .ic-result-group.ic-notes{background:rgba(13,25,36,.35);border-style:dashed;}
   .ic-result-head{display:flex;align-items:center;gap:10px;margin-bottom:12px;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:.03em;}
-  .ic-result-head .icon{font-size:17px;line-height:1;}
+  .ic-result-head .icon{font-size:17px;line-height:1;display:inline-flex;}
   .ic-main .ic-result-head{color:#8fe8ff;}
   .ic-extra .ic-result-head{color:#ffe6b0;}
   .ic-notes .ic-result-head{color:#a8d8ea;}
-  .ic-doc-list{display:flex;flex-direction:column;gap:8px;}
-  .ic-doc-item{position:relative;font-size:13.5px;color:#eafcff;padding:8px 10px 8px 22px;border-radius:4px;background:rgba(143,232,255,.04);}
-  .ic-doc-item::before{content:'';position:absolute;left:10px;top:14px;width:6px;height:6px;border-radius:50%;background:#8fe8ff;box-shadow:0 0 5px #8fe8ff;}
-  .ic-extra .ic-doc-item{background:rgba(255,176,32,.05);}
-  .ic-extra .ic-doc-item::before{background:#ffb020;box-shadow:0 0 5px #ffb020;}
+  .ic-paths-wrap{display:flex;flex-direction:column;gap:12px;}
+  .ic-path-block{display:flex;flex-direction:column;gap:8px;border:1px solid rgba(143,232,255,.12);border-radius:4px 10px 10px 10px;padding:12px;background:rgba(5,20,28,.35);}
+  .ic-path-divider{display:flex;align-items:center;gap:10px;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:11px;letter-spacing:.08em;color:#7fc4dc;text-transform:uppercase;}
+  .ic-path-divider::before,.ic-path-divider::after{content:'';flex:1;height:1px;background:rgba(143,232,255,.15);}
+  .ic-card-row{display:flex;flex-direction:column;gap:8px;}
+  .ic-or-sep{font-size:10.5px;color:#7fc4dc;text-transform:uppercase;letter-spacing:.05em;text-align:center;opacity:.8;}
+  .ic-extras-sep{font-size:10.5px;color:#ffb020;text-transform:uppercase;letter-spacing:.05em;text-align:center;}
+  .ic-doc-card{display:flex;align-items:center;gap:10px;font-size:13.5px;color:#eafcff;padding:9px 12px;border-radius:4px;background:rgba(143,232,255,.05);border:1px solid rgba(143,232,255,.15);}
+  .ic-doc-card i{font-size:16px;color:#8fe8ff;flex-shrink:0;}
+  .ic-doc-card.ic-doc-card-extra{background:rgba(255,176,32,.06);border-color:rgba(255,176,32,.25);}
+  .ic-doc-card.ic-doc-card-extra i{color:#ffb020;}
   .ic-note-list{display:flex;flex-direction:column;gap:6px;}
   .ic-note-item{font-size:12px;color:#a8d8ea;font-style:italic;line-height:1.5;}
   .ic-empty{font-size:13px;color:#557b8c;font-style:italic;}
@@ -2302,8 +2309,8 @@
 <script src="comuni.js?v=5"></script>
 <script src="manuali.js?v=6"></script>
 <script src="parco-sim.js?v=2"></script>
-<script src="identificazione-cliente-rules.js?v=1"></script>
-<script src="identificazione-cliente.js?v=1"></script>
+<script src="identificazione-cliente-rules.js?v=2"></script>
+<script src="identificazione-cliente.js?v=2"></script>
 <script src="settings.js?v=1"></script>
 <div id="login-flash"></div>
 <div id="login-iris"></div>
