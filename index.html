@@ -412,6 +412,32 @@
   .ps-row-del{background:none;border:none;color:#c0392b;font-size:14px;cursor:pointer;padding:5px;}
   .ps-row-del:hover{color:#ff6767;}
 
+  /* ===== IDENTIFICAZIONE CLIENTE ===== */
+  .ic-layout{display:grid;grid-template-columns:380px 1fr;gap:24px;align-items:start;}
+  @media (max-width:700px){ .ic-layout{grid-template-columns:1fr;} }
+  .ic-col-left{display:flex;flex-direction:column;gap:20px;}
+  .ic-pillrow{display:flex;flex-wrap:wrap;gap:8px;}
+  .ic-flags{display:flex;flex-direction:column;gap:10px;margin-top:2px;}
+  .ic-flag-row{display:flex;align-items:center;gap:9px;font-size:13px;color:#c8e8f2;cursor:pointer;}
+  .ic-flag-row input[type=checkbox]{width:17px;height:17px;accent-color:#ffb020;cursor:pointer;flex-shrink:0;}
+  .ic-result{display:flex;flex-direction:column;gap:18px;}
+  .ic-result-group{border-radius:4px 12px 12px 12px;padding:16px 18px;background:rgba(13,25,36,.5);border:1px solid rgba(143,232,255,.18);}
+  .ic-result-group.ic-extra{border-color:rgba(255,176,32,.35);background:linear-gradient(160deg,rgba(255,176,32,.05),rgba(13,25,36,.5));}
+  .ic-result-group.ic-notes{background:rgba(13,25,36,.35);border-style:dashed;}
+  .ic-result-head{display:flex;align-items:center;gap:10px;margin-bottom:12px;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:.03em;}
+  .ic-result-head .icon{font-size:17px;line-height:1;}
+  .ic-main .ic-result-head{color:#8fe8ff;}
+  .ic-extra .ic-result-head{color:#ffe6b0;}
+  .ic-notes .ic-result-head{color:#a8d8ea;}
+  .ic-doc-list{display:flex;flex-direction:column;gap:8px;}
+  .ic-doc-item{position:relative;font-size:13.5px;color:#eafcff;padding:8px 10px 8px 22px;border-radius:4px;background:rgba(143,232,255,.04);}
+  .ic-doc-item::before{content:'';position:absolute;left:10px;top:14px;width:6px;height:6px;border-radius:50%;background:#8fe8ff;box-shadow:0 0 5px #8fe8ff;}
+  .ic-extra .ic-doc-item{background:rgba(255,176,32,.05);}
+  .ic-extra .ic-doc-item::before{background:#ffb020;box-shadow:0 0 5px #ffb020;}
+  .ic-note-list{display:flex;flex-direction:column;gap:6px;}
+  .ic-note-item{font-size:12px;color:#a8d8ea;font-style:italic;line-height:1.5;}
+  .ic-empty{font-size:13px;color:#557b8c;font-style:italic;}
+
   /* ===== IMPOSTAZIONI ===== */
   .stg-user-card{border:1px solid rgba(143,232,255,.18);border-radius:4px;background:rgba(13,25,36,.5);margin-bottom:12px;overflow:hidden;}
   .stg-user-head{display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;}
@@ -590,6 +616,7 @@
   <div class="nav-item" data-view="comuni" data-text="Comuni Aree Bianche">Comuni Aree Bianche</div>
   <div class="nav-item" data-view="manuali" data-text="Manuali">Manuali</div>
   <div class="nav-item" data-view="parco_sim" data-text="Parco SIM">Parco SIM</div>
+  <div class="nav-item" data-view="identificazione_cliente" data-text="Identificazione Cliente">Identificazione Cliente</div>
   <div class="nav-item" data-view="impostazioni" data-text="Impostazioni">Impostazioni</div>
 </div>
 
@@ -2225,6 +2252,22 @@
     </div>
   </div>
 
+  <!-- IDENTIFICAZIONE CLIENTE -->
+  <div id="view-identificazione_cliente" class="hidden">
+    <div class="gd-panel">
+      <div class="panel-head">
+        <div class="title">&#9670; identificazione cliente</div>
+      </div>
+      <p class="sub" style="margin:0 0 18px">Seleziona i criteri: il documento richiesto si aggiorna in tempo reale.</p>
+      <div class="ic-layout">
+        <div class="ic-col-left" id="icFieldsCol"></div>
+        <div class="ic-col-right">
+          <div class="ic-result" id="icResult"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="view-impostazioni" class="hidden">
     <div class="gd-panel">
       <div class="panel-head">
@@ -2259,6 +2302,8 @@
 <script src="comuni.js?v=5"></script>
 <script src="manuali.js?v=6"></script>
 <script src="parco-sim.js?v=2"></script>
+<script src="identificazione-cliente-rules.js?v=1"></script>
+<script src="identificazione-cliente.js?v=1"></script>
 <script src="settings.js?v=1"></script>
 <div id="login-flash"></div>
 <div id="login-iris"></div>

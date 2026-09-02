@@ -35,7 +35,8 @@ var PAGES_REGISTRY = [
       { key: 'delete', label: 'Eliminare schede' },
       { key: 'export', label: 'Esportare Excel' }
     ]
-  }
+  },
+  { key: 'identificazione_cliente', label: 'Identificazione Cliente', actions: [] }
 ];
 
 var PERMS = {
