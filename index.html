@@ -14,6 +14,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -377,6 +378,40 @@
   .leaflet-control-attribution{background:rgba(5,20,28,.7) !important;color:#557b8c !important;}
   .leaflet-control-attribution a{color:#7fc4dc !important;}
 
+  /* ===== PARCO SIM ===== */
+  .ps-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;padding:4px 0 8px;}
+  .ps-card{border:1px solid rgba(143,232,255,.18);border-radius:4px 12px 12px 12px;background:rgba(13,25,36,.5);padding:16px;cursor:pointer;position:relative;transition:border-color .15s;}
+  .ps-card:hover{border-color:rgba(143,232,255,.4);}
+  .ps-card-cliente{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:16px;color:#eafcff;margin-bottom:4px;padding-right:26px;}
+  .ps-card-meta{font-size:11.5px;color:#7fc4dc;margin-bottom:10px;}
+  .ps-card-counts{display:flex;gap:14px;font-size:12.5px;color:#c8f0ff;margin-bottom:10px;}
+  .ps-card-counts b{color:#8fe8ff;font-family:'Rajdhani',sans-serif;font-size:15px;}
+  .ps-badges{display:flex;gap:6px;flex-wrap:wrap;}
+  .ps-badge{font-size:10px;font-family:'Rajdhani',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.03em;border-radius:3px;padding:3px 8px;}
+  .ps-badge-warn{background:rgba(255,176,32,.12);border:1px solid rgba(255,176,32,.4);color:#ffe6b0;}
+  .ps-badge-danger{background:rgba(224,80,80,.12);border:1px solid rgba(224,80,80,.4);color:#ff8f8f;}
+  .ps-card-del{position:absolute;top:12px;right:12px;background:none;border:none;color:#7fc4dc;font-size:15px;cursor:pointer;padding:4px;}
+  .ps-card-del:hover{color:#ff6767;}
+
+  .ps-editor-fields{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px;}
+  .ps-editor-fields .ps-field{flex:1;min-width:200px;}
+  .ps-editor-fields .ps-field.ps-field-note{flex:2;min-width:280px;}
+  .ps-editor-fields textarea.cfg-input{resize:vertical;min-height:38px;font-family:'Inter',sans-serif;}
+
+  .ps-table-wrap{overflow:auto;max-height:48vh;border:1px solid rgba(143,232,255,.15);border-radius:6px;margin-bottom:14px;}
+  .ps-table{border-collapse:separate;border-spacing:0;width:100%;min-width:1500px;font-size:12px;}
+  .ps-table thead th{background:#12232f;color:#4fc8e8;font-family:'Rajdhani',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.03em;font-size:10.5px;padding:8px 6px;text-align:left;position:sticky;top:0;z-index:3;border-bottom:1px solid rgba(143,232,255,.25);white-space:nowrap;}
+  .ps-table tbody tr{border-bottom:1px solid rgba(143,232,255,.08);}
+  .ps-table td{padding:4px;vertical-align:top;}
+  .ps-table input,.ps-table select{width:100%;min-width:85px;background:rgba(42,184,217,.05);border:1px solid rgba(143,232,255,.18);border-radius:3px;color:#eafcff;padding:5px 6px;font-family:'Inter',sans-serif;font-size:12px;}
+  .ps-table input:focus,.ps-table select:focus{outline:none;border-color:#8fe8ff;}
+  .ps-table select option{background:#0d1924;color:#eafcff;}
+  .ps-table input:disabled,.ps-table select:disabled{opacity:.55;cursor:not-allowed;}
+  .ps-calc-cell{color:#7fc4dc;font-size:11.5px;padding:6px 4px;white-space:nowrap;}
+  .ps-calc-cell.overdue{color:#ff8f8f;}
+  .ps-row-del{background:none;border:none;color:#c0392b;font-size:14px;cursor:pointer;padding:5px;}
+  .ps-row-del:hover{color:#ff6767;}
+
   /* ===== IMPOSTAZIONI ===== */
   .stg-user-card{border:1px solid rgba(143,232,255,.18);border-radius:4px;background:rgba(13,25,36,.5);margin-bottom:12px;overflow:hidden;}
   .stg-user-head{display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;}
@@ -554,6 +589,7 @@
   <div class="nav-item" data-view="gestione" data-text="Database Offerte">Database Offerte</div>
   <div class="nav-item" data-view="comuni" data-text="Comuni Aree Bianche">Comuni Aree Bianche</div>
   <div class="nav-item" data-view="manuali" data-text="Manuali">Manuali</div>
+  <div class="nav-item" data-view="parco_sim" data-text="Parco SIM">Parco SIM</div>
   <div class="nav-item" data-view="impostazioni" data-text="Impostazioni">Impostazioni</div>
 </div>
 
@@ -2098,6 +2134,96 @@
     </div>
   </div>
 
+  <div id="view-parco_sim" class="hidden">
+    <div class="gd-panel">
+      <div class="panel-head">
+        <div class="title">&#9670; parco sim</div>
+      </div>
+      <p class="sub" style="margin:0 0 18px">Gestione del parco SIM/linee di ogni cliente business: voce, dati/internet e fisso, con piano tariffario, date contratto e dati SIM.</p>
+
+      <div class="page-toolbar">
+        <input type="text" id="psSearchInput" class="of-search-input" placeholder="Cerca per nome cliente&hellip;">
+        <button type="button" class="pt-btn primary" id="psNewBtn">+ Nuova scheda</button>
+        <button type="button" class="pt-btn hidden" id="psSezManageBtn">Gestisci sezioni</button>
+      </div>
+
+      <div class="ps-grid" id="psGrid"></div>
+    </div>
+  </div>
+
+  <!-- Gestione sezioni (SuperAdmin) -->
+  <div class="of-modal-backdrop hidden" id="psSezBackdrop">
+    <div class="of-modal">
+      <div class="of-modal-head">
+        <div class="title">Gestisci sezioni</div>
+        <button type="button" class="of-modal-close" id="psSezClose">&times;</button>
+      </div>
+      <div class="of-modal-body">
+        <div id="psSezList" style="margin-bottom:14px;"></div>
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="psSezNewInput" class="cfg-input" placeholder="Nome nuova sezione">
+          <button type="button" class="of-chip of-manage-btn" id="psSezAddBtn">Aggiungi</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Editor scheda -->
+  <div class="of-modal-backdrop hidden" id="psEditorBackdrop">
+    <div class="of-modal of-modal-wide" style="max-width:1300px;">
+      <div class="of-modal-head">
+        <div class="title" id="psEditorTitle">Nuova scheda</div>
+        <button type="button" class="of-modal-close" id="psEditorClose">&times;</button>
+      </div>
+      <div class="of-modal-body">
+        <div class="ps-editor-fields">
+          <div class="ps-field">
+            <label class="cfg-label" style="margin-top:0;">Cliente</label>
+            <input type="text" id="psClienteInput" class="cfg-input" placeholder="Nome cliente">
+          </div>
+          <div class="ps-field ps-field-note">
+            <label class="cfg-label" style="margin-top:0;">Note</label>
+            <textarea id="psNoteInput" class="cfg-input" rows="1"></textarea>
+          </div>
+        </div>
+
+        <div class="ps-table-wrap">
+          <table class="ps-table">
+            <thead>
+              <tr>
+                <th>Sezione</th>
+                <th>Piano tariffario</th>
+                <th>Numero</th>
+                <th>Seriale</th>
+                <th>PUK</th>
+                <th>Utente utilizzatore</th>
+                <th>Data attivazione</th>
+                <th>Data scadenza</th>
+                <th>Durata (gg)</th>
+                <th>Rimanenza (gg)</th>
+                <th>% completato</th>
+                <th>Canone</th>
+                <th>Terminale</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="psRigheTbody"></tbody>
+          </table>
+        </div>
+
+        <button type="button" class="pt-btn" id="psAddRigaBtn">+ Aggiungi riga</button>
+
+        <datalist id="psOfferteList"></datalist>
+      </div>
+      <div class="of-modal-foot">
+        <button type="button" class="pt-btn danger hidden" id="psDeleteSchedaBtn">Elimina scheda</button>
+        <button type="button" class="pt-btn hidden" id="psExportBtn" style="margin-left:auto;">Esporta Excel</button>
+        <button type="button" class="pt-btn primary hidden" id="psSaveBtn">Salva scheda</button>
+        <span class="status" id="psEditorStatus"></span>
+      </div>
+    </div>
+  </div>
+
   <div id="view-impostazioni" class="hidden">
     <div class="gd-panel">
       <div class="panel-head">
@@ -2131,6 +2257,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="comuni.js?v=5"></script>
 <script src="manuali.js?v=6"></script>
+<script src="parco-sim.js?v=1"></script>
 <script src="settings.js?v=1"></script>
 <div id="login-flash"></div>
 <div id="login-iris"></div>

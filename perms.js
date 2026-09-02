@@ -28,6 +28,13 @@ var PAGES_REGISTRY = [
       { key: 'upload', label: 'Caricare/aggiornare manuali' },
       { key: 'delete', label: 'Eliminare manuali' }
     ]
+  },
+  {
+    key: 'parco_sim', label: 'Parco SIM', actions: [
+      { key: 'edit', label: 'Creare/modificare schede e righe' },
+      { key: 'delete', label: 'Eliminare schede' },
+      { key: 'export', label: 'Esportare Excel' }
+    ]
   }
 ];
 
