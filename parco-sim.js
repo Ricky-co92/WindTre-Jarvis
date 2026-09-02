@@ -188,6 +188,13 @@
     document.getElementById('psClienteInput').value = scheda ? scheda.cliente : '';
     document.getElementById('psNoteInput').value = scheda ? (scheda.note || '') : '';
 
+    // La vista carica le sezioni in parallelo all'attivazione (jarvis:view), senza
+    // attenderle: se l'editor viene aperto prima che quella fetch sia arrivata (o se
+    // era fallita, es. tabella non ancora creata), il select Sezione si renderizzerebbe
+    // permanentemente senza opzioni, perché niente altro lo ridisegna in seguito.
+    // Qui ci si assicura che SEZIONI sia popolato PRIMA di disegnare la tabella.
+    if (!SEZIONI.length) await loadSezioni();
+
     try {
       currentRighe = schedaId
         ? await fetchAllRows('wt_parco_sim_righe', '*', function (q) { return q.eq('scheda_id', schedaId).order('ordine'); })
