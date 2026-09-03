@@ -251,14 +251,34 @@
         '<td><input type="text" class="ps-f-utente" value="' + escapeHtml(r.utente_utilizzatore || '') + '"' + dis + '></td>' +
         '<td><input type="date" class="ps-f-attivazione" value="' + (r.data_attivazione || '') + '"' + dis + '></td>' +
         '<td><input type="date" class="ps-f-scadenza" value="' + (r.data_scadenza || '') + '"' + dis + '></td>' +
-        '<td class="ps-calc-cell">' + (calc.durata != null ? calc.durata : '&mdash;') + '</td>' +
-        '<td class="ps-calc-cell' + (overdue ? ' overdue' : '') + '">' + (calc.rimanenza != null ? calc.rimanenza : '&mdash;') + '</td>' +
-        '<td class="ps-calc-cell">' + (calc.pct != null ? calc.pct + '%' : '&mdash;') + '</td>' +
+        '<td class="ps-calc-cell ps-calc-durata">' + (calc.durata != null ? calc.durata : '&mdash;') + '</td>' +
+        '<td class="ps-calc-cell ps-calc-rimanenza' + (overdue ? ' overdue' : '') + '">' + (calc.rimanenza != null ? calc.rimanenza : '&mdash;') + '</td>' +
+        '<td class="ps-calc-cell ps-calc-pct">' + (calc.pct != null ? calc.pct + '%' : '&mdash;') + '</td>' +
         '<td><input type="number" step="0.01" class="ps-f-canone" value="' + (r.canone != null ? r.canone : '') + '"' + dis + '></td>' +
         '<td><input type="text" class="ps-f-terminale" value="' + escapeHtml(r.terminale || '') + '"' + dis + '></td>' +
         '<td>' + (canEdit ? '<button type="button" class="ps-row-del" data-idx="' + idx + '" title="Elimina riga">&#128465;</button>' : '') + '</td>' +
         '</tr>';
     }).join('');
+
+    // Aggiorna solo le celle di calcolo (Durata/Rimanenza/%) di una riga, senza
+    // toccare i suoi <input>: un rerender completo (innerHTML) distruggerebbe e
+    // ricreerebbe i campi data mentre l'utente li sta ancora digitando, facendogli
+    // perdere lo stato interno del segmento anno in corso di scrittura (i date
+    // input nativi non tollerano che il proprio .value/DOM venga sostituito a metà
+    // digitazione: vedi bug "02/02/0002" invece di "02/02/2022").
+    function updateRowCalc(tr, idx) {
+      var calc = computeCalc(currentRighe[idx]);
+      var overdue = calc.rimanenza != null && calc.rimanenza < 0;
+      var dEl = tr.querySelector('.ps-calc-durata');
+      var rEl = tr.querySelector('.ps-calc-rimanenza');
+      var pEl = tr.querySelector('.ps-calc-pct');
+      if (dEl) dEl.textContent = calc.durata != null ? calc.durata : '—';
+      if (rEl) {
+        rEl.textContent = calc.rimanenza != null ? calc.rimanenza : '—';
+        rEl.classList.toggle('overdue', overdue);
+      }
+      if (pEl) pEl.textContent = calc.pct != null ? calc.pct + '%' : '—';
+    }
 
     tbody.querySelectorAll('tr').forEach(function (tr) {
       var idx = parseInt(tr.dataset.idx, 10);
@@ -270,6 +290,7 @@
           if (opts && opts.number) val = val === '' ? null : parseFloat(val);
           currentRighe[idx][field] = val;
           if (opts && opts.rerender) renderRigheTable();
+          if (opts && opts.updateCalc) updateRowCalc(tr, idx);
         });
       }
       bind('.ps-f-sezione', 'sezione', { event: 'change', rerender: true });
@@ -278,8 +299,8 @@
       bind('.ps-f-seriale', 'seriale');
       bind('.ps-f-puk', 'puk');
       bind('.ps-f-utente', 'utente_utilizzatore');
-      bind('.ps-f-attivazione', 'data_attivazione', { event: 'change', rerender: true });
-      bind('.ps-f-scadenza', 'data_scadenza', { event: 'change', rerender: true });
+      bind('.ps-f-attivazione', 'data_attivazione', { updateCalc: true });
+      bind('.ps-f-scadenza', 'data_scadenza', { updateCalc: true });
       bind('.ps-f-canone', 'canone', { number: true });
       bind('.ps-f-terminale', 'terminale');
       var delBtn = tr.querySelector('.ps-row-del');
