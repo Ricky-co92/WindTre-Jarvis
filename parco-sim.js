@@ -572,6 +572,15 @@
   var PDF_SEZ_TEXT = [143, 232, 255];
   var PDF_ZEBRA = [250, 251, 252];
   var PDF_BORDER = [226, 228, 231];
+  var PDF_TOTAL_BG = [18, 35, 47];
+  var PDF_TOTAL_TEXT = [255, 255, 255];
+
+  // "EUR" invece del simbolo "€": i font standard di jsPDF (helvetica) possono
+  // sbagliare il calcolo della larghezza del glifo Euro, con celle che appaiono
+  // vuote o troncate in autoTable — con caratteri ASCII il rendering è garantito.
+  function fmtMoneyPdf(v) {
+    return 'EUR ' + Number(v).toFixed(2);
+  }
 
   function exportSchedaPdf() {
     if (typeof window.jspdf === 'undefined' || !window.jspdf.jsPDF) {
@@ -604,13 +613,17 @@
     var body = [];
     var rowMeta = [];
     var zebraIdx = 0;
+    var totalCanone = 0;
+    var totalCanoneCount = 0;
     sezOrder.forEach(function (sezName) {
       body.push([{ content: sezName, colSpan: 12, styles: { halign: 'left' } }]);
       rowMeta.push({ type: 'section' });
       bySezione[sezName].forEach(function (r) {
         var calc = computeCalc(r);
+        var hasCanone = r.canone != null && r.canone !== '';
+        if (hasCanone) { totalCanone += Number(r.canone); totalCanoneCount++; }
         body.push([
-          r.canone != null ? ('€ ' + Number(r.canone).toFixed(2)) : '',
+          hasCanone ? fmtMoneyPdf(r.canone) : '',
           r.piano_tariffario || '',
           r.numero || '',
           r.seriale || '',
@@ -627,6 +640,14 @@
         zebraIdx++;
       });
     });
+
+    if (totalCanoneCount) {
+      body.push([
+        { content: fmtMoneyPdf(totalCanone), styles: { halign: 'right' } },
+        { content: 'TOTALE CANONE MENSILE (' + totalCanoneCount + (totalCanoneCount === 1 ? ' riga' : ' righe') + ')', colSpan: 11, styles: { halign: 'left' } }
+      ]);
+      rowMeta.push({ type: 'total' });
+    }
 
     var doc = new window.jspdf.jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
     var pageWidth = doc.internal.pageSize.getWidth();
@@ -680,7 +701,7 @@
         // PIANO TARIFFARIO (1) e UTENTE UTILIZZATORE (5) restano senza cellWidth fisso
         // così autotable assorbe lì lo spazio residuo della pagina landscape invece di
         // lasciarlo vuoto a destra (le altre colonne hanno contenuto a lunghezza fissa).
-        0: { cellWidth: 15, halign: 'right' }, 2: { cellWidth: 19 },
+        0: { cellWidth: 22, halign: 'right' }, 2: { cellWidth: 19 },
         3: { cellWidth: 20 }, 4: { cellWidth: 18, halign: 'center' },
         6: { cellWidth: 18, halign: 'center' }, 7: { cellWidth: 18, halign: 'center' },
         8: { cellWidth: 14, halign: 'center' }, 9: { cellWidth: 16, halign: 'center' },
@@ -705,6 +726,13 @@
           data.cell.styles.fillColor = PDF_SEZ_BG;
           data.cell.styles.textColor = PDF_SEZ_TEXT;
           data.cell.styles.fontStyle = 'bold';
+          return;
+        }
+        if (meta.type === 'total') {
+          data.cell.styles.fillColor = PDF_TOTAL_BG;
+          data.cell.styles.textColor = PDF_TOTAL_TEXT;
+          data.cell.styles.fontStyle = 'bold';
+          data.cell.styles.fontSize = 8.5;
           return;
         }
         data.cell.styles.fillColor = meta.zebra ? PDF_ZEBRA : [255, 255, 255];
