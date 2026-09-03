@@ -278,8 +278,8 @@
       bind('.ps-f-seriale', 'seriale');
       bind('.ps-f-puk', 'puk');
       bind('.ps-f-utente', 'utente_utilizzatore');
-      bind('.ps-f-attivazione', 'data_attivazione', { rerender: true });
-      bind('.ps-f-scadenza', 'data_scadenza', { rerender: true });
+      bind('.ps-f-attivazione', 'data_attivazione', { event: 'change', rerender: true });
+      bind('.ps-f-scadenza', 'data_scadenza', { event: 'change', rerender: true });
       bind('.ps-f-canone', 'canone', { number: true });
       bind('.ps-f-terminale', 'terminale');
       var delBtn = tr.querySelector('.ps-row-del');
