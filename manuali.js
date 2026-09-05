@@ -581,11 +581,32 @@
     var res = await sb.from('wt_manuali_categorie').select('*').order('ordine');
     var list = res.data || [];
     var wrap = document.getElementById('mnCatList');
-    wrap.innerHTML = list.map(function (c) {
-      return '<div class="mn-bulk-ver-row" data-id="' + c.id + '"><span class="mn-cat-name" style="flex:1;color:#eafcff;">' + escapeHtml(c.nome) + '</span>' +
+    wrap.innerHTML = list.map(function (c, i) {
+      return '<div class="mn-bulk-ver-row" data-id="' + c.id + '">' +
+        '<button type="button" class="mn-icon-btn mn-cat-up" data-id="' + c.id + '" title="Sposta su"' + (i === 0 ? ' disabled style="opacity:.3;"' : '') + '>&#9650;</button>' +
+        '<button type="button" class="mn-icon-btn mn-cat-down" data-id="' + c.id + '" title="Sposta giù"' + (i === list.length - 1 ? ' disabled style="opacity:.3;"' : '') + '>&#9660;</button>' +
+        '<span class="mn-cat-name" style="flex:1;color:#eafcff;">' + escapeHtml(c.nome) + '</span>' +
         '<button type="button" class="mn-icon-btn mn-cat-rename" data-id="' + c.id + '" title="Rinomina">&#9998;</button>' +
         '<button type="button" class="mn-icon-btn mn-cat-del" data-id="' + c.id + '" title="Elimina">&#128465;</button></div>';
     }).join('') || '<p class="sub">Nessuna categoria.</p>';
+    async function moveCategoria(id, direction) {
+      var idx = list.findIndex(function (c) { return String(c.id) === String(id); });
+      var swapIdx = idx + direction;
+      if (idx < 0 || swapIdx < 0 || swapIdx >= list.length) return;
+      var a = list[idx], other = list[swapIdx];
+      await Promise.all([
+        sb.from('wt_manuali_categorie').update({ ordine: other.ordine }).eq('id', a.id),
+        sb.from('wt_manuali_categorie').update({ ordine: a.ordine }).eq('id', other.id)
+      ]);
+      await loadCategorie();
+      renderCatList();
+    }
+    wrap.querySelectorAll('.mn-cat-up').forEach(function (b) {
+      b.addEventListener('click', function () { moveCategoria(b.dataset.id, -1); });
+    });
+    wrap.querySelectorAll('.mn-cat-down').forEach(function (b) {
+      b.addEventListener('click', function () { moveCategoria(b.dataset.id, 1); });
+    });
     wrap.querySelectorAll('.mn-cat-del').forEach(function (b) {
       b.addEventListener('click', async function () {
         if (!confirm('Eliminare questa categoria? I manuali gi\u00e0 assegnati la manterranno come testo, ma non sar\u00e0 pi\u00f9 selezionabile.')) return;
