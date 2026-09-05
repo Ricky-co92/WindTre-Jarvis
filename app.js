@@ -158,6 +158,11 @@ function bindStaticEvents(){
 
 // ---------- MENU (sidebar overlay con scan line + decode) ----------
 const GLITCH_CHARS = "!<>-_\\/[]{}—=+*^?#";
+function scrambleText(el){
+  const target = el.dataset.text;
+  if(!target) return;
+  el.textContent = target.split("").map(ch => ch === " " ? " " : GLITCH_CHARS[Math.floor(Math.random()*GLITCH_CHARS.length)]).join("");
+}
 function decodeEffect(el){
   const target = el.dataset.text;
   if(!target) return;
@@ -174,15 +179,24 @@ function decodeEffect(el){
   }, 30);
 }
 function toggleMenu(){
-  const opening = !document.getElementById("sidebar").classList.contains("open");
-  document.getElementById("sidebar").classList.toggle("open", opening);
+  const sidebar = document.getElementById("sidebar");
+  const opening = !sidebar.classList.contains("open");
+  const navItems = document.querySelectorAll("#sidebar .nav-item[data-text]");
+  navItems.forEach((el, i)=>{
+    clearTimeout(el._decodeTimeout);
+    clearInterval(el._interval);
+    if(opening){
+      // Stesso ritardo scalare usato dalla transizione CSS del pannello:
+      // testo (scramble->decode) e comparsa della voce restano sincronizzati.
+      const delay = i * 90;
+      el.style.animationDelay = delay + "ms";
+      scrambleText(el);
+      el._decodeTimeout = setTimeout(()=> decodeEffect(el), delay);
+    }
+  });
+  sidebar.classList.toggle("open", opening);
   document.getElementById("backdrop").classList.toggle("open", opening);
   document.getElementById("btn-hamburger").classList.toggle("open", opening);
-  if(opening){
-    document.querySelectorAll("#sidebar .nav-item[data-text]").forEach((el,i)=>{
-      setTimeout(()=> decodeEffect(el), 150 + i*130);
-    });
-  }
 }
 function closeMenu(){
   document.getElementById("sidebar").classList.remove("open");
