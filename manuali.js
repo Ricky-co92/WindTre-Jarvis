@@ -95,21 +95,12 @@
       if (res.error) throw res.error;
       allRows = res.data || [];
       docs = allRows.filter(function (r) { return r.is_latest; });
-      populateTargetSelect();
       populateTitoliDatalist();
       renderList();
     } catch (err) {
       console.error('Errore caricamento manuali:', err);
       document.getElementById('mnList').innerHTML = '<p class="sub">Errore caricamento manuali.</p>';
     }
-  }
-
-  function populateTargetSelect() {
-    var sel = document.getElementById('mnTargetSelect');
-    var current = sel.value;
-    sel.innerHTML = '<option value="">+ Nuovo documento</option>' +
-      docs.map(function (d) { return '<option value="' + d.gruppo_id + '">' + escapeHtml(d.titolo) + ' (v' + d.versione + ')</option>'; }).join('');
-    sel.value = current;
   }
 
   // "Rubrica" dei titoli già usati: un <datalist> condiviso tra il campo Titolo del
@@ -125,8 +116,21 @@
     dl.innerHTML = titoli.map(function (t) { return '<option value="' + escapeHtml(t) + '">'; }).join('');
   }
 
-  document.getElementById('mnTargetSelect').addEventListener('change', function () {
-    document.getElementById('mnNewFields').style.display = this.value ? 'none' : 'flex';
+  // Trova il documento esistente il cui titolo corrisponde (case/spazi insensitive) a
+  // quanto digitato: se c'è, l'upload aggiunge una versione a quel documento invece di
+  // crearne uno nuovo.
+  function findDocByTitolo(titolo) {
+    var norm = (titolo || '').trim().toLowerCase();
+    if (!norm) return null;
+    return docs.filter(function (d) { return (d.titolo || '').trim().toLowerCase() === norm; })[0] || null;
+  }
+
+  document.getElementById('mnTitoloInput').addEventListener('input', function () {
+    var match = findDocByTitolo(this.value);
+    document.getElementById('mnCategoriaField').style.display = match ? 'none' : 'flex';
+    document.getElementById('mnTitoloMatchHint').textContent = match
+      ? 'Documento esistente: verrà caricata la versione ' + (match.versione + 1) + ' nella categoria "' + (match.categoria || 'nessuna') + '".'
+      : '';
   });
 
   function filteredDocs() {
@@ -445,24 +449,23 @@
     var file = ev.target.files[0];
     if (!file) return;
     var statusEl = document.getElementById('mnUploadStatus');
-    var targetGruppo = document.getElementById('mnTargetSelect').value;
+    var titoloInput = document.getElementById('mnTitoloInput').value.trim();
+    if (!titoloInput) { statusEl.textContent = 'Inserisci un titolo per il documento.'; statusEl.className = 'status err'; ev.target.value = ''; return; }
+    var current = findDocByTitolo(titoloInput);
     var titolo, categoria, versione, gruppoId;
 
-    if (targetGruppo) {
-      var current = docs.filter(function (d) { return d.gruppo_id === targetGruppo; })[0];
-      if (!current) { statusEl.textContent = 'Documento non trovato.'; statusEl.className = 'status err'; ev.target.value = ''; return; }
+    if (current) {
       titolo = current.titolo; categoria = current.categoria; versione = current.versione + 1; gruppoId = current.gruppo_id;
     } else {
-      titolo = document.getElementById('mnTitoloInput').value.trim();
+      titolo = titoloInput;
       categoria = document.getElementById('mnCategoriaInput').value;
-      if (!titolo) { statusEl.textContent = 'Inserisci un titolo per il nuovo documento.'; statusEl.className = 'status err'; ev.target.value = ''; return; }
       versione = 1; gruppoId = crypto.randomUUID();
     }
 
     statusEl.textContent = 'Caricamento in corso...';
     statusEl.className = 'status';
     try {
-      if (targetGruppo) {
+      if (current) {
         var updRes = await sb.from('wt_manuali').update({ is_latest: false }).eq('gruppo_id', gruppoId).eq('is_latest', true);
         if (updRes.error) throw updRes.error;
       }
@@ -470,8 +473,8 @@
       statusEl.textContent = 'Caricato: ' + titolo + ' (v' + versione + ')';
       statusEl.className = 'status ok';
       document.getElementById('mnTitoloInput').value = '';
-      document.getElementById('mnTargetSelect').value = '';
-      document.getElementById('mnNewFields').style.display = 'flex';
+      document.getElementById('mnCategoriaField').style.display = 'flex';
+      document.getElementById('mnTitoloMatchHint').textContent = '';
       await loadManuali();
     } catch (err) {
       statusEl.textContent = 'Errore: ' + err.message;
@@ -553,9 +556,9 @@
   document.addEventListener('jarvis:permsReady', renderCatManager);
 
   document.getElementById('mnUploadOpenBtn').addEventListener('click', function () {
-    document.getElementById('mnTargetSelect').value = '';
-    document.getElementById('mnNewFields').style.display = 'flex';
     document.getElementById('mnTitoloInput').value = '';
+    document.getElementById('mnCategoriaField').style.display = 'flex';
+    document.getElementById('mnTitoloMatchHint').textContent = '';
     document.getElementById('mnUploadStatus').textContent = '';
     document.getElementById('mnUploadStatus').className = 'status';
     document.getElementById('mnUploadBackdrop').classList.remove('hidden');

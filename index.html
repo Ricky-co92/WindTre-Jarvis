@@ -2046,15 +2046,10 @@
         <button type="button" class="of-modal-close" id="mnUploadClose">&times;</button>
       </div>
       <div class="of-modal-body">
-        <label class="cfg-label" style="margin-top:0;">Documento</label>
-        <select id="mnTargetSelect" class="cfg-input">
-          <option value="">+ Nuovo documento</option>
-        </select>
-        <div id="mnNewFields" style="display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;">
-          <div style="flex:1;min-width:160px;">
-            <label class="cfg-label" style="margin-top:0;">Titolo</label>
-            <input type="text" id="mnTitoloInput" class="cfg-input" placeholder="Es. Guida attivazione SIM" list="mnTitoliList" autocomplete="off">
-          </div>
+        <label class="cfg-label" style="margin-top:0;">Titolo</label>
+        <input type="text" id="mnTitoloInput" class="cfg-input" placeholder="Scrivi il titolo del manuale&hellip;" list="mnTitoliList" autocomplete="off">
+        <p class="sub" id="mnTitoloMatchHint" style="margin:6px 0 0;"></p>
+        <div id="mnCategoriaField" style="display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;">
           <div style="flex:1;min-width:140px;">
             <label class="cfg-label" style="margin-top:0;">Categoria</label>
             <select id="mnCategoriaInput" class="cfg-input">
@@ -2283,7 +2278,7 @@
 <script src="offerte.js?v=1"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="comuni.js?v=5"></script>
-<script src="manuali.js?v=11"></script>
+<script src="manuali.js?v=12"></script>
 <script src="parco-sim.js?v=5"></script>
 <script src="identificazione-cliente-rules.js?v=3"></script>
 <script src="identificazione-cliente.js?v=2"></script>
