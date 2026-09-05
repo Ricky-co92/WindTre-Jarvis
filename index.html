@@ -480,16 +480,8 @@
   .mn-icon-btn{background:none;border:none;color:#7fc4dc;font-size:13px;cursor:pointer;padding:2px 4px;}
   .mn-icon-btn:hover{color:#8fe8ff;}
   .mn-del-btn:hover{color:#ff6767;}
-  .mn-bulk-fam{border:1px solid rgba(143,232,255,.18);border-radius:4px;background:rgba(13,25,36,.5);margin-bottom:10px;padding:12px 14px;}
-  .mn-bulk-fam-head{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px;}
-  .mn-bulk-fam-head input[type=text]{flex:2;min-width:180px;}
-  .mn-bulk-fam-head select{flex:1;min-width:140px;}
   .mn-bulk-ver-row{display:flex;align-items:center;gap:8px;font-size:12px;color:#a8d8ea;padding:3px 0;}
   .mn-bulk-ver-row input[type=date]{background:rgba(42,184,217,.05);border:1px solid rgba(143,232,255,.18);border-radius:3px;color:#eafcff;padding:2px 6px;font-size:11.5px;}
-  .mn-bulk-flag{color:#ffb020;font-size:11px;}
-  .mn-bulk-toggle-versions{font-size:11px;color:#7fc4dc;cursor:pointer;text-decoration:underline;}
-  .mn-bulk-versions{display:none;margin-top:6px;padding-top:6px;border-top:1px dashed rgba(143,232,255,.1);}
-  .mn-bulk-versions.open{display:block;}
   .of-admin-list{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;max-height:240px;overflow-y:auto;}
   .of-admin-row{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border:1px solid rgba(143,232,255,.15);border-radius:4px;font-size:13px;color:#c8e8f2;cursor:pointer;}
   .of-admin-row:hover{border-color:#8fe8ff;}
@@ -2016,38 +2008,10 @@
       <div class="panel-head">
         <div class="title">&#9670; manuali</div>
       </div>
-      <p class="sub" style="margin:0 0 18px">Raccolta PDF con le spiegazioni WindTre. Caricando un aggiornamento di un manuale esistente, la versione precedente resta archiviata nello storico.</p>
 
       <div class="page-toolbar">
-        <div id="mnUploadBox" class="cfg-fascia-row" style="align-items:flex-end;flex-wrap:wrap;flex:1 1 100%;">
-          <div style="flex:2;min-width:180px;">
-            <label class="cfg-label" style="margin-top:0;">Documento</label>
-            <select id="mnTargetSelect" class="cfg-input">
-              <option value="">+ Nuovo documento</option>
-            </select>
-          </div>
-          <div id="mnNewFields" style="display:flex;gap:12px;flex:2;flex-wrap:wrap;">
-            <div style="flex:1;min-width:160px;">
-              <label class="cfg-label" style="margin-top:0;">Titolo</label>
-              <input type="text" id="mnTitoloInput" class="cfg-input" placeholder="Es. Guida attivazione SIM" list="mnTitoliList" autocomplete="off">
-            </div>
-            <div style="flex:1;min-width:140px;">
-              <label class="cfg-label" style="margin-top:0;">Categoria</label>
-              <select id="mnCategoriaInput" class="cfg-input">
-                <option value="Manuali">Manuali</option>
-                <option value="Sintesi Offerte">Sintesi Offerte</option>
-                <option value="Guide">Guide</option>
-              </select>
-            </div>
-          </div>
-          <input type="file" id="mnFileInput" accept="application/pdf" class="hidden">
-          <button type="button" class="pt-btn primary" id="mnUploadTriggerBtn">Scegli PDF e carica</button>
-          <span class="status" id="mnUploadStatus"></span>
-        </div>
-
         <input type="text" id="mnSearchInput" class="of-search-input" placeholder="Cerca manuale per titolo o categoria&hellip;">
-
-        <button type="button" class="pt-btn" id="mnBulkOpenBtn">Importa da ZIP (archivio storico)</button>
+        <button type="button" class="pt-btn primary hidden" id="mnUploadOpenBtn">Importa</button>
         <button type="button" class="pt-btn hidden" id="mnCatManageBtn">Gestisci categorie</button>
       </div>
 
@@ -2074,24 +2038,37 @@
     </div>
   </div>
 
-  <!-- Import massivo da ZIP -->
-  <div class="of-modal-backdrop hidden" id="mnBulkBackdrop">
-    <div class="of-modal of-modal-wide" style="max-width:900px;">
+  <!-- Importa manuale (SuperAdmin) -->
+  <div class="of-modal-backdrop hidden" id="mnUploadBackdrop">
+    <div class="of-modal">
       <div class="of-modal-head">
-        <div class="title">Importa da ZIP</div>
-        <button type="button" class="of-modal-close" id="mnBulkClose">&times;</button>
+        <div class="title">Importa manuale</div>
+        <button type="button" class="of-modal-close" id="mnUploadClose">&times;</button>
       </div>
       <div class="of-modal-body">
-        <p class="sub" style="margin:0 0 14px">Seleziona uno o pi&ugrave; file .zip. Analizzo i PDF dentro, li raggruppo automaticamente per documento e stimo la data di ogni versione. Poi rivedi/correggi prima di confermare.</p>
-        <input type="file" id="mnBulkFiles" accept=".zip" multiple class="cfg-input">
-        <button type="button" class="of-chip of-manage-btn" id="mnBulkAnalyzeBtn" style="margin-top:10px;">Analizza</button>
-        <span class="status" id="mnBulkAnalyzeStatus"></span>
-        <div id="mnBulkSkipped" style="margin-top:10px;"></div>
-        <div id="mnBulkReview" style="margin-top:16px;"></div>
+        <label class="cfg-label" style="margin-top:0;">Documento</label>
+        <select id="mnTargetSelect" class="cfg-input">
+          <option value="">+ Nuovo documento</option>
+        </select>
+        <div id="mnNewFields" style="display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;">
+          <div style="flex:1;min-width:160px;">
+            <label class="cfg-label" style="margin-top:0;">Titolo</label>
+            <input type="text" id="mnTitoloInput" class="cfg-input" placeholder="Es. Guida attivazione SIM" list="mnTitoliList" autocomplete="off">
+          </div>
+          <div style="flex:1;min-width:140px;">
+            <label class="cfg-label" style="margin-top:0;">Categoria</label>
+            <select id="mnCategoriaInput" class="cfg-input">
+              <option value="Manuali">Manuali</option>
+              <option value="Sintesi Offerte">Sintesi Offerte</option>
+              <option value="Guide">Guide</option>
+            </select>
+          </div>
+        </div>
       </div>
       <div class="of-modal-foot">
-        <button type="button" class="of-chip of-manage-btn hidden" id="mnBulkConfirmBtn" style="margin-left:auto;">Conferma import</button>
-        <span class="status" id="mnBulkImportStatus"></span>
+        <input type="file" id="mnFileInput" accept="application/pdf" class="hidden">
+        <button type="button" class="of-chip of-manage-btn" id="mnUploadTriggerBtn" style="margin-left:auto;">Scegli PDF e carica</button>
+        <span class="status" id="mnUploadStatus"></span>
       </div>
     </div>
   </div>
@@ -2299,7 +2276,6 @@
 </div>
 
   
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="config.js"></script>
 <script src="perms.js"></script>
 <script src="app.js"></script>
@@ -2307,7 +2283,7 @@
 <script src="offerte.js?v=1"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="comuni.js?v=5"></script>
-<script src="manuali.js?v=10"></script>
+<script src="manuali.js?v=11"></script>
 <script src="parco-sim.js?v=5"></script>
 <script src="identificazione-cliente-rules.js?v=3"></script>
 <script src="identificazione-cliente.js?v=2"></script>

@@ -73,14 +73,9 @@
     }
   }
 
-  function bulkCatOptionsHtml(selected) {
-    return '<option value=""' + (!selected ? ' selected' : '') + '>(scegli categoria)</option>' +
-      CATEGORIE.map(function (c) { return '<option value="' + escapeHtml(c) + '"' + (selected === c ? ' selected' : '') + '>' + escapeHtml(c) + '</option>'; }).join('');
-  }
-
-  // Come bulkCatOptionsHtml, ma se la categoria attuale del documento non è (più) tra
-  // quelle configurate (es. cancellata da "Gestisci categorie") la preserva comunque
-  // come opzione selezionata invece di far sparire silenziosamente il valore dal select.
+  // Se la categoria attuale del documento non è (più) tra quelle configurate (es.
+  // cancellata da "Gestisci categorie") la preserva comunque come opzione selezionata
+  // invece di far sparire silenziosamente il valore dal select.
   function editCatOptionsHtml(selected) {
     var html = '<option value=""' + (!selected ? ' selected' : '') + '>(nessuna categoria)</option>';
     var found = false;
@@ -532,19 +527,13 @@
 
   function applyManualiPerms() {
     if (typeof PERMS === 'undefined' || !PERMS.ready) return;
-    var canUpload = PERMS.can('manuali', 'upload');
     var canDelete = PERMS.can('manuali', 'delete');
     var isSuperAdmin = !!PERMS.isSuperAdmin;
-    var uploadBox = document.getElementById('mnUploadBox');
-    if (uploadBox) uploadBox.style.display = canUpload ? 'flex' : 'none';
     document.querySelectorAll('.mn-del-btn').forEach(function (b) { b.style.display = canDelete ? '' : 'none'; });
-    // Import da ZIP e "aggiungi versione storica" restano riservati al SuperAdmin,
-    // indipendentemente dal permesso granulare "upload" (che governa solo il
-    // caricamento di un singolo PDF, invariato qui sotto).
+    // "Aggiungi versione storica" resta riservato al SuperAdmin (come l'import di un
+    // manuale e la gestione categorie, vedi renderCatManager).
     document.querySelectorAll('.mn-edit-btn').forEach(function (b) { b.style.display = isSuperAdmin ? '' : 'none'; });
     document.querySelectorAll('.mn-add-hist-btn').forEach(function (b) { b.style.display = isSuperAdmin ? '' : 'none'; });
-    var bulkBtn = document.getElementById('mnBulkOpenBtn');
-    if (bulkBtn) bulkBtn.style.display = isSuperAdmin ? '' : 'none';
   }
   document.addEventListener('jarvis:permsReady', applyManualiPerms);
 
@@ -555,16 +544,28 @@
     loadManuali();
   });
 
-  // ================= GESTIONE CATEGORIE (SuperAdmin) =================
+  // ================= GESTIONE CATEGORIE E IMPORT (SuperAdmin) =================
   async function renderCatManager() {
-    if (typeof PERMS === 'undefined' || !PERMS.isSuperAdmin) {
-      var btn = document.getElementById('mnCatManageBtn');
-      if (btn) btn.classList.add('hidden');
-      return;
-    }
-    document.getElementById('mnCatManageBtn').classList.remove('hidden');
+    var isSuperAdmin = typeof PERMS !== 'undefined' && !!PERMS.isSuperAdmin;
+    document.getElementById('mnCatManageBtn').classList.toggle('hidden', !isSuperAdmin);
+    document.getElementById('mnUploadOpenBtn').classList.toggle('hidden', !isSuperAdmin);
   }
   document.addEventListener('jarvis:permsReady', renderCatManager);
+
+  document.getElementById('mnUploadOpenBtn').addEventListener('click', function () {
+    document.getElementById('mnTargetSelect').value = '';
+    document.getElementById('mnNewFields').style.display = 'flex';
+    document.getElementById('mnTitoloInput').value = '';
+    document.getElementById('mnUploadStatus').textContent = '';
+    document.getElementById('mnUploadStatus').className = 'status';
+    document.getElementById('mnUploadBackdrop').classList.remove('hidden');
+  });
+  document.getElementById('mnUploadClose').addEventListener('click', function () {
+    document.getElementById('mnUploadBackdrop').classList.add('hidden');
+  });
+  document.getElementById('mnUploadBackdrop').addEventListener('click', function (ev) {
+    if (ev.target.id === 'mnUploadBackdrop') document.getElementById('mnUploadClose').click();
+  });
 
   document.getElementById('mnCatManageBtn').addEventListener('click', function () {
     renderCatList();
@@ -662,280 +663,4 @@
     renderCatList();
   });
 
-  // ================= IMPORT MASSIVO DA ZIP =================
-  var MONTHS_IT = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre'];
-  var SEASON_MONTH = { estate: 5, summer: 5, inverno: 11, winter: 11, primavera: 2, spring: 2, autunno: 8, autumn: 8 };
-  var monthsRe = MONTHS_IT.join('|');
-
-  function parseDateFromText(text) {
-    if (!text) return null;
-    var iso = text.match(/(\d{4})-(\d{2})-(\d{2})/);
-    if (iso) { var d1 = new Date(+iso[1], +iso[2] - 1, +iso[3]); if (!isNaN(d1)) return d1; }
-    var re = new RegExp('(\\d{1,2})\\s*[\\+\\-_ ]?\\s*(' + monthsRe + ')\\s*[\\+\\-_ ]?\\s*(\\d{2,4})', 'i');
-    var m = text.toLowerCase().match(re);
-    if (m) {
-      var day = parseInt(m[1], 10);
-      var month = MONTHS_IT.indexOf(m[2].toLowerCase());
-      var year = parseInt(m[3], 10);
-      if (year < 100) year += 2000;
-      var d2 = new Date(year, month, day);
-      if (!isNaN(d2) && day >= 1 && day <= 31) return d2;
-    }
-    var reMY = new RegExp('(' + monthsRe + ')\\s*[\\+\\-_ ]?\\s*(\\d{2,4})', 'i');
-    var m2 = text.toLowerCase().match(reMY);
-    if (m2) {
-      var month2 = MONTHS_IT.indexOf(m2[1].toLowerCase());
-      var year2 = parseInt(m2[2], 10);
-      if (year2 < 100) year2 += 2000;
-      return new Date(year2, month2, 1);
-    }
-    var seasonRe = new RegExp('(' + Object.keys(SEASON_MONTH).join('|') + ')\\s*[\\+\\-_ ]?\\s*(\\d{4})', 'i');
-    var m3 = text.toLowerCase().match(seasonRe);
-    if (m3) return new Date(parseInt(m3[2], 10), SEASON_MONTH[m3[1].toLowerCase()], 1);
-    var yOnly = text.match(/\b(20\d{2})\b/);
-    if (yOnly) return new Date(parseInt(yOnly[1], 10), 0, 1);
-    return null;
-  }
-
-  function familyKeyFromFilename(nameNoExt) {
-    var re = new RegExp('\\d{1,2}\\s*[\\+\\-_ ]?\\s*(' + monthsRe + ')\\s*[\\+\\-_ ]?\\s*\\d{2,4}', 'gi');
-    var stripped = nameNoExt
-      .replace(/\(\d+\)/g, '')
-      .replace(/\d{4}-\d{2}-\d{2}/g, '')
-      .replace(re, '')
-      .replace(/[_\-\+]+/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim();
-    return stripped.toLowerCase() || nameNoExt.toLowerCase();
-  }
-
-  function isGenericKey(key) {
-    return key.indexOf(' ') === -1 && key.length > 0 && key.length <= 12;
-  }
-
-  function titleize(key) {
-    return key.split(' ').filter(Boolean).map(function (w) {
-      return w.charAt(0).toUpperCase() + w.slice(1);
-    }).join(' ');
-  }
-
-  function guessCategoria(nameNoExt) {
-    var n = nameNoExt.toLowerCase();
-    if (n.indexOf('manuale') > -1) return 'Manuali';
-    if (n.indexOf('sintesi') > -1) return 'Sintesi Offerte';
-    if (n.indexOf('canvass') > -1) return 'Canvass';
-    if (n.indexOf('guid') > -1 || n.indexOf('selling') > -1) return 'Guide';
-    return '';
-  }
-
-  async function sha256Hex(buf) {
-    var hash = await crypto.subtle.digest('SHA-256', buf);
-    return Array.prototype.map.call(new Uint8Array(hash), function (b) { return b.toString(16).padStart(2, '0'); }).join('');
-  }
-
-  var bulkFamilies = null; // { key: { titolo, categoria, versions:[{file, buf, path, date, dateGuessConfident}] } }
-
-  function versionDateSort(a, b) {
-    var da = a.date ? a.date.getTime() : Infinity;
-    var db = b.date ? b.date.getTime() : Infinity;
-    return da - db;
-  }
-
-  document.getElementById('mnBulkOpenBtn').addEventListener('click', function () {
-    document.getElementById('mnBulkFiles').value = '';
-    document.getElementById('mnBulkReview').innerHTML = '';
-    document.getElementById('mnBulkSkipped').innerHTML = '';
-    document.getElementById('mnBulkAnalyzeStatus').textContent = '';
-    document.getElementById('mnBulkConfirmBtn').classList.add('hidden');
-    document.getElementById('mnBulkImportStatus').textContent = '';
-    bulkFamilies = null;
-    document.getElementById('mnBulkBackdrop').classList.remove('hidden');
-  });
-  document.getElementById('mnBulkClose').addEventListener('click', function () {
-    document.getElementById('mnBulkBackdrop').classList.add('hidden');
-  });
-  document.getElementById('mnBulkBackdrop').addEventListener('click', function (ev) {
-    if (ev.target.id === 'mnBulkBackdrop') document.getElementById('mnBulkClose').click();
-  });
-
-  document.getElementById('mnBulkAnalyzeBtn').addEventListener('click', async function () {
-    var fileList = document.getElementById('mnBulkFiles').files;
-    var statusEl = document.getElementById('mnBulkAnalyzeStatus');
-    if (!fileList.length) { statusEl.textContent = 'Seleziona almeno un file .zip.'; statusEl.className = 'status err'; return; }
-
-    var families = {};
-    var seenHashes = {};
-    var skippedNonPdf = [];
-    var skippedDupes = 0;
-
-    for (var zi = 0; zi < fileList.length; zi++) {
-      statusEl.textContent = 'Apro ' + fileList[zi].name + ' (' + (zi + 1) + '/' + fileList.length + ')...';
-      statusEl.className = 'status';
-      var zip = await JSZip.loadAsync(fileList[zi]);
-      var entries = Object.keys(zip.files).filter(function (n) { return !zip.files[n].dir; });
-      for (var ei = 0; ei < entries.length; ei++) {
-        var path = entries[ei];
-        var lower = path.toLowerCase();
-        if (lower.endsWith('/')) continue;
-        if (!lower.endsWith('.pdf')) {
-          if (!/\.(pdf)$/.test(lower)) skippedNonPdf.push(path);
-          continue;
-        }
-        statusEl.textContent = 'Leggo ' + path + '...';
-        var buf = await zip.files[path].async('arraybuffer');
-        var hash = await sha256Hex(buf);
-        if (seenHashes[hash]) { skippedDupes++; continue; }
-        seenHashes[hash] = true;
-
-        var parts = path.split('/');
-        var fileName = parts[parts.length - 1];
-        var nameNoExt = fileName.replace(/\.pdf$/i, '');
-        var key = familyKeyFromFilename(nameNoExt);
-        var titolo = titleize(key);
-        var immediateFolder = parts.length > 1 ? parts[parts.length - 2] : '';
-        if (isGenericKey(key) && immediateFolder) {
-          // Nome troppo generico (es. "DATI.pdf", "VOCE.pdf") per fondere file di cartelle/periodi diversi
-          // nella stessa famiglia: la cartella diventa parte della chiave per evitare falsi storici.
-          key = key + '::' + immediateFolder.toLowerCase();
-          titolo = titolo + ' (' + titleize(immediateFolder.toLowerCase()) + ')';
-        }
-        var dateFromName = parseDateFromText(nameNoExt);
-        var dateFromPath = dateFromName || parseDateFromText(parts.slice(0, -1).join(' '));
-        var confident = !!dateFromName;
-        var finalDate = dateFromPath || null;
-
-        // WindTre alterna, a seconda del mese, tra nomi "Con Spazi" e "SenzaSpazi" per
-        // lo stesso identico documento (es. "Manuale Professionisti 5 ottobre 22.pdf" e
-        // "ManualeProfessionisti15maggio23.pdf"): la sola normalizzazione spazi/maiuscole
-        // di familyKeyFromFilename non basta a farli combaciare. Il bucket di raggruppamento
-        // usa quindi la chiave senza spazi; titolo/isGenericKey restano sulla chiave "piena"
-        // per non perdere i confini di parola.
-        var matchKey = key.replace(/\s+/g, '');
-
-        if (!families[matchKey]) {
-          families[matchKey] = { titolo: titolo, categoria: guessCategoria(nameNoExt), versions: [] };
-        }
-        families[matchKey].versions.push({ fileName: fileName, buf: buf, date: finalDate, confident: confident, noDate: !finalDate, sourcePath: path });
-      }
-    }
-
-    Object.keys(families).forEach(function (k) {
-      families[k].versions.sort(versionDateSort);
-    });
-
-    bulkFamilies = families;
-    statusEl.textContent = Object.keys(families).length + ' documenti rilevati, ' +
-      Object.values(families).reduce(function (s, f) { return s + f.versions.length; }, 0) + ' versioni totali (' +
-      skippedDupes + ' duplicati esatti scartati).';
-    statusEl.className = 'status ok';
-
-    document.getElementById('mnBulkSkipped').innerHTML = skippedNonPdf.length
-      ? '<p class="sub">' + skippedNonPdf.length + ' file non-PDF ignorati (non importati).</p>' : '';
-
-    renderBulkReview();
-    document.getElementById('mnBulkConfirmBtn').classList.remove('hidden');
-  });
-
-  function renderBulkReview() {
-    var wrap = document.getElementById('mnBulkReview');
-    wrap.innerHTML = '';
-    var keys = Object.keys(bulkFamilies).sort();
-    keys.forEach(function (key) {
-      var fam = bulkFamilies[key];
-      var card = document.createElement('div');
-      card.className = 'mn-bulk-fam';
-      var lowConfCount = fam.versions.filter(function (v) { return !v.confident && !v.noDate; }).length;
-      var noDateCount = fam.versions.filter(function (v) { return v.noDate; }).length;
-      card.innerHTML =
-        '<div class="mn-bulk-fam-head">' +
-        '<input type="text" class="cfg-input mn-bulk-titolo" value="' + escapeHtml(fam.titolo) + '">' +
-        '<select class="cfg-input mn-bulk-cat">' + bulkCatOptionsHtml(fam.categoria) + '</select>' +
-        '<label style="font-size:12px;color:#7fc4dc;display:flex;align-items:center;gap:5px;"><input type="checkbox" class="mn-bulk-include" checked> Includi</label>' +
-        '<span class="mn-bulk-toggle-versions">' + fam.versions.length + ' versioni' +
-        (lowConfCount ? ' &mdash; <span class="mn-bulk-flag">' + lowConfCount + ' con data incerta</span>' : '') +
-        (noDateCount ? ' &mdash; <span class="mn-bulk-flag" style="color:#ff6b6b;">' + noDateCount + ' senza data</span>' : '') +
-        '</span>' +
-        '</div>' +
-        '<div class="mn-bulk-versions">' +
-        fam.versions.map(function (v, vi) {
-          return '<div class="mn-bulk-ver-row"><input type="checkbox" class="mn-bulk-ver-include" checked data-vi="' + vi + '">' +
-            '<span style="flex:1;">' + escapeHtml(v.fileName) + '</span>' +
-            '<input type="date" class="mn-bulk-ver-date" data-vi="' + vi + '" value="' + (v.date ? v.date.toISOString().slice(0, 10) : '') + '">' +
-            (v.noDate ? '<span class="mn-bulk-flag" style="color:#ff6b6b;" title="Nessuna data trovata: verrà caricato con la data/ora reale di upload">!</span>' :
-              (v.confident ? '' : '<span class="mn-bulk-flag" title="Data dedotta dalla cartella, verifica">?</span>')) +
-            '</div>';
-        }).join('') +
-        '</div>';
-
-      card.querySelector('.mn-bulk-titolo').addEventListener('input', function () { fam.titolo = this.value; });
-      card.querySelector('.mn-bulk-cat').addEventListener('change', function () { fam.categoria = this.value; });
-      card.querySelector('.mn-bulk-include').addEventListener('change', function () {
-        card.style.opacity = this.checked ? '' : '.4';
-        fam._excluded = !this.checked;
-      });
-      card.querySelector('.mn-bulk-toggle-versions').addEventListener('click', function () {
-        card.querySelector('.mn-bulk-versions').classList.toggle('open');
-      });
-      card.querySelectorAll('.mn-bulk-ver-date').forEach(function (inp) {
-        inp.addEventListener('change', function () {
-          fam.versions[+this.dataset.vi].date = this.value ? new Date(this.value + 'T12:00:00') : null;
-        });
-      });
-      card.querySelectorAll('.mn-bulk-ver-include').forEach(function (chk) {
-        chk.addEventListener('change', function () { fam.versions[+this.dataset.vi]._excluded = !this.checked; });
-      });
-
-      wrap.appendChild(card);
-    });
-  }
-
-  var BULK_UPLOAD_CONCURRENCY = 5;
-
-  document.getElementById('mnBulkConfirmBtn').addEventListener('click', async function () {
-    if (!bulkFamilies) return;
-    var statusEl = document.getElementById('mnBulkImportStatus');
-    var keys = Object.keys(bulkFamilies).filter(function (k) { return !bulkFamilies[k]._excluded; });
-
-    // Versione/gruppoId/isLatest sono già determinati dall'ordine cronologico prima dell'upload,
-    // quindi le versioni (anche di famiglie diverse) possono essere caricate in parallelo a batch.
-    var tasks = [];
-    keys.forEach(function (key) {
-      var fam = bulkFamilies[key];
-      var versions = fam.versions.filter(function (v) { return !v._excluded; }).sort(versionDateSort);
-      if (!versions.length) return;
-      var gruppoId = crypto.randomUUID();
-      versions.forEach(function (v, vi) {
-        var isLatest = vi === versions.length - 1;
-        tasks.push(function () {
-          var blob = new Blob([v.buf], { type: 'application/pdf' });
-          blob.name = v.fileName;
-          return uploadOne(blob, {
-            gruppoId: gruppoId, titolo: fam.titolo, categoria: fam.categoria || null,
-            versione: vi + 1, isLatest: isLatest,
-            uploadedAt: v.date ? v.date.toISOString() : undefined,
-            skipThumb: !isLatest
-          }, v.fileName);
-        });
-      });
-    });
-
-    var total = tasks.length;
-    var done = 0;
-    statusEl.className = 'status';
-    for (var bi = 0; bi < tasks.length; bi += BULK_UPLOAD_CONCURRENCY) {
-      var batch = tasks.slice(bi, bi + BULK_UPLOAD_CONCURRENCY);
-      statusEl.textContent = 'Import ' + (done + 1) + '-' + Math.min(done + batch.length, total) + '/' + total + '...';
-      try {
-        await Promise.all(batch.map(function (t) { return t(); }));
-      } catch (err) {
-        statusEl.textContent = 'Errore durante import: ' + err.message;
-        statusEl.className = 'status err';
-        return;
-      }
-      done += batch.length;
-    }
-    statusEl.textContent = 'Import completato: ' + total + ' file caricati.';
-    statusEl.className = 'status ok';
-    await loadManuali();
-  });
 })();
