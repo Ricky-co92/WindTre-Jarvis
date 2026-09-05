@@ -582,7 +582,8 @@
     var list = res.data || [];
     var wrap = document.getElementById('mnCatList');
     wrap.innerHTML = list.map(function (c) {
-      return '<div class="mn-bulk-ver-row" data-id="' + c.id + '"><span style="flex:1;color:#eafcff;">' + escapeHtml(c.nome) + '</span>' +
+      return '<div class="mn-bulk-ver-row" data-id="' + c.id + '"><span class="mn-cat-name" style="flex:1;color:#eafcff;">' + escapeHtml(c.nome) + '</span>' +
+        '<button type="button" class="mn-icon-btn mn-cat-rename" data-id="' + c.id + '" title="Rinomina">&#9998;</button>' +
         '<button type="button" class="mn-icon-btn mn-cat-del" data-id="' + c.id + '" title="Elimina">&#128465;</button></div>';
     }).join('') || '<p class="sub">Nessuna categoria.</p>';
     wrap.querySelectorAll('.mn-cat-del').forEach(function (b) {
@@ -592,6 +593,37 @@
         await loadCategorie();
         renderCatList();
         renderList();
+      });
+    });
+    wrap.querySelectorAll('.mn-cat-rename').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var row = b.closest('.mn-bulk-ver-row');
+        var cat = list.find(function (c) { return String(c.id) === b.dataset.id; });
+        var oldNome = cat ? cat.nome : '';
+        row.innerHTML =
+          '<input type="text" class="cfg-input mn-cat-rename-input" style="flex:1;padding:4px 8px;" value="' + escapeHtml(oldNome) + '">' +
+          '<button type="button" class="mn-icon-btn mn-cat-rename-save" title="Salva">&#10003;</button>' +
+          '<button type="button" class="mn-icon-btn mn-cat-rename-cancel" title="Annulla">&#10005;</button>';
+        var input = row.querySelector('.mn-cat-rename-input');
+        input.focus();
+        input.select();
+        var save = async function () {
+          var nuovoNome = input.value.trim();
+          if (!nuovoNome) { alert('Il nome non pu\u00f2 essere vuoto.'); return; }
+          if (nuovoNome === oldNome) { renderCatList(); return; }
+          var upd = await sb.from('wt_manuali_categorie').update({ nome: nuovoNome }).eq('id', b.dataset.id);
+          if (upd.error) { alert('Errore: ' + upd.error.message); return; }
+          await sb.from('wt_manuali').update({ categoria: nuovoNome }).eq('categoria', oldNome);
+          await loadCategorie();
+          renderCatList();
+          renderList();
+        };
+        row.querySelector('.mn-cat-rename-save').addEventListener('click', save);
+        row.querySelector('.mn-cat-rename-cancel').addEventListener('click', function () { renderCatList(); });
+        input.addEventListener('keydown', function (ev) {
+          if (ev.key === 'Escape') renderCatList();
+          if (ev.key === 'Enter') save();
+        });
       });
     });
   }
