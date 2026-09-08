@@ -512,11 +512,11 @@
     }
     el.addEventListener('change', function() { memPush(memKey, el.value.trim()); });
   }
-  [['doc_tipo', 'doc_tipo'], ['f_doc_tipo', 'doc_tipo']].forEach(function(p) { setupAutofillMemory(p[0], p[1]); });
+  [['doc_tipo', 'doc_tipo'], ['f_doc_tipo', 'doc_tipo'], ['bf_doc_tipo', 'doc_tipo']].forEach(function(p) { setupAutofillMemory(p[0], p[1]); });
   [
-    ['cap', 'cap'], ['f_cap', 'cap'], ['c_ces_cap', 'cap'], ['c_ces_sede_legale_cap', 'cap'], ['c_sott_cap', 'cap'], ['c_intest_cap', 'cap'],
-    ['indirizzo_citta', 'citta'], ['f_indirizzo_citta', 'citta'], ['c_ces_comune', 'citta'], ['c_ces_sede_legale_comune', 'citta'], ['c_sott_comune', 'citta'], ['c_intest_comune', 'citta'],
-    ['provincia', 'provincia'], ['f_provincia', 'provincia'], ['c_ces_prov', 'provincia'], ['c_ces_prov_nascita', 'provincia'], ['c_ces_sede_legale_prov', 'provincia'], ['c_sott_prov', 'provincia'], ['c_intest_prov', 'provincia'],
+    ['cap', 'cap'], ['f_cap', 'cap'], ['bf_cap', 'cap'], ['c_ces_cap', 'cap'], ['c_ces_sede_legale_cap', 'cap'], ['c_sott_cap', 'cap'], ['c_intest_cap', 'cap'],
+    ['indirizzo_citta', 'citta'], ['f_indirizzo_citta', 'citta'], ['bf_indirizzo_citta', 'citta'], ['c_ces_comune', 'citta'], ['c_ces_sede_legale_comune', 'citta'], ['c_sott_comune', 'citta'], ['c_intest_comune', 'citta'],
+    ['provincia', 'provincia'], ['f_provincia', 'provincia'], ['bf_provincia', 'provincia'], ['c_ces_prov', 'provincia'], ['c_ces_prov_nascita', 'provincia'], ['c_ces_sede_legale_prov', 'provincia'], ['c_sott_prov', 'provincia'], ['c_intest_prov', 'provincia'],
     ['c_ces_comune_nascita', 'citta']
   ].forEach(function(p) { setupDatalist(p[0], p[1]); });
 
@@ -669,6 +669,10 @@
       h1: 'Richiesta di recesso \u2014 servizio di telefonia fissa',
       sub: 'Compila i campi, disegna la firma e genera il PDF pronto da allegare al documento d\u2019identit\u00e0 e al codice fiscale.'
     },
+    bizfisso: {
+      h1: 'Richiesta di recesso \u2014 servizio di telefonia fissa per professionisti',
+      sub: 'Compila i campi, disegna la firma e genera il PDF pronto da allegare al documento d\u2019identit\u00e0 e al codice fiscale.'
+    },
     cessione: {
       h1: 'Proposta di cessione del contratto mobile',
       sub: 'Compila i dati di Cedente e Cessionario, disegna entrambe le firme e genera il PDF pronto per l\u2019invio a WINDTRE.'
@@ -698,7 +702,7 @@
       sub: 'Compila i dati aziendali, del delegato e le SIM che attivi. Il documento ha pi\u00f9 punti firma: posizionali dove serve nello step successivo.'
     }
   };
-  var ALL_MODES_LIST = ['mobile', 'micro', 'fisso', 'cessione', 'morte', 'decesso', 'firmadoc', 'energy', 'oltresogliasingolo', 'oltresoglia10sim'];
+  var ALL_MODES_LIST = ['mobile', 'micro', 'fisso', 'bizfisso', 'cessione', 'morte', 'decesso', 'firmadoc', 'energy', 'oltresogliasingolo', 'oltresoglia10sim'];
   function switchMode(mode) {
     if (mode !== currentMode) {
       standardFilledBytes = null;
@@ -751,7 +755,7 @@
 
   // ================= STEP 1: scelta modulo, anteprima, descrizione =================
   var MODULE_LABELS = {
-    mobile: 'Recesso Mobile', micro: 'Recesso Biz Mobile', fisso: 'Recesso Fisso',
+    mobile: 'Recesso Mobile', micro: 'Recesso Biz Mobile', fisso: 'Recesso Fisso', bizfisso: 'Recesso Biz Fisso',
     cessione: 'Subentro', morte: 'Autodich Cert. Morte', decesso: 'Autodich Atto Notorio',
     firmadoc: 'Firma Doc', energy: 'Att. Utenza Energy',
     oltresogliasingolo: 'Oltresoglia Singolo', oltresoglia10sim: 'Oltresoglia 10 SIM'
@@ -760,6 +764,7 @@
     mobile: 'Richiesta di recesso da un contratto mobile privato.',
     micro: 'Richiesta di recesso da un contratto mobile intestato a professionista/ditta.',
     fisso: 'Richiesta di recesso da un servizio di telefonia fissa.',
+    bizfisso: 'Richiesta di recesso da un servizio di telefonia fissa intestato a professionista/ditta.',
     cessione: 'Proposta di cessione del contratto mobile a un nuovo intestatario (cedente + cessionario).',
     morte: 'Autocertificazione di decesso ai sensi dell\u2019art. 46 D.P.R. 445/2000.',
     decesso: 'Lettera a WindTre per la disattivazione della linea del titolare deceduto, a cura dell\u2019erede.',
@@ -879,6 +884,7 @@
     mobile: ['nome_cognome','codice_fiscale','doc_tipo','doc_numero','numero_titolare','indirizzo_via','indirizzo_numero','indirizzo_citta','provincia','cap','recapito_alternativo','utenza'],
     micro: ['mm_ragione_sociale','mm_partita_iva','mm_referente_legale','mm_rappresentante_legale','mm_codice_fiscale','mm_doc_tipo','mm_doc_numero','mm_numero_rappresentante','mm_indirizzo_via','mm_indirizzo_numero','mm_indirizzo_citta','mm_provincia','mm_cap','mm_recapito_alternativo','mm_utenza'],
     fisso: ['f_nome_cognome','f_codice_fiscale','f_doc_tipo','f_doc_numero','f_numero_titolare','f_recapito_alternativo','f_indirizzo_via','f_indirizzo_numero','f_indirizzo_citta','f_provincia','f_cap','f_utenza'],
+    bizfisso: ['bf_ragione_sociale','bf_partita_iva','bf_referente_legale','bf_rappresentante_legale','bf_codice_fiscale','bf_doc_tipo','bf_doc_numero','bf_numero_rappresentante','bf_indirizzo_via','bf_indirizzo_numero','bf_indirizzo_citta','bf_provincia','bf_cap','bf_recapito_alternativo','bf_utenza'],
     morte: ['m_nome_cognome','m_cf','m_comune_nascita','m_prov_nascita','m_data_nascita','m_comune_residenza','m_prov_residenza','m_via_residenza','m_civico_residenza','m_nome_deceduto','m_grado_parentela','m_data_decesso','m_luogo_data'],
     decesso: ['d_data_lettera','d_linea_numero','d_nome_cognome_erede','d_comune_nascita_erede','d_data_nascita_erede','d_cf_erede','d_comune_residenza_erede','d_via_residenza_erede','d_civico_residenza_erede','d_data_decesso','d_nome_deceduto','d_altri_eredi_1'],
     energy: ['en_pod_pdr','en_sott_cognome','en_sott_nome','en_sott_nato_a','en_sott_data_nascita','en_sott_cf','en_cliente_cognome_nome','en_cliente_cf','en_fornitura_indirizzo','en_fornitura_civico','en_fornitura_citta','en_fornitura_cap','en_fornitura_provincia'],
@@ -1470,6 +1476,7 @@
     mobile: 'templates/recesso_mobile.pdf',
     micro: 'templates/recesso_micro.pdf',
     fisso: 'templates/recesso_fisso.pdf',
+    bizfisso: 'templates/recesso_biz_fisso.pdf',
     cessione: 'templates/cessione_contratto.pdf',
     morte: 'templates/autocert_morte.pdf',
     decesso: 'templates/autocert_decesso.pdf',
@@ -1593,6 +1600,47 @@
         cb_portabilita:          { x0: 153.1, top: 324.6, x1: 161.0, bottom: 332.5 },
         cb_pagamento_rateizzato: { x0: 153.1, top: 702.9, x1: 161.0, bottom: 710.9 },
         cb_pagamento_unica:      { x0: 153.1, top: 711.9, x1: 161.0, bottom: 719.9 }
+      }
+    },
+    bizfisso: {
+      templateUrl: TEMPLATE_FILES.bizfisso,
+      fieldPrefix: 'bf_',
+      requiredIds: ['bf_ragione_sociale', 'bf_rappresentante_legale', 'bf_codice_fiscale', 'bf_utenza'],
+      motivoRadioName: 'bf_motivo',
+      pagamentoRadioName: 'bf_pagamento',
+      modalitaRadioName: 'bf_modalita',
+      allCheckboxKeys: ['cb_richiesta_recesso', 'cb_diritto_modifiche', 'cb_pagamento_rateizzato', 'cb_pagamento_unica', 'cb_cessazione', 'cb_portabilita'],
+      filenamePrefix: 'Recesso_Biz_Fisso_',
+      nameFieldId: 'ragione_sociale',
+      fieldIds: ['ragione_sociale', 'partita_iva', 'referente_legale', 'rappresentante_legale',
+        'codice_fiscale', 'doc_tipo', 'doc_numero', 'numero_rappresentante',
+        'indirizzo_via', 'indirizzo_numero', 'indirizzo_citta', 'provincia', 'cap',
+        'recapito_alternativo', 'utenza'],
+      fields: {
+        ragione_sociale:      { x: 103, top: 145.0, bottom: 155.5, size: 9 },
+        partita_iva:          { x: 445, top: 145.0, bottom: 155.5, size: 9 },
+        referente_legale:     { x: 140, top: 156.9, bottom: 167.4, size: 9 },
+        rappresentante_legale:{ x: 144, top: 168.7, bottom: 179.2, size: 9 },
+        codice_fiscale:       { x: 98,  top: 192.3, bottom: 202.9, size: 8, boxed: true, boxX0: 94.85, boxWidth: 12.62, boxCount: 16 },
+        doc_tipo:             { x: 148, top: 204.2, bottom: 214.7, size: 8 },
+        doc_numero:           { x: 326, top: 204.2, bottom: 214.7, size: 8 },
+        numero_rappresentante:{ x: 171, top: 216.0, bottom: 226.5, size: 8 },
+        indirizzo_via:        { x: 140, top: 227.9, bottom: 238.4, size: 8 },
+        indirizzo_numero:     { x: 320, top: 227.9, bottom: 238.4, size: 8 },
+        indirizzo_citta:      { x: 387, top: 227.9, bottom: 238.4, size: 8 },
+        provincia:            { x: 79,  top: 239.7, bottom: 250.2, size: 8 },
+        cap:                  { x: 308, top: 239.7, bottom: 250.2, size: 8 },
+        recapito_alternativo: { x: 284, top: 251.5, bottom: 262.0, size: 8 },
+        utenza:               { x: 130, top: 275.2, bottom: 285.7, size: 9 },
+        data:                 { x: 64,  top: 721.6, bottom: 732.1, size: 9 }
+      },
+      checkboxes: {
+        cb_richiesta_recesso:    { x0: 153.1, top: 291.6, x1: 161.0, bottom: 299.5 },
+        cb_diritto_modifiche:    { x0: 153.1, top: 303.5, x1: 161.0, bottom: 311.4 },
+        cb_cessazione:           { x0: 153.1, top: 330.0, x1: 161.0, bottom: 337.9 },
+        cb_portabilita:          { x0: 153.1, top: 341.8, x1: 161.0, bottom: 349.7 },
+        cb_pagamento_rateizzato: { x0: 153.1, top: 678.5, x1: 161.0, bottom: 686.4 },
+        cb_pagamento_unica:      { x0: 153.1, top: 687.5, x1: 161.0, bottom: 695.4 }
       }
     },
     morte: {

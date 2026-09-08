@@ -675,6 +675,7 @@
         <button type="button" class="module-card" data-mode="mobile">Recesso Mobile</button>
         <button type="button" class="module-card" data-mode="micro">Recesso Biz Mobile</button>
         <button type="button" class="module-card" data-mode="fisso">Recesso Fisso</button>
+        <button type="button" class="module-card" data-mode="bizfisso">Recesso Biz Fisso</button>
         <button type="button" class="module-card" data-mode="cessione">Subentro</button>
         <button type="button" class="module-card" data-mode="morte">Autodich Cert. Morte</button>
         <button type="button" class="module-card" data-mode="decesso">Autodich Atto Notorio</button>
@@ -727,6 +728,7 @@
           <option value="mobile">Recesso Mobile</option>
           <option value="micro">Recesso Biz Mobile</option>
           <option value="fisso">Recesso Fisso</option>
+          <option value="bizfisso">Recesso Biz Fisso</option>
           <option value="cessione">Subentro</option>
           <option value="morte">Autodich Cert. Morte</option>
           <option value="decesso">Autodich Atto Notorio</option>
@@ -993,6 +995,82 @@
           <div class="radio-group">
             <label class="radio-opt"><input type="radio" name="f_pagamento" value="cb_pagamento_rateizzato"> Pagamento rateizzato</label>
             <label class="radio-opt"><input type="radio" name="f_pagamento" value="cb_pagamento_unica" checked> Pagamento in unica soluzione</label>
+          </div>
+        </div>
+      </div>
+    </fieldset>
+  </div>
+<div id="panel-bizfisso" class="tab-panel" data-hidden="true">
+    <fieldset>
+      <legend>Intestatario (Professionista)</legend>
+      <div class="row">
+        <div class="field wide"><label>Ragione Sociale <span class="req">*</span></label><input type="text" id="bf_ragione_sociale" placeholder="Rossi Costruzioni S.r.l."></div>
+        <div class="field"><label>Partita IVA</label><input type="text" id="bf_partita_iva"></div>
+      </div>
+      <div class="row">
+        <div class="field wide"><label>Referente Legale/Delegato</label><input type="text" id="bf_referente_legale"></div>
+      </div>
+      <div class="row">
+        <div class="field wide"><label>Il/La Rappresentante Legale <span class="req">*</span></label><input type="text" id="bf_rappresentante_legale" placeholder="Mario Rossi"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Codice fiscale <span class="req">*</span></label><input type="text" id="bf_codice_fiscale" maxlength="16" style="text-transform:uppercase"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Documento d'identit&agrave; &mdash; tipo</label><input type="text" id="bf_doc_tipo"></div>
+        <div class="field"><label>Documento d'identit&agrave; &mdash; numero</label><input type="text" id="bf_doc_numero"></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Recapiti</legend>
+      <div class="row">
+        <div class="field"><label>Numero del Rappresentante Legale</label><input type="text" id="bf_numero_rappresentante" placeholder="333 1234567"></div>
+        <div class="field"><label>Recapito telefonico Referente Delegato</label><input type="text" id="bf_recapito_alternativo"></div>
+      </div>
+      <div class="row">
+        <div class="field" style="flex:2 1 260px"><label>Indirizzo di residenza &mdash; via</label><input type="text" id="bf_indirizzo_via"></div>
+        <div class="field narrow"><label>Numero civico</label><input type="text" id="bf_indirizzo_numero"></div>
+        <div class="field"><label>Citt&agrave;</label><input type="text" id="bf_indirizzo_citta"></div>
+      </div>
+      <div class="row">
+        <div class="field narrow"><label>Provincia</label><input type="text" id="bf_provincia" maxlength="2" style="text-transform:uppercase"></div>
+        <div class="field narrow"><label>CAP</label><input type="text" id="bf_cap" maxlength="5"></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Recesso richiesto</legend>
+      <div class="row">
+        <div class="field wide">
+          <label>Utenza/e oggetto della richiesta <span class="req">*</span></label>
+          <input type="text" id="bf_utenza" placeholder="0142 987654">
+        </div>
+      </div>
+      <div class="row">
+        <div class="field wide">
+          <label style="margin-bottom:2px">Motivo</label>
+          <div class="radio-group">
+            <label class="radio-opt"><input type="radio" name="bf_motivo" value="cb_richiesta_recesso" checked> Richiesta di recesso</label>
+            <label class="radio-opt"><input type="radio" name="bf_motivo" value="cb_diritto_modifiche"> Diritto di recesso per modifiche contrattuali</label>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="field wide">
+          <label style="margin-bottom:2px">Modalit&agrave; con cui recedere dal servizio <span class="req">*</span></label>
+          <div class="radio-group">
+            <label class="radio-opt"><input type="radio" name="bf_modalita" value="cb_cessazione"> Con cessazione definitiva della linea e perdita del numero</label>
+            <label class="radio-opt"><input type="radio" name="bf_modalita" value="cb_portabilita"> Con portabilit&agrave; verso altro operatore tramite codice di migrazione</label>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="field wide">
+          <label style="margin-bottom:2px">Modalit&agrave; pagamento rate residue (se dovute)</label>
+          <div class="radio-group">
+            <label class="radio-opt"><input type="radio" name="bf_pagamento" value="cb_pagamento_rateizzato"> Pagamento rateizzato</label>
+            <label class="radio-opt"><input type="radio" name="bf_pagamento" value="cb_pagamento_unica" checked> Pagamento in unica soluzione</label>
           </div>
         </div>
       </div>
@@ -2274,7 +2352,7 @@
 <script src="config.js"></script>
 <script src="perms.js"></script>
 <script src="app.js"></script>
-<script src="compilatore.js?v=3"></script>
+<script src="compilatore.js?v=4"></script>
 <script src="offerte.js?v=1"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="comuni.js?v=5"></script>
