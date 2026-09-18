@@ -551,6 +551,25 @@
       .filter(function (f) { return f !== undefined; });
   }
 
+  // html5-qrcode ridisegna il ritaglio su un canvas grande quanto il riquadro in pixel di layout
+  // e decodifica quello. Il box dello scanner ha quindi una larghezza logica fissa e grande
+  // (vedi CSS #gzScannerBox) e qui lo si rimpicciolisce a schermo: il decoder lavora vicino
+  // alla risoluzione reale della camera, l'utente vede un box che sta nella card.
+  var SCAN_LOGICAL_WIDTH = 1000;
+
+  function fitScanner() {
+    var wrap = $('gzScanWrap');
+    var box = $('gzScannerBox');
+    if (!wrap || !wrap.clientWidth) return;
+    var k = wrap.clientWidth / SCAN_LOGICAL_WIDTH;
+    box.style.transform = 'scale(' + k + ')';
+    // transform non cambia il layout: l'altezza del contenitore va impostata a mano.
+    wrap.style.height = box.offsetHeight ? Math.ceil(box.offsetHeight * k) + 'px' : '';
+  }
+
+  window.addEventListener('resize', fitScanner);
+  if (typeof ResizeObserver !== 'undefined') new ResizeObserver(fitScanner).observe($('gzScannerBox'));
+
   async function startScanner() {
     var msg = $('gzScanMsg');
     if (typeof Html5Qrcode === 'undefined') { msg.textContent = 'Libreria scanner non disponibile (controlla la connessione).'; return; }
@@ -563,16 +582,20 @@
         { facingMode: 'environment' },
         {
           fps: 10,
-          // Rettangolo largo: i barcode 1D non si leggono in un riquadro quadrato.
+          // Senza vincoli molti telefoni aprono la camera a 640x480: pochi pixel per barra.
+          videoConstraints: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
+          // Riquadro largo (i 1D sono orizzontali) e quasi a tutta larghezza: la libreria
+          // decodifica un canvas grande quanto questo riquadro, quindi più è grande meglio si legge.
           qrbox: function (vw, vh) {
-            var w = Math.max(50, Math.floor(Math.min(vw * 0.9, 480)));
-            return { width: w, height: Math.max(50, Math.floor(Math.min(vh * 0.7, w * 0.5))) };
+            var w = Math.max(50, Math.floor(vw * 0.92));
+            return { width: w, height: Math.max(50, Math.floor(Math.min(vh * 0.8, w * 0.4))) };
           }
         },
         onDecode,
         function () { /* nessun codice nel frame: normale */ }
       );
       scannerRunning = true;
+      fitScanner();
       $('gzScanToggle').textContent = 'Ferma fotocamera';
     } catch (err) {
       console.error('Errore avvio fotocamera:', err);
