@@ -2,11 +2,12 @@
   var COOLDOWN_MS = 1500; // stesso codice non ricontato finché non sparisce dall'inquadratura per almeno tanto
   var UPSERT_CHUNK = 500;
   var DELETE_CHUNK = 100;
+  var MANUAL_MAX_RESULTS = 10; // risultati mostrati dal typeahead della ricerca manuale
 
   var attese = []; // [{codice, nome_articolo, unita_attese, importato_il}]
   var atteseHay = []; // stringhe minuscole "codice nome" parallele ad attese, per la ricerca
   var attMap = new Map(); // chiave normalizzata (trim+MAIUSCOLO) -> riga di attese
-  var attExact = new Set(); // codici esatti presenti in attese
+  var attExact = new Map(); // codice esatto -> riga di attese
 
   var sessione = null; // riga di wt_giacenze_conteggio mostrata (attiva o completata)
   var inCorso = null; // eventuale conteggio 'in_corso' su DB, anche se non ripreso in questa vista
@@ -243,11 +244,11 @@
     attese.forEach(function (a) { a.unita_attese = Number(a.unita_attese) || 0; });
     atteseHay = attese.map(function (a) { return (a.codice + ' ' + (a.nome_articolo || '')).toLowerCase(); });
     attMap = new Map();
-    attExact = new Set();
+    attExact = new Map();
     attese.forEach(function (a) {
       var k = normKey(a.codice);
       if (!attMap.has(k)) attMap.set(k, a);
-      attExact.add(a.codice);
+      attExact.set(a.codice, a);
     });
   }
 
@@ -364,7 +365,7 @@
     $('gzSearchInput').value = '';
     $('gzSuggest').innerHTML = '';
     $('gzStepper').innerHTML = '';
-    $('gzManualMsg').textContent = '';
+    setManualMsg('', false);
     pendingUnknown = null;
   }
 
@@ -598,7 +599,7 @@
     var tokens = term.toLowerCase().split(/\s+/).filter(Boolean);
     if (!tokens.length) return [];
     var out = [];
-    for (var i = 0; i < attese.length && out.length < 30; i++) {
+    for (var i = 0; i < attese.length && out.length < MANUAL_MAX_RESULTS; i++) {
       var hay = atteseHay[i];
       if (tokens.every(function (t) { return hay.indexOf(t) > -1; })) out.push(attese[i]);
     }
@@ -608,7 +609,7 @@
   $('gzSearchInput').addEventListener('input', function () {
     var term = this.value.trim();
     var box = $('gzSuggest');
-    $('gzManualMsg').textContent = '';
+    setManualMsg('', false);
     if (!term) { box.innerHTML = ''; return; }
     var found = searchAttese(term);
     if (!found.length) {
@@ -636,64 +637,94 @@
         await bump(add.dataset.code, 1);
         selectArticle(add.dataset.code);
       } catch (err) {
-        $('gzManualMsg').textContent = 'Errore salvataggio: ' + err.message;
+        setManualMsg('Errore salvataggio: ' + err.message, false);
       }
     }
   });
 
+  function setManualMsg(text, isOk) {
+    var el = $('gzManualMsg');
+    el.textContent = text;
+    el.className = 'gz-msg' + (isOk ? ' ok' : '');
+  }
+
+  function currentCount(codice) {
+    return righe.has(codice) ? righe.get(codice) : 0;
+  }
+
+  // Selezionato un articolo: -1/+1 e input lavorano su un valore in bozza (parte dal
+  // conteggio attuale), che viene scritto su DB solo premendo Salva.
   function selectArticle(codice) {
     selectedCode = codice;
-    var art = attMap.get(normKey(codice));
+    var art = attExact.get(codice) || attMap.get(normKey(codice));
     var nome = art ? art.nome_articolo : null;
     $('gzSuggest').innerHTML = '';
-    $('gzSearchInput').value = '';
-    $('gzManualMsg').textContent = '';
+    setManualMsg('', false);
     $('gzStepper').innerHTML =
       '<div class="gz-step-title">' + escapeHtml(nome || codice) + '</div>' +
       '<div class="gz-fb-sub">' + escapeHtml(codice) + ' &middot; ' +
       (art ? 'attesi ' + fmtNum(art.unita_attese) : 'non presente in giacenza attesa') + '</div>' +
+      '<div class="gz-step-current">Contate ora: <b id="gzStepCurrent"></b></div>' +
       '<div class="gz-stepper">' +
       '<button type="button" class="pt-btn" id="gzStepMinus">&minus;1</button>' +
       '<input type="number" min="0" step="1" inputmode="numeric" id="gzStepInput" class="cfg-input">' +
-      '<button type="button" class="pt-btn primary" id="gzStepPlus">+1</button>' +
-      '</div>';
+      '<button type="button" class="pt-btn" id="gzStepPlus">+1</button>' +
+      '</div>' +
+      '<button type="button" class="pt-btn primary gz-step-save" id="gzStepSave">Salva</button>';
+    $('gzStepInput').value = currentCount(codice);
     updateStepper();
   }
 
-  // Aggiorna solo il valore mostrato, senza ridisegnare l'input: un rerender mentre
-  // l'utente sta digitando gli farebbe perdere il numero a metà.
+  // Il "Contate ora" segue i conteggi live (anche da scanner); l'input in bozza non si
+  // tocca mai: un rerender mentre l'utente digita gli farebbe perdere il numero a metà.
   function updateStepper() {
-    var input = $('gzStepInput');
-    if (!input || selectedCode == null) return;
-    if (document.activeElement !== input) input.value = righe.has(selectedCode) ? righe.get(selectedCode) : 0;
+    var cur = $('gzStepCurrent');
+    if (!cur || selectedCode == null) return;
+    cur.textContent = fmtNum(currentCount(selectedCode));
   }
 
-  $('gzStepper').addEventListener('click', async function (ev) {
-    var plus = ev.target.closest('#gzStepPlus');
-    var minus = ev.target.closest('#gzStepMinus');
-    if ((!plus && !minus) || selectedCode == null) return;
+  function resetManual() {
+    selectedCode = null;
+    $('gzStepper').innerHTML = '';
+    $('gzSuggest').innerHTML = '';
+    $('gzSearchInput').value = '';
+    $('gzSearchInput').focus();
+  }
+
+  function stepDraft(delta) {
+    var input = $('gzStepInput');
+    if (!input) return;
+    var v = parseFloat(input.value);
+    input.value = Math.max(0, (isNaN(v) ? 0 : v) + delta);
+  }
+
+  async function saveManual() {
+    var input = $('gzStepInput');
+    var saveBtn = $('gzStepSave');
+    if (!input || selectedCode == null) return;
+    var v = parseFloat(input.value);
+    if (isNaN(v) || v < 0) { setManualMsg('Inserisci un numero maggiore o uguale a zero.', false); return; }
+    var codice = selectedCode;
+    var art = attExact.get(codice) || attMap.get(normKey(codice));
+    saveBtn.disabled = true;
     try {
-      await bump(selectedCode, plus ? 1 : -1);
-      $('gzManualMsg').textContent = '';
+      await setCount(codice, v); // aggiorna righe e ridisegna la tabella (scheduleRender) come lo scanner
+      resetManual();
+      setManualMsg('Salvato: ' + ((art && art.nome_articolo) || codice) + ' — ' + fmtNum(v), true);
     } catch (err) {
-      $('gzManualMsg').textContent = 'Errore salvataggio: ' + err.message;
+      saveBtn.disabled = false;
+      setManualMsg('Errore salvataggio: ' + err.message, false);
     }
+  }
+
+  $('gzStepper').addEventListener('click', function (ev) {
+    if (ev.target.closest('#gzStepPlus')) stepDraft(1);
+    else if (ev.target.closest('#gzStepMinus')) stepDraft(-1);
+    else if (ev.target.closest('#gzStepSave')) saveManual();
   });
 
-  $('gzStepper').addEventListener('change', async function (ev) {
-    if (ev.target.id !== 'gzStepInput' || selectedCode == null) return;
-    var v = parseFloat(ev.target.value);
-    if (isNaN(v) || v < 0) {
-      ev.target.value = righe.has(selectedCode) ? righe.get(selectedCode) : 0;
-      $('gzManualMsg').textContent = 'Inserisci un numero maggiore o uguale a zero.';
-      return;
-    }
-    try {
-      await setCount(selectedCode, v);
-      $('gzManualMsg').textContent = '';
-    } catch (err) {
-      $('gzManualMsg').textContent = 'Errore salvataggio: ' + err.message;
-    }
+  $('gzStepper').addEventListener('keydown', function (ev) {
+    if (ev.key === 'Enter' && ev.target.id === 'gzStepInput') { ev.preventDefault(); saveManual(); }
   });
 
   // ================= TABELLA DI CONFRONTO =================
