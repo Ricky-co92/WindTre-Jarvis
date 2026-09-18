@@ -8,6 +8,9 @@
   var atteseHay = []; // stringhe minuscole "codice nome" parallele ad attese, per la ricerca
   var attMap = new Map(); // chiave normalizzata (trim+MAIUSCOLO) -> riga di attese
   var attExact = new Map(); // codice esatto -> riga di attese
+  var eanMap = new Map(); // barcodeKey(EAN) -> {codice, descrizione}: mappatura autoritativa dal file importato
+  var barcodeMap = new Map(); // barcodeKey(barcode) -> {codice}: collegamenti fatti a mano sul campo
+  var pendingLink = null; // barcode non riconosciuto in attesa di essere collegato a un articolo dalla ricerca manuale
 
   var sessione = null; // riga di wt_giacenze_conteggio mostrata (attiva o completata)
   var inCorso = null; // eventuale conteggio 'in_corso' su DB, anche se non ripreso in questa vista
@@ -35,6 +38,13 @@
   // che case li esporta il gestionale né in che case li decodifica il barcode.
   function normKey(s) {
     return String(s == null ? '' : s).trim().toUpperCase();
+  }
+
+  // Chiave per confrontare i barcode: come normKey, ma i barcode solo numerici perdono gli zeri
+  // iniziali, così lo stesso EAN letto come UPC-A (12 cifre) o EAN-13 (con lo 0 davanti) coincide.
+  function barcodeKey(s) {
+    var t = normKey(s);
+    return /^\d+$/.test(t) ? (t.replace(/^0+/, '') || '0') : t;
   }
 
   function fmtNum(n) {
@@ -92,83 +102,92 @@
     return text;
   }
 
-  function cellText(el) {
-    return el ? el.textContent.replace(/ /g, ' ').replace(/\s+/g, ' ').trim() : '';
-  }
-
+  // Nome colonna -> chiave confrontabile (solo lettere minuscole, senza accenti):
+  // "Codice EAN" -> "codiceean", "IMEI / SN" -> "imeisn".
   function headerKey(s) {
-    return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z]/g, '');
+    return String(s == null ? '' : s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z]/g, '');
   }
 
-  // Trova la colonna "Unita" del negozio dall'header: è quella subito prima di "Costo".
-  // Se l'header non è riconoscibile ripiega sulla penultima colonna.
-  function findUnitCol(headers, colCount) {
-    var keys = headers.map(headerKey);
-    var costoIdx = -1;
-    var unitIdxs = [];
-    keys.forEach(function (k, i) {
-      if (costoIdx === -1 && k.indexOf('costo') === 0) costoIdx = i;
-      if (k.indexOf('unit') === 0) unitIdxs.push(i);
+  // Ogni riga del CSV è UNA unità fisica. Solo Stato = GIACENZA entra nelle giacenze attese
+  // (unità = numero di righe per Codice); la mappatura EAN -> Codice si prende invece da
+  // tutte le righe con Codice EAN valorizzato, qualunque sia lo stato.
+  function parseGiacenzeCsv(text) {
+    if (typeof Papa === 'undefined') throw new Error('Libreria CSV non disponibile (controlla la connessione).');
+    var rawHeaders = [];
+    var res = Papa.parse(text.replace(/^﻿/, ''), {
+      header: true,
+      skipEmptyLines: 'greedy',
+      transformHeader: function (h) { rawHeaders.push(h); return headerKey(h); }
     });
-    if (costoIdx > 0 && unitIdxs.indexOf(costoIdx - 1) > -1) return costoIdx - 1;
-    if (unitIdxs.length) return unitIdxs[unitIdxs.length - 1];
-    if (costoIdx > 0) return costoIdx - 1;
-    return colCount - 2;
-  }
-
-  // "12", "12,5", "1.234", "1.234,50" -> numero. Restituisce NaN se non è un numero.
-  function parseQty(raw) {
-    var s = String(raw == null ? '' : raw).replace(/\s/g, '');
-    if (s === '') return 0;
-    if (s.indexOf(',') > -1) s = s.replace(/\./g, '').replace(',', '.');
-    else if (/^\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g, '');
-    return /^-?\d+(\.\d+)?$/.test(s) ? parseFloat(s) : NaN;
-  }
-
-  function parseGiacenzeDoc(doc) {
-    var table = doc.querySelector('table[id^="DataTables_Table"]') || doc.querySelector('table');
-    if (!table) throw new Error('Nessuna tabella trovata nel file.');
-
-    var headRow = table.querySelector('thead tr') ||
-      Array.from(table.querySelectorAll('tr')).filter(function (tr) { return tr.querySelector('th'); })[0] || null;
-    var headers = headRow ? Array.from(headRow.children).map(cellText) : [];
-
-    var trs = Array.from(table.querySelectorAll('tbody tr, tr')).filter(function (tr) {
-      return tr !== headRow && tr.querySelectorAll('td').length > 0;
-    });
-    if (!trs.length) throw new Error('La tabella non contiene righe.');
-
-    var colCount = headers.length || trs[0].querySelectorAll('td').length;
-    var unitCol = findUnitCol(headers, colCount);
-    if (unitCol < 2) throw new Error('Colonna delle unità non riconosciuta (header: ' + (headers.join(' | ') || 'assente') + ').');
+    var fields = res.meta.fields || [];
+    if (fields.indexOf('stato') === -1 || fields.indexOf('codice') === -1) {
+      throw new Error('Colonne "Stato" e "Codice" non trovate (intestazioni lette: ' + (rawHeaders.join(' | ') || 'nessuna') + ').');
+    }
 
     var byCode = new Map();
-    var skipped = 0;
-    var merged = 0;
-    trs.forEach(function (tr) {
-      var cells = tr.querySelectorAll('td');
-      var codice = cellText(cells[0]);
-      var nome = cellText(cells[1]);
-      if (!codice || /^totale:?$/i.test(codice) || /^totale:?$/i.test(nome)) return;
-      var unita = parseQty(cellText(cells[unitCol]));
-      if (isNaN(unita)) { skipped++; return; }
+    var eans = new Map();
+    var stats = { righe: res.data.length, nonGiacenza: 0, senzaCodice: 0, eanConflitti: 0, eanNonValidi: 0 };
+    res.data.forEach(function (r) {
+      var codice = String(r.codice == null ? '' : r.codice).trim();
+      var descrizione = String(r.descrizione == null ? '' : r.descrizione).trim();
+      var ean = String(r.codiceean == null ? '' : r.codiceean).trim();
+
+      if (ean && codice) {
+        // Notazione scientifica (8.00123E+12) = colonna rovinata da Excel: mappare quel valore sarebbe sbagliato.
+        if (/^\d+([.,]\d+)?e\+?\d+$/i.test(ean)) {
+          stats.eanNonValidi++;
+        } else {
+          var prevEan = eans.get(ean);
+          if (!prevEan) eans.set(ean, { ean: ean, codice: codice, descrizione: descrizione || null });
+          else if (prevEan.codice !== codice) stats.eanConflitti++; // resta il primo abbinamento
+          else if (!prevEan.descrizione && descrizione) prevEan.descrizione = descrizione;
+        }
+      }
+
+      if (String(r.stato == null ? '' : r.stato).trim().toUpperCase() !== 'GIACENZA') { stats.nonGiacenza++; return; }
+      if (!codice) { stats.senzaCodice++; return; }
       var prev = byCode.get(codice);
       if (prev) {
-        // Stesso codice su più righe: si sommano le unità invece di perderne una.
-        prev.unita_attese += unita;
-        if (!prev.nome_articolo && nome) prev.nome_articolo = nome;
-        merged++;
+        prev.unita_attese++;
+        if (!prev.nome_articolo && descrizione) prev.nome_articolo = descrizione;
       } else {
-        byCode.set(codice, { codice: codice, nome_articolo: nome || null, unita_attese: unita });
+        byCode.set(codice, { codice: codice, nome_articolo: descrizione || null, unita_attese: 1 });
       }
     });
 
+    var rows = Array.from(byCode.values());
     return {
-      rows: Array.from(byCode.values()),
-      skipped: skipped,
-      merged: merged,
-      unitLabel: headers[unitCol] || ('colonna ' + (unitCol + 1))
+      rows: rows,
+      unitaTotali: rows.reduce(function (s, r) { return s + r.unita_attese; }, 0),
+      eans: Array.from(eans.values()),
+      stats: stats
     };
+  }
+
+  // Nessun TRUNCATE (la anon key non può fare DDL): prima si scrive tutto (upsert), poi si
+  // eliminano solo i codici spariti dal file. Lo stato finale è quello di un truncate+insert,
+  // ma un errore a metà non lascia mai la tabella vuota. Restituisce quanti codici ha tolto.
+  async function writeAttese(payload) {
+    for (var i = 0; i < payload.length; i += UPSERT_CHUNK) {
+      var up = await sb.from('wt_giacenze_attese').upsert(payload.slice(i, i + UPSERT_CHUNK), { onConflict: 'codice' });
+      if (up.error) throw up.error;
+    }
+    var newCodes = new Set(payload.map(function (r) { return r.codice; }));
+    var existing = await fetchAllRows('wt_giacenze_attese', 'codice', function (q) { return q.order('codice'); });
+    var stale = existing.map(function (r) { return r.codice; }).filter(function (c) { return !newCodes.has(c); });
+    for (var j = 0; j < stale.length; j += DELETE_CHUNK) {
+      var del = await sb.from('wt_giacenze_attese').delete().in('codice', stale.slice(j, j + DELETE_CHUNK));
+      if (del.error) throw del.error;
+    }
+    return stale.length;
+  }
+
+  // Solo upsert per ean: un EAN già mappato viene aggiornato, mai duplicato né cancellato.
+  async function writeEan(payload) {
+    for (var i = 0; i < payload.length; i += UPSERT_CHUNK) {
+      var up = await sb.from('wt_giacenze_ean').upsert(payload.slice(i, i + UPSERT_CHUNK), { onConflict: 'ean' });
+      if (up.error) throw up.error;
+    }
   }
 
   async function importFile(file) {
@@ -177,43 +196,41 @@
     btn.disabled = true;
     setInfo('Lettura file...', '');
     try {
-      var text = await readFileText(file);
-      var parsed = parseGiacenzeDoc(new DOMParser().parseFromString(text, 'text/html'));
-      if (!parsed.rows.length) throw new Error('Nessun articolo valido trovato nel file.');
+      var parsed = parseGiacenzeCsv(await readFileText(file));
+      if (!parsed.rows.length) {
+        throw new Error('Nessuna riga con Stato = GIACENZA trovata (' + parsed.stats.righe + ' righe lette): giacenza non modificata.');
+      }
 
-      var extra = (parsed.merged ? '\n' + parsed.merged + ' righe con codice duplicato sommate.' : '') +
-        (parsed.skipped ? '\n' + parsed.skipped + ' righe scartate (unità non numeriche).' : '');
-      if (!confirm('Sostituire la giacenza attesa con ' + parsed.rows.length + ' articoli?\nColonna unità letta: "' + parsed.unitLabel + '".' + extra)) {
+      var st = parsed.stats;
+      var note = (st.nonGiacenza ? '\n' + st.nonGiacenza + ' righe con stato diverso da GIACENZA ignorate per le giacenze.' : '') +
+        (st.senzaCodice ? '\n' + st.senzaCodice + ' righe in giacenza senza Codice scartate.' : '') +
+        (st.eanConflitti ? '\n' + st.eanConflitti + ' EAN associati a più codici: tenuto il primo.' : '') +
+        (st.eanNonValidi ? '\n' + st.eanNonValidi + ' EAN in notazione scientifica (file rovinato da Excel) ignorati.' : '');
+      if (!confirm('Sostituire la giacenza attesa con ' + parsed.rows.length + ' articoli distinti (' + parsed.unitaTotali +
+        ' unità) e aggiornare ' + parsed.eans.length + ' codici EAN?' + note)) {
         setInfo('Import annullato.', '');
         return;
       }
 
-      // Nessun TRUNCATE: la anon key non può fare DDL. Prima si scrive tutto (upsert),
-      // poi si eliminano solo i codici spariti dal file: lo stato finale è quello di
-      // un truncate+insert, ma un errore a metà non lascia mai la tabella vuota.
       var now = new Date().toISOString();
-      var payload = parsed.rows.map(function (r) {
+      var attesePayload = parsed.rows.map(function (r) {
         return { codice: r.codice, nome_articolo: r.nome_articolo, unita_attese: r.unita_attese, importato_il: now };
       });
-      for (var i = 0; i < payload.length; i += UPSERT_CHUNK) {
-        setInfo('Salvataggio... ' + Math.min(i + UPSERT_CHUNK, payload.length) + '/' + payload.length, '');
-        var up = await sb.from('wt_giacenze_attese').upsert(payload.slice(i, i + UPSERT_CHUNK), { onConflict: 'codice' });
-        if (up.error) throw up.error;
-      }
+      var eanPayload = parsed.eans.map(function (e) {
+        return { ean: e.ean, codice: e.codice, descrizione: e.descrizione, aggiornato_il: now };
+      });
 
-      var newCodes = new Set(payload.map(function (r) { return r.codice; }));
-      var existing = await fetchAllRows('wt_giacenze_attese', 'codice', function (q) { return q.order('codice'); });
-      var stale = existing.map(function (r) { return r.codice; }).filter(function (c) { return !newCodes.has(c); });
-      for (var j = 0; j < stale.length; j += DELETE_CHUNK) {
-        var del = await sb.from('wt_giacenze_attese').delete().in('codice', stale.slice(j, j + DELETE_CHUNK));
-        if (del.error) throw del.error;
-      }
+      setInfo('Salvataggio di ' + attesePayload.length + ' articoli e ' + eanPayload.length + ' EAN...', '');
+      // Le due tabelle non dipendono l'una dall'altra: si scrivono in parallelo.
+      var results = await Promise.all([writeAttese(attesePayload), writeEan(eanPayload)]);
+      var removed = results[0];
 
-      await loadAttese();
-      renderImportInfo();
+      // L'import è già andato a buon fine: un problema sulla mappa manuale si vede al prossimo caricamento della pagina.
+      await Promise.all([loadAttese(), loadEanMaps().catch(function (e) { console.error(e); })]);
       scheduleRender();
-      setInfo(payload.length + ' articoli importati, aggiornati il ' + fmtDateTime(now) +
-        (stale.length ? ' (' + stale.length + ' rimossi perché non più nel file)' : ''), 'ok');
+      setInfo(attesePayload.length + ' articoli distinti importati (' + parsed.unitaTotali + ' unità totali), ' +
+        eanPayload.length + ' codici EAN mappati' +
+        (removed ? ' — ' + removed + ' articoli rimossi perché non più in giacenza' : ''), 'ok');
     } catch (err) {
       console.error('Errore import giacenze:', err);
       setInfo('Errore import: ' + err.message, 'err');
@@ -235,7 +252,9 @@
       return;
     }
     var last = attese.reduce(function (m, r) { return r.importato_il > m ? r.importato_il : m; }, '');
-    setInfo(attese.length + ' articoli importati, aggiornati il ' + fmtDateTime(last), '');
+    var unita = attese.reduce(function (s, r) { return s + r.unita_attese; }, 0);
+    setInfo(attese.length + ' articoli distinti importati (' + fmtNum(unita) + ' unità totali), ' + eanMap.size +
+      ' codici EAN mappati — aggiornati il ' + fmtDateTime(last), '');
   }
 
   // ================= LOAD =================
@@ -250,6 +269,32 @@
       if (!attMap.has(k)) attMap.set(k, a);
       attExact.set(a.codice, a);
     });
+  }
+
+  // Le due mappe barcode -> codice si tengono in memoria (come le attese): la scansione non
+  // aspetta una query. Se una tabella non c'è ancora (migration non eseguita) lo scanner
+  // continua a funzionare con le altre fonti, ma l'errore viene mostrato, non nascosto.
+  async function loadEanMaps() {
+    var problemi = [];
+    try {
+      var eans = await fetchAllRows('wt_giacenze_ean', '*', function (q) { return q.order('ean'); });
+      eanMap = new Map();
+      eans.forEach(function (r) { eanMap.set(barcodeKey(r.ean), { codice: r.codice, descrizione: r.descrizione }); });
+    } catch (err) {
+      console.error('Errore caricamento wt_giacenze_ean:', err);
+      problemi.push('wt_giacenze_ean: ' + err.message);
+    }
+    try {
+      var bcs = await fetchAllRows('wt_giacenze_barcode_map', '*', function (q) { return q.order('barcode'); });
+      barcodeMap = new Map();
+      bcs.forEach(function (r) { barcodeMap.set(barcodeKey(r.barcode), { codice: r.codice }); });
+    } catch (err) {
+      console.error('Errore caricamento wt_giacenze_barcode_map:', err);
+      problemi.push('wt_giacenze_barcode_map: ' + err.message);
+    }
+    if (problemi.length) {
+      throw new Error('Mappatura barcode non caricata (' + problemi.join('; ') + ') — hai eseguito tools/giacenze-ean-schema.sql su Supabase?');
+    }
   }
 
   function setRigaLocal(codice, val) {
@@ -294,7 +339,10 @@
   async function loadAll() {
     try {
       await loadAttese();
+      var mapError = null;
+      try { await loadEanMaps(); } catch (e) { mapError = e; }
       renderImportInfo();
+      if (mapError) setInfo(mapError.message, 'err');
       await loadSessione();
     } catch (err) {
       console.error('Errore caricamento giacenze:', err);
@@ -367,6 +415,7 @@
     $('gzStepper').innerHTML = '';
     setManualMsg('', false);
     pendingUnknown = null;
+    clearLink();
   }
 
   async function onStartClick() {
@@ -497,23 +546,79 @@
     vibrate(60);
   }
 
+  // Barcode -> articolo. Ordine di ricerca:
+  //   1. wt_giacenze_ean: mappatura autoritativa arrivata con il file importato
+  //   2. wt_giacenze_barcode_map: collegamenti fatti a mano sul campo per barcode non coperti dal file
+  //   3. il barcode coincide con un codice articolo (etichette interne che stampano il codice)
+  function resolveBarcode(rawText) {
+    var hit = eanMap.get(barcodeKey(rawText));
+    if (hit) return { codice: hit.codice, nome: hit.descrizione };
+    hit = barcodeMap.get(barcodeKey(rawText));
+    if (hit) return { codice: hit.codice, nome: null };
+    var nk = normKey(rawText);
+    var art = attMap.get(nk);
+    if (art) return { codice: art.codice, nome: art.nome_articolo };
+    var extra = righeKeys.get(nk);
+    if (extra) return { codice: extra, nome: null };
+    return null;
+  }
+
+  async function countResolved(hit) {
+    var art = attExact.get(hit.codice) || attMap.get(normKey(hit.codice));
+    var codice = art ? art.codice : (righeKeys.get(normKey(hit.codice)) || hit.codice);
+    var tot = await bump(codice, 1);
+    if (art) feedbackCounted(art.nome_articolo, codice, tot, art.unita_attese);
+    else feedbackCounted(hit.nome ? hit.nome + ' (non in giacenza attesa)' : 'Non presente in giacenza attesa', codice, tot, null);
+  }
+
+  // Barcode sconosciuto: si apre la ricerca manuale perché l'utente lo colleghi a un articolo.
+  // Il collegamento va in wt_giacenze_barcode_map, mai in wt_giacenze_ean (riservata al file ufficiale).
+  function startLink(barcode) {
+    pendingLink = barcode;
+    selectedCode = null;
+    $('gzStepper').innerHTML = '';
+    $('gzSuggest').innerHTML = '';
+    $('gzSearchInput').value = '';
+    setManualMsg('', false);
+    $('gzLinkCode').textContent = barcode;
+    $('gzLinkBanner').classList.remove('hidden');
+    $('gzSearchInput').focus();
+    if ($('gzSearchInput').scrollIntoView) $('gzSearchInput').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+
+  function clearLink() {
+    pendingLink = null;
+    $('gzLinkBanner').classList.add('hidden');
+  }
+
+  function cancelLink() {
+    if (pendingLink == null) return;
+    clearLink();
+    if (selectedCode != null) selectArticle(selectedCode); // ridisegna la riga senza la nota di collegamento
+  }
+
+  async function saveBarcodeLink(barcode, codice) {
+    var res = await sb.from('wt_giacenze_barcode_map').upsert(
+      { barcode: barcode, codice: codice, creato_da: operatoreCorrente() },
+      { onConflict: 'barcode' }
+    );
+    if (res.error) throw res.error;
+    barcodeMap.set(barcodeKey(barcode), { codice: codice });
+  }
+
+  $('gzLinkCancel').addEventListener('click', cancelLink);
+
   async function handleCode(key, rawText) {
-    var art = attMap.get(key);
-    var extraCode = righeKeys.get(key);
     try {
-      if (art) {
-        var tot = await bump(art.codice, 1);
-        feedbackCounted(art.nome_articolo, art.codice, tot, art.unita_attese);
-      } else if (extraCode) {
-        var tot2 = await bump(extraCode, 1);
-        feedbackCounted('Non presente in giacenza attesa', extraCode, tot2, null);
-      } else {
-        pendingUnknown = key;
-        showFeedback('warn',
-          '<div class="gz-fb-title">Codice non riconosciuto: ' + escapeHtml(rawText) + '</div>' +
-          '<button type="button" class="pt-btn primary" id="gzAddAnywayBtn">Aggiungi comunque</button>');
-        vibrate([40, 60, 40]);
-      }
+      var hit = resolveBarcode(rawText);
+      if (hit) { await countResolved(hit); return; }
+      pendingUnknown = key;
+      showFeedback('warn',
+        '<div class="gz-fb-title">Barcode non riconosciuto: ' + escapeHtml(rawText) + '</div>' +
+        '<div class="gz-fb-sub">Cerca l\'articolo nella ricerca manuale per collegarlo: il collegamento verrà ricordato.</div>' +
+        '<button type="button" class="pt-btn primary" id="gzAddAnywayBtn">Aggiungi comunque</button>');
+      vibrate([40, 60, 40]);
+      startLink(key);
     } catch (err) {
       showFeedback('err', '<div class="gz-fb-title">Errore salvataggio: ' + escapeHtml(err.message) + '</div>');
     }
@@ -523,6 +628,7 @@
     if (!ev.target.closest('#gzAddAnywayBtn') || !pendingUnknown) return;
     var key = pendingUnknown;
     pendingUnknown = null;
+    clearLink();
     try {
       var tot = await bump(key, 1);
       feedbackCounted('Non presente in giacenza attesa', key, tot, null);
@@ -656,6 +762,7 @@
     if (pick) { selectArticle(pick.dataset.code); return; }
     var add = ev.target.closest('.gz-sugg-add');
     if (add && add.dataset.code) {
+      clearLink(); // è un articolo nuovo digitato a mano: niente collegamento del barcode in sospeso
       try {
         await bump(add.dataset.code, 1);
         selectArticle(add.dataset.code);
@@ -688,13 +795,15 @@
       '<div class="gz-fb-sub">' + escapeHtml(codice) + ' &middot; ' +
       (art ? 'attesi ' + fmtNum(art.unita_attese) : 'non presente in giacenza attesa') + '</div>' +
       '<div class="gz-step-current">Contate ora: <b id="gzStepCurrent"></b></div>' +
+      (pendingLink ? '<div class="gz-step-link">Salvando colleghi il barcode <b>' + escapeHtml(pendingLink) + '</b> a questo articolo e conteggi la copia appena scansionata (+1).</div>' : '') +
       '<div class="gz-stepper">' +
       '<button type="button" class="pt-btn" id="gzStepMinus">&minus;1</button>' +
       '<input type="number" min="0" step="1" inputmode="numeric" id="gzStepInput" class="cfg-input">' +
       '<button type="button" class="pt-btn" id="gzStepPlus">+1</button>' +
       '</div>' +
       '<button type="button" class="pt-btn primary gz-step-save" id="gzStepSave">Salva</button>';
-    $('gzStepInput').value = currentCount(codice);
+    // Con un barcode da collegare la bozza parte già da +1: l'unità scansionata va contata.
+    $('gzStepInput').value = currentCount(codice) + (pendingLink ? 1 : 0);
     updateStepper();
   }
 
@@ -729,11 +838,16 @@
     if (isNaN(v) || v < 0) { setManualMsg('Inserisci un numero maggiore o uguale a zero.', false); return; }
     var codice = selectedCode;
     var art = attExact.get(codice) || attMap.get(normKey(codice));
+    var nome = (art && art.nome_articolo) || codice;
+    var link = pendingLink;
     saveBtn.disabled = true;
     try {
+      if (link) await saveBarcodeLink(link, codice); // prima il collegamento: è il motivo per cui si è arrivati qui
       await setCount(codice, v); // aggiorna righe e ridisegna la tabella (scheduleRender) come lo scanner
+      if (link) clearLink();
       resetManual();
-      setManualMsg('Salvato: ' + ((art && art.nome_articolo) || codice) + ' — ' + fmtNum(v), true);
+      setManualMsg(link ? 'Barcode ' + link + ' collegato a ' + nome + ' — contate: ' + fmtNum(v)
+        : 'Salvato: ' + nome + ' — ' + fmtNum(v), true);
     } catch (err) {
       saveBtn.disabled = false;
       setManualMsg('Errore salvataggio: ' + err.message, false);

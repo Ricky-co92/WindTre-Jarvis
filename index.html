@@ -24,6 +24,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.7.0/papaparse.min.js"></script>
 <link rel="stylesheet" href="compilatore.css?v=3">
 <style>
   :root{ font-size:18px; }
@@ -451,6 +452,10 @@
   .gz-step-current{font-size:13px;color:#7fc4dc;margin-top:6px;}
   .gz-step-current b{font-family:'Orbitron',sans-serif;color:#eafcff;font-size:1.05rem;margin-left:4px;}
   .gz-step-save{margin-top:10px;width:100%;}
+  .gz-step-link{font-size:12.5px;color:#ffe6b0;margin-top:8px;line-height:1.5;}
+  .gz-link{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 12px;margin-bottom:10px;border:1px solid rgba(255,176,32,.5);background:rgba(255,176,32,.1);border-radius:4px 12px 12px 12px;color:#ffe6b0;font-size:12.5px;line-height:1.5;}
+  .gz-link span{flex:1;min-width:180px;word-break:break-word;}
+  .gz-link .pt-btn{padding:5px 12px;}
   .gz-filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
   .gz-summary{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12.5px;color:#7fc4dc;margin-bottom:12px;}
   .gz-summary b{color:#eafcff;font-family:'Rajdhani',sans-serif;font-size:15px;margin-left:3px;}
@@ -2397,7 +2402,7 @@
 
       <div class="page-toolbar">
         <button type="button" class="pt-btn hidden" id="gzImportBtn">Importa Giacenze</button>
-        <input type="file" id="gzImportFile" class="hidden" accept=".xls,.html,.htm">
+        <input type="file" id="gzImportFile" class="hidden" accept=".csv,.txt,text/csv">
         <button type="button" class="pt-btn primary" id="gzStartBtn">Avvia Conteggio</button>
         <button type="button" class="pt-btn danger hidden" id="gzEndBtn">Termina Conteggio</button>
         <button type="button" class="pt-btn hidden" id="gzExportBtn">Esporta Excel</button>
@@ -2420,6 +2425,10 @@
         </div>
         <div class="gz-card">
           <div class="gz-card-title">Ricerca manuale</div>
+          <div class="gz-link hidden" id="gzLinkBanner">
+            <span>Barcode <b id="gzLinkCode"></b> non riconosciuto: cerca l'articolo, selezionalo e premi Salva per collegarlo.</span>
+            <button type="button" class="pt-btn" id="gzLinkCancel">Annulla</button>
+          </div>
           <input type="text" id="gzSearchInput" class="of-search-input" style="max-width:none;" placeholder="Codice o nome articolo&hellip;" autocomplete="off">
           <div id="gzSuggest"></div>
           <div id="gzStepper"></div>
@@ -2504,7 +2513,7 @@
 <script src="parco-sim.js?v=5"></script>
 <script src="identificazione-cliente-rules.js?v=3"></script>
 <script src="identificazione-cliente.js?v=2"></script>
-<script src="giacenze.js?v=3"></script>
+<script src="giacenze.js?v=4"></script>
 <script src="settings.js?v=1"></script>
 <div id="login-flash"></div>
 <div id="login-iris"></div>
