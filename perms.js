@@ -36,7 +36,8 @@ var PAGES_REGISTRY = [
       { key: 'export', label: 'Esportare Excel' }
     ]
   },
-  { key: 'identificazione_cliente', label: 'Identificazione Cliente', actions: [] }
+  { key: 'identificazione_cliente', label: 'Identificazione Cliente', actions: [] },
+  { key: 'giacenze', label: 'Giacenze', actions: [] }
 ];
 
 var PERMS = {

@@ -302,7 +302,7 @@ async function onLogin(user){
 }
 
 // ---------- NAV ----------
-const VIEWS = ["home","compilatore","offerte","gestione","comuni","manuali","parco_sim","identificazione_cliente","impostazioni"];
+const VIEWS = ["home","compilatore","offerte","gestione","comuni","manuali","parco_sim","identificazione_cliente","giacenze","impostazioni"];
 function switchView(view){
   if (typeof PERMS !== "undefined" && PERMS.ready) {
     const allowed = view === "impostazioni" ? PERMS.isSuperAdmin : PERMS.canView(view);

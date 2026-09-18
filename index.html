@@ -23,6 +23,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <link rel="stylesheet" href="compilatore.css?v=3">
 <style>
   :root{ font-size:18px; }
@@ -409,6 +410,58 @@
   .ps-row-del{background:none;border:none;color:#c0392b;font-size:14px;cursor:pointer;padding:5px;}
   .ps-row-del:hover{color:#ff6767;}
 
+  /* ===== GIACENZE ===== */
+  .gz-info{font-size:13px;color:#7fc4dc;margin:-6px 0 16px;min-height:1.2em;}
+  .gz-info.ok{color:#7fe8a0;font-weight:600;}
+  .gz-info.err{color:#ff8f8f;font-weight:600;}
+  .gz-banner{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 16px;margin-bottom:16px;border:1px solid rgba(255,176,32,.4);background:rgba(255,176,32,.08);border-radius:4px 12px 12px 12px;color:#ffe6b0;font-size:13px;}
+  .gz-banner .pt-btn{margin-left:auto;}
+  .gz-session{font-size:12.5px;color:#7fc4dc;margin-bottom:16px;}
+  .gz-input-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:22px;}
+  @media (max-width:900px){ .gz-input-grid{grid-template-columns:1fr;} }
+  .gz-card{border:1px solid rgba(143,232,255,.18);border-radius:4px 12px 12px 12px;background:rgba(13,25,36,.5);padding:16px;min-width:0;}
+  .gz-card-title{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:14px;color:#4fc8e8;text-transform:uppercase;letter-spacing:.03em;margin-bottom:12px;}
+  #gzScannerBox{width:100%;min-height:200px;background:#05141c;border:1px solid rgba(143,232,255,.18);border-radius:4px;overflow:hidden;margin-bottom:12px;}
+  #gzScannerBox video{width:100% !important;display:block;}
+  .gz-msg{font-size:12.5px;color:#ff8f8f;margin-top:8px;min-height:1em;}
+  .gz-feedback{border-radius:4px 12px 12px 12px;padding:12px 14px;border:1px solid;}
+  .gz-feedback.ok{background:rgba(95,214,138,.12);border-color:rgba(95,214,138,.5);color:#c9f5da;}
+  .gz-feedback.warn{background:rgba(255,176,32,.12);border-color:rgba(255,176,32,.55);color:#ffe6b0;}
+  .gz-feedback.err{background:rgba(224,80,80,.12);border-color:rgba(224,80,80,.5);color:#ffc9c9;}
+  .gz-fb-title{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:16px;margin-bottom:4px;word-break:break-word;}
+  .gz-fb-sub{font-size:12px;opacity:.75;margin-bottom:6px;word-break:break-all;}
+  .gz-fb-count{font-size:14px;}
+  .gz-fb-count b{font-family:'Orbitron',sans-serif;font-size:1.05rem;}
+  .gz-feedback .pt-btn{margin-top:6px;}
+  #gzSuggest{margin-top:8px;display:flex;flex-direction:column;gap:4px;max-height:260px;overflow-y:auto;}
+  .gz-sugg{text-align:left;background:rgba(42,184,217,.05);border:1px solid rgba(143,232,255,.18);border-radius:3px;color:#c8e8f2;font-family:'Inter',sans-serif;font-size:12.5px;padding:8px 10px;cursor:pointer;}
+  .gz-sugg:hover{border-color:#8fe8ff;background:rgba(143,232,255,.08);}
+  .gz-sugg b{color:#8fe8ff;margin-right:6px;}
+  .gz-sugg-empty{font-size:12.5px;color:#7fc4dc;display:flex;flex-direction:column;gap:8px;align-items:flex-start;}
+  #gzStepper{margin-top:14px;}
+  .gz-step-title{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:16px;color:#eafcff;word-break:break-word;}
+  .gz-stepper{display:flex;gap:8px;align-items:stretch;margin-top:6px;}
+  .gz-stepper .cfg-input{text-align:center;font-family:'Orbitron',sans-serif;font-size:1.1rem;min-width:0;}
+  .gz-stepper .pt-btn{min-width:64px;font-size:16px;}
+  .gz-filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+  .gz-summary{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12.5px;color:#7fc4dc;margin-bottom:12px;}
+  .gz-summary b{color:#eafcff;font-family:'Rajdhani',sans-serif;font-size:15px;margin-left:3px;}
+  .gz-summary .gz-s-ok b{color:#7fe8a0;}
+  .gz-summary .gz-s-diff b{color:#ff8f8f;}
+  .gz-summary .gz-s-warn b{color:#ffb020;}
+  .gz-table-wrap{overflow:auto;max-height:65vh;border:1px solid rgba(143,232,255,.15);border-radius:6px;}
+  .gz-table{border-collapse:separate;border-spacing:0;width:100%;min-width:560px;font-size:12.5px;}
+  .gz-table thead th{background:#12232f;color:#4fc8e8;font-family:'Rajdhani',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.03em;font-size:11px;padding:8px 10px;text-align:left;position:sticky;top:0;z-index:3;border-bottom:1px solid rgba(143,232,255,.25);white-space:nowrap;}
+  .gz-table th.gz-num,.gz-table td.gz-num{text-align:right;white-space:nowrap;}
+  .gz-table td{padding:7px 10px;border-bottom:1px solid rgba(143,232,255,.08);color:#c8e8f2;}
+  .gz-code{font-family:'Rajdhani',sans-serif;font-weight:700;white-space:nowrap;}
+  .gz-row.gz-none td{background:rgba(143,184,204,.05);color:#8fb8cc;}
+  .gz-row.gz-ok td{background:rgba(95,214,138,.10);color:#c9f5da;}
+  .gz-row.gz-diff td{background:rgba(224,80,80,.13);color:#ffc9c9;}
+  .gz-row.gz-diff .gz-diffcell{font-weight:700;}
+  .gz-sep td{background:#0d1924;color:#ffb020;font-family:'Rajdhani',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.03em;padding:10px;}
+  .gz-empty{text-align:center;color:#7fc4dc !important;padding:18px !important;}
+
   /* ===== IDENTIFICAZIONE CLIENTE ===== */
   .ic-layout{display:grid;grid-template-columns:380px 1fr;gap:24px;align-items:start;}
   @media (max-width:700px){ .ic-layout{grid-template-columns:1fr;} }
@@ -612,6 +665,7 @@
   <div class="nav-item" data-view="manuali" data-text="Manuali">Manuali</div>
   <div class="nav-item" data-view="parco_sim" data-text="Parco SIM">Parco SIM</div>
   <div class="nav-item" data-view="identificazione_cliente" data-text="Identificazione Cliente">Identificazione Cliente</div>
+  <div class="nav-item" data-view="giacenze" data-text="Giacenze">Giacenze</div>
   <div class="nav-item" data-view="impostazioni" data-text="Impostazioni">Impostazioni</div>
 </div>
 
@@ -2325,6 +2379,88 @@
     </div>
   </div>
 
+  <!-- GIACENZE -->
+  <div id="view-giacenze" class="hidden">
+    <div class="gd-panel">
+      <div class="panel-head">
+        <div class="title">&#9670; giacenze</div>
+      </div>
+      <p class="sub" style="margin:0 0 18px">Conteggio fisico di magazzino: scansiona i barcode o cerca l'articolo a mano e confronta il contato con la giacenza attesa del gestionale.</p>
+
+      <div class="page-toolbar">
+        <button type="button" class="pt-btn hidden" id="gzImportBtn">Importa Giacenze</button>
+        <input type="file" id="gzImportFile" class="hidden" accept=".xls,.html,.htm">
+        <button type="button" class="pt-btn primary" id="gzStartBtn">Avvia Conteggio</button>
+        <button type="button" class="pt-btn danger hidden" id="gzEndBtn">Termina Conteggio</button>
+        <button type="button" class="pt-btn hidden" id="gzExportBtn">Esporta Excel</button>
+      </div>
+      <div class="gz-info" id="gzImportInfo"></div>
+
+      <div class="gz-banner hidden" id="gzResume">
+        <span id="gzResumeText"></span>
+        <button type="button" class="pt-btn primary" id="gzResumeBtn">Riprendi conteggio</button>
+      </div>
+      <div class="gz-session hidden" id="gzSession"></div>
+
+      <div class="gz-input-grid hidden" id="gzInputArea">
+        <div class="gz-card">
+          <div class="gz-card-title">Scanner fotocamera</div>
+          <div id="gzScannerBox"></div>
+          <button type="button" class="pt-btn" id="gzScanToggle">Attiva fotocamera</button>
+          <div class="gz-msg" id="gzScanMsg"></div>
+          <div class="gz-feedback hidden" id="gzFeedback"></div>
+        </div>
+        <div class="gz-card">
+          <div class="gz-card-title">Ricerca manuale</div>
+          <input type="text" id="gzSearchInput" class="of-search-input" style="max-width:none;" placeholder="Codice o nome articolo&hellip;" autocomplete="off">
+          <div id="gzSuggest"></div>
+          <div id="gzStepper"></div>
+          <div class="gz-msg" id="gzManualMsg"></div>
+        </div>
+      </div>
+
+      <div id="gzCompare" class="hidden">
+        <div class="gz-filters" id="gzFilters">
+          <button type="button" class="of-chip active" data-filter="all">Tutti</button>
+          <button type="button" class="of-chip" data-filter="diff">Solo discrepanze</button>
+          <button type="button" class="of-chip" data-filter="none">Solo non contati</button>
+        </div>
+        <div class="gz-summary" id="gzSummary"></div>
+        <div class="gz-table-wrap">
+          <table class="gz-table">
+            <thead>
+              <tr>
+                <th>Codice</th>
+                <th>Articolo</th>
+                <th class="gz-num">Attese</th>
+                <th class="gz-num">Contate</th>
+                <th class="gz-num">Differenza</th>
+              </tr>
+            </thead>
+            <tbody id="gzTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Conteggio già in corso: riprendi o abbandona -->
+  <div class="of-modal-backdrop hidden" id="gzChoiceBackdrop">
+    <div class="of-modal">
+      <div class="of-modal-head">
+        <div class="title">Conteggio in corso</div>
+        <button type="button" class="of-modal-close" id="gzChoiceClose">&times;</button>
+      </div>
+      <div class="of-modal-body">
+        <p id="gzChoiceText" style="margin:0;color:#c8e8f2;font-size:13.5px;line-height:1.6;"></p>
+      </div>
+      <div class="of-modal-foot">
+        <button type="button" class="pt-btn danger" id="gzChoiceAbandon">Abbandona e ricomincia</button>
+        <button type="button" class="pt-btn primary" id="gzChoiceResume" style="margin-left:auto;">Riprendi</button>
+      </div>
+    </div>
+  </div>
+
   <div id="view-impostazioni" class="hidden">
     <div class="gd-panel">
       <div class="panel-head">
@@ -2350,8 +2486,8 @@
 
   
 <script src="config.js"></script>
-<script src="perms.js"></script>
-<script src="app.js"></script>
+<script src="perms.js?v=1"></script>
+<script src="app.js?v=1"></script>
 <script src="compilatore.js?v=4"></script>
 <script src="offerte.js?v=1"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -2360,6 +2496,7 @@
 <script src="parco-sim.js?v=5"></script>
 <script src="identificazione-cliente-rules.js?v=3"></script>
 <script src="identificazione-cliente.js?v=2"></script>
+<script src="giacenze.js?v=1"></script>
 <script src="settings.js?v=1"></script>
 <div id="login-flash"></div>
 <div id="login-iris"></div>
