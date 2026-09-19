@@ -165,7 +165,13 @@
       }
     });
 
-    var rows = Array.from(byCode.values());
+    // La Descrizione è opzionale: un Codice valido con Stato GIACENZA entra sempre nelle
+    // giacenze attese, anche a descrizione vuota (qui il fallback è leggibile in tabella:
+    // il Codice stesso al posto di una cella vuota — la riga non è mai stata esclusa prima).
+    var rows = Array.from(byCode.values()).map(function (r) {
+      if (!r.nome_articolo) r.nome_articolo = r.codice;
+      return r;
+    });
     return {
       rows: rows,
       unitaTotali: rows.reduce(function (s, r) { return s + r.unita_attese; }, 0),
