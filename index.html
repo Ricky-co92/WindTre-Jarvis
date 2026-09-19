@@ -472,12 +472,51 @@
   .gz-table th.gz-num,.gz-table td.gz-num{text-align:right;white-space:nowrap;}
   .gz-table td{padding:7px 10px;border-bottom:1px solid rgba(143,232,255,.08);color:#c8e8f2;}
   .gz-code{font-family:'Rajdhani',sans-serif;font-weight:700;white-space:nowrap;}
+  .gz-center{text-align:center;}
   .gz-row.gz-none td{background:rgba(143,184,204,.05);color:#8fb8cc;}
   .gz-row.gz-ok td{background:rgba(95,214,138,.10);color:#c9f5da;}
-  .gz-row.gz-diff td{background:rgba(224,80,80,.13);color:#ffc9c9;}
-  .gz-row.gz-diff .gz-diffcell{font-weight:700;}
+  .gz-row.gz-mancante td{background:rgba(224,80,80,.13);color:#ffc9c9;}
+  .gz-row.gz-eccedenza td{background:rgba(255,176,32,.13);color:#ffe6b0;}
+  .gz-row.gz-mancante .gz-diffcell,.gz-row.gz-eccedenza .gz-diffcell{font-weight:700;}
   .gz-sep td{background:#0d1924;color:#ffb020;font-family:'Rajdhani',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.03em;padding:10px;}
   .gz-empty{text-align:center;color:#7fc4dc !important;padding:18px !important;}
+  .gz-empty-inline{color:#7fc4dc;font-size:12.5px;padding:6px 0;}
+  @keyframes gzFlash{0%{background:rgba(143,232,255,.55);}100%{background:transparent;}}
+  .gz-row-flash td{animation:gzFlash 1.2s ease;}
+  .gz-stale-badge{font-size:11px;color:#ffb020;font-weight:600;white-space:normal;margin-top:4px;line-height:1.4;}
+  .gz-corr-date{font-size:10.5px;color:#7fc4dc;margin-top:2px;}
+  .gz-note-input{width:100%;min-width:140px;background:rgba(42,184,217,.05);border:1px solid rgba(143,232,255,.18);border-radius:3px;color:#eafcff;padding:5px 7px;font-family:'Inter',sans-serif;font-size:12px;}
+  .gz-note-input:focus{outline:none;border-color:#8fe8ff;}
+  .gz-note-disabled{color:#5a7688;}
+
+  /* ---- sessioni ---- */
+  .gz-sess-row{cursor:pointer;}
+  .gz-sess-row:hover td{background:rgba(143,232,255,.06);}
+  .gz-badge{display:inline-block;padding:3px 9px;border-radius:12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.02em;}
+  .gz-badge-in_corso{background:rgba(255,176,32,.15);color:#ffb020;}
+  .gz-badge-completato{background:rgba(95,214,138,.15);color:#7fe8a0;}
+  .gz-badge-abbandonato{background:rgba(143,184,204,.15);color:#8fb8cc;}
+
+  /* ---- confronto: selettore fonte + filtri + contatore correzioni ---- */
+  .gz-compare-toolbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:12px;}
+  .gz-fonte-label{display:flex;align-items:center;gap:8px;font-size:12.5px;color:#7fc4dc;}
+  .gz-fonte-select{width:auto;padding:6px 10px;font-size:12.5px;}
+  .gz-corr-counter{font-size:12.5px;color:#8fe8ff;font-weight:600;margin-left:auto;}
+
+  /* ---- pannello EAN sconosciuti ---- */
+  .gz-ean-panel.gz-readonly .gz-ean-assign-btn,.gz-ean-panel.gz-readonly .gz-ean-edit-btn,.gz-ean-panel.gz-readonly .gz-ean-remove-btn{display:none;}
+  .gz-ean-row{border:1px solid rgba(143,232,255,.14);border-radius:4px 10px 10px 10px;padding:9px 11px;margin-bottom:8px;background:rgba(42,184,217,.04);}
+  .gz-ean-row.gz-ean-assigned{background:rgba(95,214,138,.05);border-color:rgba(95,214,138,.25);}
+  .gz-ean-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12.5px;color:#c8e8f2;}
+  .gz-ean-qty{color:#8fe8ff;font-weight:600;}
+  .gz-ean-head .pt-btn{margin-left:auto;padding:5px 12px;font-size:11.5px;}
+  .gz-ean-assigned-title{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:12.5px;color:#7fe8a0;text-transform:uppercase;letter-spacing:.03em;margin:14px 0 8px;}
+  .gz-ean-assign{margin-top:8px;}
+  .gz-ean-assign-sugg{margin-top:6px;display:flex;flex-direction:column;gap:4px;max-height:180px;overflow-y:auto;}
+
+  /* ---- modale import giacenze ---- */
+  .gz-radio-row{display:flex;flex-direction:column;gap:8px;margin:6px 0 16px;font-size:13px;color:#c8e8f2;}
+  .gz-import-summary{white-space:pre-line;font-size:13px;color:#eafcff;background:rgba(42,184,217,.06);border:1px solid rgba(143,232,255,.18);border-radius:4px;padding:12px 14px;margin-top:12px;line-height:1.6;}
 
   /* ===== IDENTIFICAZIONE CLIENTE ===== */
   .ic-layout{display:grid;grid-template-columns:380px 1fr;gap:24px;align-items:start;}
@@ -2405,53 +2444,96 @@
       <p class="sub" style="margin:0 0 18px">Conteggio fisico di magazzino: scansiona i barcode o cerca l'articolo a mano e confronta il contato con la giacenza attesa del gestionale.</p>
 
       <div class="page-toolbar">
-        <button type="button" class="pt-btn hidden" id="gzImportBtn">Importa Giacenze</button>
-        <input type="file" id="gzImportFile" class="hidden" accept=".csv,.txt,text/csv">
-        <button type="button" class="pt-btn primary" id="gzStartBtn">Avvia Conteggio</button>
-        <button type="button" class="pt-btn danger hidden" id="gzEndBtn">Termina Conteggio</button>
-        <button type="button" class="pt-btn hidden" id="gzExportBtn">Esporta Excel</button>
+        <button type="button" class="pt-btn hidden" id="gzImportGiacenzeBtn">Importa Giacenze</button>
+        <button type="button" class="pt-btn hidden" id="gzImportListinoBtn">Importa Listino SBS</button>
+        <input type="file" id="gzListinoFile" class="hidden" accept=".csv,.txt,.xlsx,.xls,text/csv">
+        <button type="button" class="pt-btn hidden" id="gzBackToListBtn">&larr; Sessioni</button>
       </div>
       <div class="gz-info" id="gzImportInfo"></div>
+      <div class="gz-info" id="gzListinoInfo"></div>
 
-      <div class="gz-banner hidden" id="gzResume">
-        <span id="gzResumeText"></span>
-        <button type="button" class="pt-btn primary" id="gzResumeBtn">Riprendi conteggio</button>
-      </div>
-      <div class="gz-session hidden" id="gzSession"></div>
-
-      <div class="gz-input-grid hidden" id="gzInputArea">
-        <div class="gz-card">
-          <div class="gz-card-title">Scanner fotocamera</div>
-          <div class="gz-scanwrap" id="gzScanWrap">
-            <div id="gzScannerBox"></div>
-            <video id="gzScanVideo" class="hidden" playsinline muted autoplay></video>
-            <div class="gz-scan-reticle hidden" id="gzScanReticle"></div>
-          </div>
-          <div class="gz-scan-controls">
-            <button type="button" class="pt-btn" id="gzScanToggle">Attiva fotocamera</button>
-            <button type="button" class="pt-btn hidden" id="gzTorchToggle">Torcia</button>
-          </div>
-          <div class="gz-msg" id="gzScanMsg"></div>
-          <div class="gz-feedback hidden" id="gzFeedback"></div>
+      <!-- ============= PANNELLO SESSIONI ============= -->
+      <div id="gzSessionsPanel">
+        <div class="page-toolbar">
+          <button type="button" class="pt-btn primary" id="gzNewSessionBtn">+ Nuova sessione</button>
         </div>
-        <div class="gz-card">
-          <div class="gz-card-title">Ricerca manuale</div>
-          <div class="gz-link hidden" id="gzLinkBanner">
-            <span>Barcode <b id="gzLinkCode"></b> non riconosciuto: cerca l'articolo, selezionalo e premi Salva per collegarlo.</span>
-            <button type="button" class="pt-btn" id="gzLinkCancel">Annulla</button>
-          </div>
-          <input type="text" id="gzSearchInput" class="of-search-input" style="max-width:none;" placeholder="Codice o nome articolo&hellip;" autocomplete="off">
-          <div id="gzSuggest"></div>
-          <div id="gzStepper"></div>
-          <div class="gz-msg" id="gzManualMsg"></div>
+        <div class="gz-table-wrap">
+          <table class="gz-table">
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Data</th>
+                <th>Stato</th>
+                <th class="gz-num">Righe contate</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="gzSessionsBody"></tbody>
+          </table>
         </div>
       </div>
 
-      <div id="gzCompare" class="hidden">
-        <div class="gz-filters" id="gzFilters">
-          <button type="button" class="of-chip active" data-filter="all">Tutti</button>
-          <button type="button" class="of-chip" data-filter="diff">Solo discrepanze</button>
-          <button type="button" class="of-chip" data-filter="none">Solo non contati</button>
+      <!-- ============= DETTAGLIO SESSIONE ============= -->
+      <div id="gzSessionDetail" class="hidden">
+        <div class="gz-session" id="gzSessionTitle"></div>
+        <div class="page-toolbar">
+          <button type="button" class="pt-btn danger hidden" id="gzEndBtn">Termina Conteggio</button>
+          <button type="button" class="pt-btn hidden" id="gzImportScansioniBtn">Importa scansioni</button>
+          <input type="file" id="gzScansioniFile" class="hidden" accept=".xlsx,.xls">
+          <button type="button" class="pt-btn danger hidden" id="gzResetCountBtn">Azzera conteggio</button>
+          <button type="button" class="pt-btn" id="gzExportCsvBtn">Esporta CSV</button>
+          <button type="button" class="pt-btn" id="gzExportPdfBtn">Esporta PDF</button>
+          <button type="button" class="pt-btn" id="gzExportExcelBtn">Esporta Excel</button>
+        </div>
+
+        <div class="gz-input-grid hidden" id="gzInputArea">
+          <div class="gz-card">
+            <div class="gz-card-title">Scanner fotocamera</div>
+            <div class="gz-scanwrap" id="gzScanWrap">
+              <div id="gzScannerBox"></div>
+              <video id="gzScanVideo" class="hidden" playsinline muted autoplay></video>
+              <div class="gz-scan-reticle hidden" id="gzScanReticle"></div>
+            </div>
+            <div class="gz-scan-controls">
+              <button type="button" class="pt-btn" id="gzScanToggle">Attiva fotocamera</button>
+              <button type="button" class="pt-btn hidden" id="gzTorchToggle">Torcia</button>
+              <button type="button" class="pt-btn" id="gzUndoScanBtn">Annulla ultima scansione</button>
+            </div>
+            <div class="gz-msg" id="gzScanMsg"></div>
+            <div class="gz-feedback hidden" id="gzFeedback"></div>
+          </div>
+          <div class="gz-card">
+            <div class="gz-card-title">Ricerca manuale</div>
+            <input type="text" id="gzSearchInput" class="of-search-input" style="max-width:none;" placeholder="Codice o nome articolo&hellip;" autocomplete="off">
+            <div id="gzSuggest"></div>
+            <div id="gzStepper"></div>
+            <div class="gz-msg" id="gzManualMsg"></div>
+          </div>
+        </div>
+
+        <div class="gz-card gz-ean-panel hidden" id="gzEanUnresolvedPanel">
+          <div class="gz-card-title">EAN sconosciuti</div>
+          <div id="gzEanPendingList"></div>
+          <div id="gzEanAssignedWrap" class="hidden">
+            <div class="gz-ean-assigned-title">Assegnati in questa sessione</div>
+            <div id="gzEanAssignedList"></div>
+          </div>
+        </div>
+
+        <div class="gz-compare-toolbar">
+          <label class="gz-fonte-label">Confronta con:
+            <select id="gzFonteSelect" class="cfg-input gz-fonte-select">
+              <option value="giacenze">Giacenze aggregate</option>
+              <option value="export">Export magazzino</option>
+            </select>
+          </label>
+          <div class="gz-filters" id="gzFilters">
+            <button type="button" class="of-chip active" data-filter="all">Tutte</button>
+            <button type="button" class="of-chip" data-filter="daCorrere">Da correggere</button>
+            <button type="button" class="of-chip" data-filter="corrette">Corrette</button>
+          </div>
+          <span class="gz-corr-counter" id="gzCorrCounter"></span>
+          <button type="button" class="pt-btn" id="gzGotoLastCorrectedBtn">Vai all'ultima corretta</button>
         </div>
         <div class="gz-summary" id="gzSummary"></div>
         <div class="gz-table-wrap">
@@ -2463,6 +2545,8 @@
                 <th class="gz-num">Attese</th>
                 <th class="gz-num">Contate</th>
                 <th class="gz-num">Differenza</th>
+                <th class="gz-center">Corretto</th>
+                <th>Nota</th>
               </tr>
             </thead>
             <tbody id="gzTbody"></tbody>
@@ -2472,19 +2556,29 @@
     </div>
   </div>
 
-  <!-- Conteggio già in corso: riprendi o abbandona -->
-  <div class="of-modal-backdrop hidden" id="gzChoiceBackdrop">
+  <!-- Import giacenze attese: sceglie il Tipo di file, poi conferma il riepilogo prima di scrivere -->
+  <div class="of-modal-backdrop hidden" id="gzImportModalBackdrop">
     <div class="of-modal">
       <div class="of-modal-head">
-        <div class="title">Conteggio in corso</div>
-        <button type="button" class="of-modal-close" id="gzChoiceClose">&times;</button>
+        <div class="title">Importa Giacenze</div>
+        <button type="button" class="of-modal-close" id="gzImportModalClose">&times;</button>
       </div>
       <div class="of-modal-body">
-        <p id="gzChoiceText" style="margin:0;color:#c8e8f2;font-size:13.5px;line-height:1.6;"></p>
+        <div id="gzImportModalPickWrap">
+          <label class="cfg-label" style="margin-top:0;">Tipo di file</label>
+          <div class="gz-radio-row">
+            <label><input type="radio" name="gzImportTipo" id="gzImportTipoGiacenze" checked> Giacenze aggregate</label>
+            <label><input type="radio" name="gzImportTipo" id="gzImportTipoExport"> Export magazzino per unità</label>
+          </div>
+          <label class="cfg-label">File</label>
+          <input type="file" id="gzImportModalFile" class="cfg-input" accept=".csv,.txt,.xls,.html,text/csv">
+        </div>
+        <div id="gzImportModalSummary" class="gz-import-summary hidden"></div>
+        <div class="gz-msg" id="gzImportModalMsg"></div>
       </div>
       <div class="of-modal-foot">
-        <button type="button" class="pt-btn danger" id="gzChoiceAbandon">Abbandona e ricomincia</button>
-        <button type="button" class="pt-btn primary" id="gzChoiceResume" style="margin-left:auto;">Riprendi</button>
+        <button type="button" class="pt-btn" id="gzImportModalCancel">Annulla</button>
+        <button type="button" class="pt-btn primary hidden" id="gzImportModalConfirm" style="margin-left:auto;">Conferma import</button>
       </div>
     </div>
   </div>
@@ -2524,7 +2618,7 @@
 <script src="parco-sim.js?v=5"></script>
 <script src="identificazione-cliente-rules.js?v=3"></script>
 <script src="identificazione-cliente.js?v=2"></script>
-<script src="giacenze.js?v=6"></script>
+<script src="giacenze.js?v=7"></script>
 <script src="settings.js?v=1"></script>
 <div id="login-flash"></div>
 <div id="login-iris"></div>
