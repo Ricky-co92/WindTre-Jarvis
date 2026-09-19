@@ -314,35 +314,50 @@
     return (head.indexOf('<table') > -1 || head.indexOf('<html') > -1) ? 'html' : 'csv';
   }
 
-  // Trova la colonna "Unità" del negozio dall'header: è quella subito prima di "Costo".
-  // Se l'header non è riconoscibile ripiega sulla penultima colonna.
-  function findUnitCol(headers, colCount) {
-    var keys = headers.map(headerKey);
-    var costoIdx = -1;
-    var unitIdxs = [];
-    keys.forEach(function (k, i) {
-      if (costoIdx === -1 && k.indexOf('costo') === 0) costoIdx = i;
-      if (k.indexOf('unit') === 0) unitIdxs.push(i);
-    });
-    if (costoIdx > 0 && unitIdxs.indexOf(costoIdx - 1) > -1) return costoIdx - 1;
-    if (unitIdxs.length) return unitIdxs[unitIdxs.length - 1];
-    if (costoIdx > 0) return costoIdx - 1;
-    return colCount - 2;
+  // Trova la colonna "Unita" del negozio cercando il testo esatto dell'header nell'ULTIMA riga
+  // di intestazione (quella con le sotto-colonne "Unita"/"Costo" del negozio). Quella riga non
+  // ripete le colonne codice/Nome articolo/Totale Unità/Totale Costo (sono coperte da un
+  // rowspan sulla prima riga), quindi le sue celle si allineano alle ULTIME colonne della riga
+  // dati, non alle prime: da qui l'offset calcolato dalla fine invece che dall'inizio.
+  // Match sul testo esatto "Unita" (mai "Totale Unità", tutt'altra colonna aggregata) e non per
+  // posizione fissa quando possibile, così regge a piccole variazioni nella struttura del file.
+  function findUnitCol(lastHeaderRow, colCount) {
+    var keys = lastHeaderRow.map(headerKey);
+    var offset = colCount - lastHeaderRow.length;
+    var idx = keys.indexOf('unita');
+    if (idx > -1) return { col: offset + idx, label: lastHeaderRow[idx] || 'Unita' };
+    var costoIdx = keys.indexOf('costo');
+    if (costoIdx > 0) return { col: offset + costoIdx - 1, label: lastHeaderRow[costoIdx - 1] || ('colonna ' + (offset + costoIdx)) };
+    // Header non riconoscibile per testo: penultima colonna della riga dati (subito prima di
+    // "Costo", che è sempre l'ultima) come ultima spiaggia.
+    return { col: colCount - 2, label: 'colonna ' + (colCount - 1) };
   }
 
   // Raggruppamento per Codice condiviso da entrambe le sorgenti (HTML-come-xls e CSV vero) di
   // "Giacenze aggregate": stessa logica, cambia solo da dove arrivano headers/righe di celle.
-  function groupAggregateRows(headers, rowsOfCells) {
-    var colCount = headers.length || (rowsOfCells[0] || []).length;
-    var unitCol = findUnitCol(headers, colCount);
-    if (unitCol < 2) throw new Error('Colonna delle unità non riconosciuta (header: ' + (headers.join(' | ') || 'assente') + ').');
+  // "headers" è la prima riga di intestazione (solo per il messaggio d'errore), "lastHeaderRow"
+  // è quella usata davvero per individuare la colonna delle unità (vedi findUnitCol).
+  function groupAggregateRows(headers, lastHeaderRow, rowsOfCells) {
+    // La larghezza vera è quella delle righe dati, non degli header: una cella di intestazione
+    // con colspan conta come UN solo elemento DOM anche se copre più colonne di dati, quindi
+    // headers.length può essere minore del numero reale di colonne (era la causa del bug sulla
+    // colonna sbagliata: il fallback "penultima colonna" veniva calcolato sulla larghezza
+    // sbagliata).
+    var colCount = (rowsOfCells[0] || []).length || Math.max(headers.length, lastHeaderRow.length);
+    var found = findUnitCol(lastHeaderRow, colCount);
+    var unitCol = found.col;
+    if (unitCol < 0 || unitCol >= colCount) throw new Error('Colonna delle unità non riconosciuta (header: ' + (headers.join(' | ') || 'assente') + ').');
 
     var byCode = new Map();
     var skipped = 0, merged = 0;
     rowsOfCells.forEach(function (cells) {
       var codice = String(cells[0] == null ? '' : cells[0]).trim();
       var nome = String(cells[1] == null ? '' : cells[1]).trim();
-      if (!codice || /^totale:?$/i.test(codice) || /^totale:?$/i.test(nome)) return;
+      var codiceKey = headerKey(codice);
+      // Riga fantasma della seconda riga di intestazione ("Unita"/"Costo" letta come se fosse
+      // un codice articolo) o riga di totale a fondo tabella: scartata indipendentemente da
+      // dove si trova nella tabella, non solo se individuata come header a monte.
+      if (!codice || codiceKey === 'unita' || codiceKey === 'costo' || codiceKey === 'totale' || /^totale:?$/i.test(nome)) return;
       var unita = parseQty(cells[unitCol]);
       if (isNaN(unita)) { skipped++; return; }
       var prev = byCode.get(codice);
@@ -360,22 +375,34 @@
       if (!r.nome_articolo) r.nome_articolo = r.codice;
       return r;
     });
-    return { rows: rows, skipped: skipped, merged: merged, unitLabel: headers[unitCol] || ('colonna ' + (unitCol + 1)) };
+    return { rows: rows, skipped: skipped, merged: merged, unitLabel: found.label };
   }
 
   function parseAggregateHtml(text) {
     var doc = new DOMParser().parseFromString(text, 'text/html');
     var table = doc.querySelector('table[id^="DataTables_Table"]') || doc.querySelector('table');
     if (!table) throw new Error('Nessuna tabella trovata nel file.');
-    var headRow = table.querySelector('thead tr') ||
-      Array.from(table.querySelectorAll('tr')).filter(function (tr) { return tr.querySelector('th'); })[0] || null;
-    var headers = headRow ? Array.from(headRow.children).map(cellText) : [];
+    // Header a due righe: "codice, Nome articolo, Totale Unità, Totale Costo, [Negozio]" e sotto
+    // "Unita, Costo" per il negozio. Vanno riconosciute ED ESCLUSE dalle righe dati ENTRAMBE, non
+    // solo la prima (era la causa della riga fantasma codice="Unita"/nome="Costo").
+    var theadRows = Array.from(table.querySelectorAll('thead tr'));
+    if (!theadRows.length) {
+      // Nessun <thead> semantico: si prendono tutte le righe iniziali con almeno un <th>, o la
+      // prima riga in assoluto se nemmeno quelle ci sono.
+      var allTrs = Array.from(table.querySelectorAll('tr'));
+      theadRows = allTrs.filter(function (tr) { return tr.querySelector('th'); });
+      if (!theadRows.length && allTrs.length) theadRows = [allTrs[0]];
+    }
+    var headRowSet = new Set(theadRows);
+    var headers = theadRows.length ? Array.from(theadRows[0].children).map(cellText) : [];
+    var lastHeaderRow = theadRows.length ? Array.from(theadRows[theadRows.length - 1].children).map(cellText) : headers;
+
     var trs = Array.from(table.querySelectorAll('tbody tr, tr')).filter(function (tr) {
-      return tr !== headRow && tr.querySelectorAll('td').length > 0;
+      return !headRowSet.has(tr) && tr.querySelectorAll('td').length > 0;
     });
     if (!trs.length) throw new Error('La tabella non contiene righe.');
     var rowsOfCells = trs.map(function (tr) { return Array.from(tr.querySelectorAll('td')).map(cellText); });
-    return groupAggregateRows(headers, rowsOfCells);
+    return groupAggregateRows(headers, lastHeaderRow, rowsOfCells);
   }
 
   function parseAggregateCsv(text) {
@@ -385,7 +412,9 @@
     if (!data.length) throw new Error('File CSV vuoto.');
     var headers = (data[0] || []).map(function (v) { return v == null ? '' : String(v); });
     var rowsOfCells = data.slice(1);
-    return groupAggregateRows(headers, rowsOfCells);
+    // Un CSV vero non ha header su due righe come l'HTML-come-xls: la stessa riga fa da
+    // "headers" e da "lastHeaderRow" per findUnitCol.
+    return groupAggregateRows(headers, headers, rowsOfCells);
   }
 
   async function parseAggregateFile(file) {
