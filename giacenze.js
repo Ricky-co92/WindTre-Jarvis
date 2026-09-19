@@ -142,6 +142,13 @@
     }
   }
 
+  async function upsertInChunks(table, rows, conflictCol) {
+    for (var i = 0; i < rows.length; i += UPSERT_CHUNK) {
+      var up = await sb.from(table).upsert(rows.slice(i, i + UPSERT_CHUNK), { onConflict: conflictCol });
+      if (up.error) throw up.error;
+    }
+  }
+
   // ================= LETTURA FILE =================
   async function readFileText(file) {
     var text = await file.text();
@@ -172,56 +179,47 @@
     return /^-?\d+(\.\d+)?$/.test(s) ? parseFloat(s) : NaN;
   }
 
-  // ================= LISTINO SBS (import EAN -> codice, fonte primaria) =================
-  // Le colonne esatte del Listino SBS non sono confermate: si cerca per corrispondenza
-  // case-insensitive su varianti comuni dei nomi header, così un piccolo scarto nei nomi
-  // reali richiede solo di aggiungere una variante qui, non di riscrivere il parsing.
-  var LISTINO_VARIANTS = {
-    ean: ['ean', 'codiceean', 'barcode'],
-    codice: ['codice', 'codarticolo'],
-    descrizione: ['descrizione', 'nome', 'articolo', 'nomearticolo'],
-    pvp: ['pvp', 'prezzo', 'prezzovendita']
-  };
+  // ================= LISTINO SBS (catalogo EAN -> Referenza/Nome/PVP) =================
+  // Formato fisso e confermato (non più da indovinare con varianti): funzione dedicata, che
+  // NON riusa il rilevamento colonne di "Giacenze aggregate"/"Export magazzino" (quelli cercano
+  // "Codice"/"Stato"/"Unità", tutt'altre colonne). Header letterali attesi nella prima riga,
+  // confronto case-sensitive col solo trim degli spazi:
+  //   Referenza | Ean | Nome Prodotto | Prezzo al pubblico | Prezzo | Prezzo riservato | ...
+  // Le colonne "Prezzo", "Prezzo riservato", "Immagine", "Catalogo", "Categorie prodotto" non
+  // servono e vengono ignorate.
+  var LISTINO_SBS_HEADERS = { ean: 'Ean', referenza: 'Referenza', nome: 'Nome Prodotto', pvp: 'Prezzo al pubblico' };
 
-  // headers: array di stringhe grezze lette dal file. Ritorna {ean, codice, descrizione, pvp}
-  // con l'indice di colonna trovato (-1 se assente) e l'elenco di header non riconosciuti,
-  // per un messaggio d'errore leggibile se il file reale usa nomi diversi da quelli previsti.
-  function resolveColumns(headers, variants) {
-    var keys = headers.map(headerKey);
-    var out = {};
-    Object.keys(variants).forEach(function (field) {
-      var idx = -1;
-      variants[field].some(function (v) {
-        var i = keys.indexOf(v);
-        if (i > -1) { idx = i; return true; }
-        return false;
-      });
-      out[field] = idx;
+  function resolveListinoSbsColumns(headerRow) {
+    var headers = (headerRow || []).map(function (v) { return String(v == null ? '' : v).trim(); });
+    var out = { _headers: headers };
+    Object.keys(LISTINO_SBS_HEADERS).forEach(function (field) {
+      out[field] = headers.indexOf(LISTINO_SBS_HEADERS[field]);
     });
     return out;
   }
 
-  function parseListinoRows(headers, rows) {
-    var cols = resolveColumns(headers, LISTINO_VARIANTS);
-    if (cols.ean === -1 || cols.codice === -1) {
-      throw new Error('Colonne EAN e/o Codice non riconosciute nel Listino SBS (intestazioni lette: ' +
-        (headers.join(' | ') || 'nessuna') + '). Controlla i nomi delle colonne nel file.');
-    }
+  function parseListinoSbsRows(cols, dataRows) {
     var out = [];
     var skipped = 0;
-    rows.forEach(function (cells) {
+    dataRows.forEach(function (cells) {
       var ean = String(cells[cols.ean] == null ? '' : cells[cols.ean]).trim();
-      var codice = String(cells[cols.codice] == null ? '' : cells[cols.codice]).trim();
-      if (!ean || !codice) { skipped++; return; }
-      var descrizione = cols.descrizione > -1 ? String(cells[cols.descrizione] == null ? '' : cells[cols.descrizione]).trim() : '';
+      // Scarta righe con Ean vuoto o non numerico (non "sequenza numerica valida").
+      if (!ean || !/^\d+$/.test(ean)) { skipped++; return; }
+      var referenza = cols.referenza > -1 ? String(cells[cols.referenza] == null ? '' : cells[cols.referenza]).trim() : '';
+      var nome = cols.nome > -1 ? String(cells[cols.nome] == null ? '' : cells[cols.nome]).trim() : '';
       var pvpRaw = cols.pvp > -1 ? cells[cols.pvp] : null;
       var pvp = pvpRaw == null || pvpRaw === '' ? null : parseQty(pvpRaw);
-      out.push({ ean: ean, codice: codice, descrizione: descrizione || null, pvp: isNaN(pvp) ? null : pvp });
+      out.push({ ean: ean, referenza_sbs: referenza || null, nome_prodotto: nome || null, pvp: (pvp == null || isNaN(pvp)) ? null : pvp });
     });
-    return { rows: out, skipped: skipped, colsFound: cols };
+    return { rows: out, skipped: skipped };
   }
 
-  async function parseListinoFile(file) {
+  function missingEanColError(cols) {
+    return new Error('Colonna "Ean" non trovata nella prima riga del file (intestazioni lette: ' +
+      (cols._headers.join(' | ') || 'nessuna') + ').');
+  }
+
+  async function parseListinoSbsFile(file) {
     var isXlsx = /\.xlsx?$/i.test(file.name);
     if (isXlsx) {
       if (typeof XLSX === 'undefined') throw new Error('Libreria XLSX non disponibile (controlla la connessione).');
@@ -229,32 +227,31 @@
       var wb = XLSX.read(buf, { type: 'array' });
       var ws = wb.Sheets[wb.SheetNames[0]];
       var allRows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null });
-      // L'header potrebbe non essere la prima riga (titolo/riga vuota sopra): si cerca fra
-      // le prime righe quella che permette di risolvere sia EAN sia Codice.
-      var headerIdx = -1, cols = null;
-      for (var i = 0; i < Math.min(10, allRows.length); i++) {
-        var hs = (allRows[i] || []).map(function (v) { return v == null ? '' : String(v); });
-        var c = resolveColumns(hs, LISTINO_VARIANTS);
-        if (c.ean > -1 && c.codice > -1) { headerIdx = i; cols = c; break; }
-      }
-      if (headerIdx === -1) {
-        throw new Error('Intestazioni EAN/Codice non trovate nelle prime righe del file XLSX.');
-      }
-      var headers = (allRows[headerIdx] || []).map(function (v) { return v == null ? '' : String(v); });
-      var dataRows = allRows.slice(headerIdx + 1).filter(function (r) { return r && r.length; });
-      return parseListinoRows(headers, dataRows);
+      if (!allRows.length) throw new Error('Foglio XLSX vuoto.');
+      var cols = resolveListinoSbsColumns(allRows[0]);
+      if (cols.ean === -1) throw missingEanColError(cols);
+      var dataRows = allRows.slice(1).filter(function (r) { return r && r.length; });
+      return parseListinoSbsRows(cols, dataRows);
     }
     if (typeof Papa === 'undefined') throw new Error('Libreria CSV non disponibile (controlla la connessione).');
     var text = await readFileText(file);
-    var rawHeaders = [];
-    var res = Papa.parse(text.replace(/^﻿/, ''), {
-      header: false,
-      skipEmptyLines: 'greedy'
-    });
+    var res = Papa.parse(text.replace(/^﻿/, ''), { header: false, skipEmptyLines: 'greedy' });
     var data = res.data || [];
     if (!data.length) throw new Error('File CSV vuoto.');
-    var headers2 = (data[0] || []).map(function (v) { return v == null ? '' : String(v); });
-    return parseListinoRows(headers2, data.slice(1));
+    var cols2 = resolveListinoSbsColumns(data[0]);
+    if (cols2.ean === -1) throw missingEanColError(cols2);
+    return parseListinoSbsRows(cols2, data.slice(1));
+  }
+
+  var listinoSbsCount = 0;
+  var listinoSbsUpdatedAt = null;
+
+  async function loadListinoSbsInfo() {
+    var res = await sb.from('wt_giacenze_listino_sbs').select('aggiornato_il', { count: 'exact' })
+      .order('aggiornato_il', { ascending: false }).limit(1);
+    if (res.error) throw res.error;
+    listinoSbsCount = res.count || 0;
+    listinoSbsUpdatedAt = (res.data && res.data[0] && res.data[0].aggiornato_il) || null;
   }
 
   async function importListino(file) {
@@ -263,24 +260,24 @@
     btn.disabled = true;
     setListinoInfo('Lettura file...', '');
     try {
-      var parsed = await parseListinoFile(file);
-      if (!parsed.rows.length) throw new Error('Nessuna riga valida (EAN e Codice non vuoti) trovata nel Listino SBS.');
-      var note = parsed.skipped ? '\n' + parsed.skipped + ' righe scartate (EAN o Codice mancante).' : '';
+      var parsed = await parseListinoSbsFile(file);
+      if (!parsed.rows.length) throw new Error('Nessuna riga valida (Ean non vuoto e numerico) trovata nel Listino SBS.');
+      var note = parsed.skipped ? '\n' + parsed.skipped + ' righe scartate (Ean vuoto o non numerico).' : '';
       if (!confirm('Sostituire il Listino SBS con ' + parsed.rows.length + ' articoli?' + note)) {
         setListinoInfo('Import annullato.', '');
         return;
       }
       var now = new Date().toISOString();
       var payload = parsed.rows.map(function (r) {
-        return { ean: r.ean, codice: r.codice, descrizione: r.descrizione, pvp: r.pvp, aggiornato_il: now };
+        return { ean: r.ean, referenza_sbs: r.referenza_sbs, nome_prodotto: r.nome_prodotto, pvp: r.pvp, aggiornato_il: now };
       });
       setListinoInfo('Svuotamento e salvataggio di ' + payload.length + ' articoli...', '');
-      // TRUNCATE via DML (la anon key non può fare DDL): elimina tutto, poi inserisce in blocco.
-      var existing = await fetchAllRows('wt_giacenze_ean', 'ean');
-      if (existing.length) await deleteInChunks('wt_giacenze_ean', 'ean', existing.map(function (r) { return r.ean; }));
-      await insertInChunks('wt_giacenze_ean', payload);
-      await loadEanMaps();
-      scheduleRender();
+      // TRUNCATE via DML (la anon key non può fare DDL): elimina tutto, poi upsert in blocco
+      // (upsert e non insert semplice: un Ean duplicato nel file non deve far fallire l'intero import).
+      var existing = await fetchAllRows('wt_giacenze_listino_sbs', 'ean');
+      if (existing.length) await deleteInChunks('wt_giacenze_listino_sbs', 'ean', existing.map(function (r) { return r.ean; }));
+      await upsertInChunks('wt_giacenze_listino_sbs', payload, 'ean');
+      await loadListinoSbsInfo();
       setListinoInfo(payload.length + ' articoli nel listino importati — aggiornati il ' + fmtDateTime(now), 'ok');
     } catch (err) {
       console.error('Errore import Listino SBS:', err);
@@ -299,8 +296,8 @@
   }
 
   function renderListinoInfo() {
-    if (!eanMap.size) { setListinoInfo('Nessun Listino SBS importato.', ''); return; }
-    setListinoInfo(eanMap.size + ' codici EAN nel Listino SBS.', '');
+    if (!listinoSbsCount) { setListinoInfo('Nessun Listino SBS importato.', ''); return; }
+    setListinoInfo(listinoSbsCount + ' articoli nel Listino SBS — aggiornati il ' + fmtDateTime(listinoSbsUpdatedAt), '');
   }
 
   $('gzImportListinoBtn').addEventListener('click', function () { $('gzListinoFile').click(); });
@@ -610,7 +607,6 @@
       });
       eanList = Array.from(byCode.values());
       eanHay = eanList.map(function (e) { return (e.codice + ' ' + (e.descrizione || '')).toLowerCase(); });
-      renderListinoInfo();
     } catch (err) {
       console.error('Errore caricamento wt_giacenze_ean:', err);
       problemi.push('wt_giacenze_ean: ' + err.message);
@@ -669,6 +665,13 @@
       await loadAttese();
       var mapError = null;
       try { await loadEanMaps(); } catch (e) { mapError = e; }
+      try {
+        await loadListinoSbsInfo();
+        if (!mapError) renderListinoInfo();
+      } catch (e) {
+        console.error('Errore caricamento Listino SBS:', e);
+        if (!mapError) setListinoInfo('Errore caricamento Listino SBS: ' + e.message, 'err');
+      }
       if (mapError) setListinoInfo(mapError.message, 'err');
       await loadSessioni();
       applyPanel();
