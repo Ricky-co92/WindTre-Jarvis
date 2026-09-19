@@ -424,10 +424,14 @@
   .gz-card-title{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:14px;color:#4fc8e8;text-transform:uppercase;letter-spacing:.03em;margin-bottom:12px;}
   /* html5-qrcode decodifica un canvas grande quanto il video in pixel di LAYOUT (non della risoluzione della camera):
      su un telefono sono ~300px e un EAN-13 (95 moduli) resta illeggibile. Il box ha quindi una larghezza logica fissa
-     (SCAN_LOGICAL_WIDTH in giacenze.js) e viene rimpicciolito a schermo con transform: scale(). */
-  .gz-scanwrap{width:100%;min-height:150px;background:#05141c;border:1px solid rgba(143,232,255,.18);border-radius:4px;overflow:hidden;margin-bottom:12px;}
+     (SCAN_LOGICAL_WIDTH in giacenze.js) e viene rimpicciolito a schermo con transform: scale(). Usato solo come fallback
+     quando manca la BarcodeDetector nativa: il percorso nativo pilota invece #gzScanVideo direttamente. */
+  .gz-scanwrap{width:100%;aspect-ratio:4/3;max-height:340px;background:#05141c;border:1px solid rgba(143,232,255,.18);border-radius:4px;overflow:hidden;margin-bottom:12px;position:relative;}
   #gzScannerBox{width:1000px;transform-origin:0 0;}
   #gzScannerBox video{width:100% !important;display:block;}
+  #gzScanVideo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000;}
+  .gz-scan-reticle{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:78%;max-width:420px;height:88px;border:2px solid #8fe8ff;border-radius:6px;box-shadow:0 0 0 2000px rgba(0,0,0,.4);pointer-events:none;}
+  .gz-scan-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
   .gz-msg{font-size:12.5px;color:#ff8f8f;margin-top:8px;min-height:1em;}
   .gz-msg.ok{color:#7fe8a0;font-weight:600;}
   .gz-feedback{border-radius:4px 12px 12px 12px;padding:12px 14px;border:1px solid;}
@@ -2418,8 +2422,15 @@
       <div class="gz-input-grid hidden" id="gzInputArea">
         <div class="gz-card">
           <div class="gz-card-title">Scanner fotocamera</div>
-          <div class="gz-scanwrap" id="gzScanWrap"><div id="gzScannerBox"></div></div>
-          <button type="button" class="pt-btn" id="gzScanToggle">Attiva fotocamera</button>
+          <div class="gz-scanwrap" id="gzScanWrap">
+            <div id="gzScannerBox"></div>
+            <video id="gzScanVideo" class="hidden" playsinline muted autoplay></video>
+            <div class="gz-scan-reticle hidden" id="gzScanReticle"></div>
+          </div>
+          <div class="gz-scan-controls">
+            <button type="button" class="pt-btn" id="gzScanToggle">Attiva fotocamera</button>
+            <button type="button" class="pt-btn hidden" id="gzTorchToggle">Torcia</button>
+          </div>
           <div class="gz-msg" id="gzScanMsg"></div>
           <div class="gz-feedback hidden" id="gzFeedback"></div>
         </div>
@@ -2513,7 +2524,7 @@
 <script src="parco-sim.js?v=5"></script>
 <script src="identificazione-cliente-rules.js?v=3"></script>
 <script src="identificazione-cliente.js?v=2"></script>
-<script src="giacenze.js?v=4"></script>
+<script src="giacenze.js?v=5"></script>
 <script src="settings.js?v=1"></script>
 <div id="login-flash"></div>
 <div id="login-iris"></div>

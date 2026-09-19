@@ -19,8 +19,18 @@
   var righeKeys = new Map(); // chiave normalizzata -> codice esatto in righe
   var filter = 'all';
 
-  var scanner = null;
+  var scanner = null; // istanza Html5Qrcode, usata solo dal backend di fallback
   var scannerRunning = false;
+  var backend = null; // 'native' (BarcodeDetector) | 'html5qrcode' (fallback) | null
+  var nativeStream = null;
+  var nativeDetector = null;
+  var nativeRAF = null;
+  var nativeActive = false;
+  var nativeBusy = false; // true mentre un detect() è in volo, per non accodarne un altro
+  var nativeFrameCount = 0;
+  var nativeCanvas = document.createElement('canvas');
+  var nativeCtx = nativeCanvas.getContext('2d', { willReadFrequently: true });
+  var torchOn = false;
   var lastSeen = {}; // chiave normalizzata -> timestamp dell'ultima decodifica (anche se ignorata)
   var pendingUnknown = null; // codice non riconosciuto in attesa di "Aggiungi comunque"
   var selectedCode = null; // articolo selezionato nello stepper manuale
@@ -676,47 +686,204 @@
   window.addEventListener('resize', fitScanner);
   if (typeof ResizeObserver !== 'undefined') new ResizeObserver(fitScanner).observe($('gzScannerBox'));
 
+  // Elenco desiderato per la BarcodeDetector nativa: viene filtrato sui formati che il browser
+  // dichiara di supportare davvero (getSupportedFormats), perché costruire il detector con un
+  // formato non supportato lancia un errore invece di limitarsi a ignorarlo.
+  var NATIVE_FORMATS_WANTED = ['ean_13', 'ean_8', 'code_128', 'code_39', 'upc_a', 'upc_e', 'qr_code'];
+
+  async function nativeSupportedFormats() {
+    if (!('BarcodeDetector' in window)) return null;
+    try {
+      var supported = await BarcodeDetector.getSupportedFormats();
+      var formats = NATIVE_FORMATS_WANTED.filter(function (f) { return supported.indexOf(f) > -1; });
+      return formats.length ? formats : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // Mappa il riquadro-mirino (in pixel CSS dentro gzScanWrap) sulla porzione corrispondente
+  // del frame video alla sua risoluzione nativa, tenendo conto del crop che object-fit:cover
+  // applica quando l'aspect ratio della camera non coincide con quello del contenitore.
+  function computeCropRect(video, wrap, reticle) {
+    var vw = video.videoWidth, vh = video.videoHeight;
+    var cw = wrap.clientWidth, ch = wrap.clientHeight;
+    if (!vw || !vh || !cw || !ch) return null;
+    var scale = Math.max(cw / vw, ch / vh);
+    var dispW = vw * scale, dispH = vh * scale;
+    var offX = (dispW - cw) / 2, offY = (dispH - ch) / 2;
+    var wRect = wrap.getBoundingClientRect();
+    var rRect = reticle.getBoundingClientRect();
+    var sx = (offX + (rRect.left - wRect.left)) / scale;
+    var sy = (offY + (rRect.top - wRect.top)) / scale;
+    var sw = rRect.width / scale;
+    var sh = rRect.height / scale;
+    sx = Math.max(0, Math.min(sx, vw - 1));
+    sy = Math.max(0, Math.min(sy, vh - 1));
+    sw = Math.max(1, Math.min(sw, vw - sx));
+    sh = Math.max(1, Math.min(sh, vh - sy));
+    return { sx: sx, sy: sy, sw: sw, sh: sh };
+  }
+
+  // Un frame sì e uno no: la BarcodeDetector nativa è accelerata dall'hardware ma restare al
+  // passo con requestAnimationFrame (spesso 60fps) non serve e satura solo la CPU inutilmente.
+  function nativeLoop() {
+    if (!nativeActive) return;
+    nativeRAF = requestAnimationFrame(nativeLoop);
+    nativeFrameCount++;
+    if (nativeFrameCount % 2 !== 0 || nativeBusy) return;
+    var video = $('gzScanVideo');
+    var crop = computeCropRect(video, $('gzScanWrap'), $('gzScanReticle'));
+    if (!crop) return;
+    nativeCanvas.width = Math.round(crop.sw);
+    nativeCanvas.height = Math.round(crop.sh);
+    nativeCtx.drawImage(video, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, nativeCanvas.width, nativeCanvas.height);
+    nativeBusy = true;
+    nativeDetector.detect(nativeCanvas).then(function (codes) {
+      nativeBusy = false;
+      if (codes.length && mode === 'active') onDecode(codes[0].rawValue);
+    }).catch(function () { nativeBusy = false; });
+  }
+
+  async function startNativeScanner(formats) {
+    var video = $('gzScanVideo');
+    nativeStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: 'environment' } },
+      audio: false
+    });
+    backend = 'native';
+    $('gzScanWrap').style.height = ''; // torna all'aspect-ratio CSS, non all'altezza calcolata da fitScanner
+    $('gzScannerBox').classList.add('hidden');
+    video.classList.remove('hidden');
+    $('gzScanReticle').classList.remove('hidden');
+    video.srcObject = nativeStream;
+    await video.play();
+    nativeDetector = new BarcodeDetector({ formats: formats });
+    nativeFrameCount = 0;
+    nativeBusy = false;
+    nativeActive = true;
+    nativeRAF = requestAnimationFrame(nativeLoop);
+  }
+
+  async function stopNativeScanner() {
+    nativeActive = false;
+    if (nativeRAF) { cancelAnimationFrame(nativeRAF); nativeRAF = null; }
+    nativeDetector = null;
+    var video = $('gzScanVideo');
+    try { video.pause(); } catch (e) { /* ignora */ }
+    video.srcObject = null;
+    video.classList.add('hidden');
+    $('gzScanReticle').classList.add('hidden');
+    $('gzScannerBox').classList.remove('hidden');
+    if (nativeStream) {
+      nativeStream.getTracks().forEach(function (t) { t.stop(); });
+      nativeStream = null;
+    }
+  }
+
+  async function startHtml5QrcodeScanner() {
+    if (typeof Html5Qrcode === 'undefined') throw new Error('Libreria scanner non disponibile (controlla la connessione).');
+    $('gzScanVideo').classList.add('hidden');
+    $('gzScanReticle').classList.add('hidden');
+    $('gzScannerBox').classList.remove('hidden');
+    if (!scanner) scanner = new Html5Qrcode('gzScannerBox', { verbose: false, formatsToSupport: scanFormats() });
+    await scanner.start(
+      { facingMode: 'environment' },
+      {
+        fps: 10, // il collo di bottiglia è la dimensione del frame, non serve alzarlo
+        // Risoluzione ridotta: meno pixel da processare ad ogni frame decodificato più velocemente.
+        videoConstraints: { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 480 } },
+        // Riquadro piccolo e orizzontale: la libreria decodifica un canvas grande quanto questo
+        // riquadro, quindi restringerlo riduce il lavoro per frame (i 1D sono comunque orizzontali).
+        qrbox: { width: 260, height: 100 }
+      },
+      onDecode,
+      function () { /* nessun codice nel frame: normale */ }
+    );
+    backend = 'html5qrcode';
+    fitScanner();
+  }
+
+  // Sia la BarcodeDetector nativa (via track.applyConstraints) sia html5-qrcode (via
+  // scanner.applyVideoConstraints) espongono la torcia come vincolo "torch" sulla traccia video.
+  function activeTrackCapabilities() {
+    try {
+      if (backend === 'native' && nativeStream) {
+        var t = nativeStream.getVideoTracks()[0];
+        return t && t.getCapabilities ? t.getCapabilities() : null;
+      }
+      if (backend === 'html5qrcode' && scanner && scanner.getRunningTrackCapabilities) {
+        return scanner.getRunningTrackCapabilities();
+      }
+    } catch (e) { /* capability non disponibile su questo device/browser */ }
+    return null;
+  }
+
+  function setupTorchButton() {
+    var btn = $('gzTorchToggle');
+    torchOn = false;
+    btn.textContent = 'Torcia';
+    var caps = activeTrackCapabilities();
+    btn.classList.toggle('hidden', !(caps && caps.torch));
+  }
+
+  async function toggleTorch() {
+    var btn = $('gzTorchToggle');
+    var next = !torchOn;
+    try {
+      if (backend === 'native' && nativeStream) {
+        await nativeStream.getVideoTracks()[0].applyConstraints({ advanced: [{ torch: next }] });
+      } else if (backend === 'html5qrcode' && scanner && scanner.applyVideoConstraints) {
+        await scanner.applyVideoConstraints({ advanced: [{ torch: next }] });
+      } else {
+        return;
+      }
+      torchOn = next;
+      btn.textContent = torchOn ? 'Spegni torcia' : 'Torcia';
+    } catch (err) {
+      console.error('Errore torcia:', err);
+    }
+  }
+
+  $('gzTorchToggle').addEventListener('click', toggleTorch);
+
   async function startScanner() {
     var msg = $('gzScanMsg');
-    if (typeof Html5Qrcode === 'undefined') { msg.textContent = 'Libreria scanner non disponibile (controlla la connessione).'; return; }
     if (scannerRunning || mode !== 'active') return;
     msg.textContent = '';
     $('gzScanToggle').disabled = true;
     try {
-      if (!scanner) scanner = new Html5Qrcode('gzScannerBox', { verbose: false, formatsToSupport: scanFormats() });
-      await scanner.start(
-        { facingMode: 'environment' },
-        {
-          fps: 10,
-          // Senza vincoli molti telefoni aprono la camera a 640x480: pochi pixel per barra.
-          videoConstraints: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
-          // Riquadro largo (i 1D sono orizzontali) e quasi a tutta larghezza: la libreria
-          // decodifica un canvas grande quanto questo riquadro, quindi più è grande meglio si legge.
-          qrbox: function (vw, vh) {
-            var w = Math.max(50, Math.floor(vw * 0.92));
-            return { width: w, height: Math.max(50, Math.floor(Math.min(vh * 0.8, w * 0.4))) };
-          }
-        },
-        onDecode,
-        function () { /* nessun codice nel frame: normale */ }
-      );
+      var nativeFormats = await nativeSupportedFormats();
+      if (nativeFormats) {
+        await startNativeScanner(nativeFormats);
+      } else {
+        await startHtml5QrcodeScanner();
+      }
       scannerRunning = true;
-      fitScanner();
+      setupTorchButton();
       $('gzScanToggle').textContent = 'Ferma fotocamera';
     } catch (err) {
       console.error('Errore avvio fotocamera:', err);
       msg.textContent = 'Impossibile avviare la fotocamera: ' + (err && err.message ? err.message : err);
+      try { await stopScanner(); } catch (e) { /* ignora, stiamo già gestendo un errore */ }
     } finally {
       $('gzScanToggle').disabled = false;
     }
   }
 
   async function stopScanner() {
-    if (!scanner || !scannerRunning) return;
     scannerRunning = false;
-    try { await scanner.stop(); scanner.clear(); } catch (e) { /* già fermo */ }
+    if (backend === 'native') {
+      await stopNativeScanner();
+    } else if (backend === 'html5qrcode' && scanner) {
+      try { await scanner.stop(); scanner.clear(); } catch (e) { /* già fermo */ }
+    }
+    backend = null;
+    torchOn = false;
     var btn = $('gzScanToggle');
     if (btn) btn.textContent = 'Attiva fotocamera';
+    var torchBtn = $('gzTorchToggle');
+    if (torchBtn) { torchBtn.classList.add('hidden'); torchBtn.textContent = 'Torcia'; }
   }
 
   $('gzScanToggle').addEventListener('click', function () {
