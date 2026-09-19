@@ -707,18 +707,50 @@
         '<td>' + fmtDate(s.iniziato_il) + (s.operatore ? ' · ' + escapeHtml(s.operatore) : '') + '</td>' +
         '<td><span class="gz-badge gz-badge-' + s.stato + '">' + statoLabel + '</span></td>' +
         '<td class="gz-num">' + s.righeCount + '</td>' +
-        '<td><button type="button" class="pt-btn gz-sess-open">Apri</button></td>' +
+        '<td class="gz-sess-actions">' +
+        '<button type="button" class="pt-btn gz-sess-open">Apri</button>' +
+        (isSuperAdmin() ? '<button type="button" class="ps-row-del gz-sess-del" title="Elimina sessione">&#128465;</button>' : '') +
+        '</td>' +
         '</tr>';
     }).join('');
   }
 
   $('gzSessionsBody').addEventListener('click', function (ev) {
+    var delBtn = ev.target.closest('.gz-sess-del');
     var row = ev.target.closest('.gz-sess-row');
     if (!row) return;
     var id = row.dataset.id;
     var s = sessioni.find(function (x) { return x.id === id; });
-    if (s) apriSessione(s.id, s.stato);
+    if (!s) return;
+    if (delBtn) { eliminaSessione(s); return; }
+    apriSessione(s.id, s.stato);
   });
+
+  // SuperAdmin only, come le altre azioni che distruggono dati in modo irreversibile in questo
+  // modulo (import Listino SBS/Giacenze): non c'è nel progetto un precedente di permesso
+  // "solo il creatore" per azioni distruttive, ed eliminare una sessione cancella conteggi che
+  // potrebbero essere di un altro operatore.
+  async function eliminaSessione(s) {
+    if (!isSuperAdmin()) return;
+    if (!confirm('Eliminare la sessione "' + (s.nome || '(senza nome)') + '" del ' + fmtDate(s.iniziato_il) + '? ' +
+      'Verranno cancellati tutti i conteggi associati. Azione irreversibile.')) return;
+    try {
+      // Le FK verso wt_giacenze_conteggio hanno ON DELETE CASCADE (vedi tools/giacenze-schema.sql
+      // e tools/giacenze-migration-v2.sql), ma le righe figlie si cancellano comunque esplicitamente
+      // prima: funziona a prescindere da quale versione delle migration è stata davvero eseguita sul
+      // progetto Supabase, invece di fidarsi ciecamente della cascade.
+      var delRighe = await sb.from('wt_giacenze_conteggio_righe').delete().eq('conteggio_id', s.id);
+      if (delRighe.error) throw delRighe.error;
+      var delEan = await sb.from('wt_giacenze_ean_non_risolti').delete().eq('conteggio_id', s.id);
+      if (delEan.error) throw delEan.error;
+      var delSess = await sb.from('wt_giacenze_conteggio').delete().eq('id', s.id);
+      if (delSess.error) throw delSess.error;
+      sessioni = sessioni.filter(function (x) { return x.id !== s.id; });
+      renderSessioni();
+    } catch (err) {
+      alert('Errore eliminazione sessione: ' + err.message);
+    }
+  }
 
   $('gzNewSessionBtn').addEventListener('click', async function () {
     if (!attese.length) {
